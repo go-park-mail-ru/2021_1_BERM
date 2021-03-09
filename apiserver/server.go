@@ -40,7 +40,7 @@ func (s *server) ServeHTTP (w http.ResponseWriter, r *http.Request){
 }
 
 func (s *server) configureRouter(){
-	s.router.HandleFunc("/{[A-Za-z0-9]*}", s.handleOptions()).Methods("OPTIONS")
+	s.router.HandleFunc("", s.handleOptions()).Methods("OPTIONS")
 	s.router.HandleFunc("/signup",  s.handleSignUp()).Methods("POST")
 	s.router.HandleFunc("/signin",  s.handleSignIn()).Methods("POST")
 	s.router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods("POST")
@@ -54,6 +54,7 @@ func (s *server) setOptions(next http.Handler) http.Handler {
 		println("1")
 		fmt.Println(r.Header)
 		if r.Method != "OPTIONS" {
+			println(3)
 			setupSimpleResponse(&w, r)
 			next.ServeHTTP(w, r)
 		}
