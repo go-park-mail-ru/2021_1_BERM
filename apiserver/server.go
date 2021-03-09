@@ -39,10 +39,10 @@ func (s *server) ServeHTTP (w http.ResponseWriter, r *http.Request){
 }
 
 func (s *server) configureRouter(){
-	s.router.HandleFunc("/signup",  s.handleSignUp()).Methods("POST")
-	s.router.HandleFunc("/signin",  s.handleSignIn()).Methods("POST")
-	s.router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods("POST")
-	s.router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods("POST")
+	s.router.HandleFunc("/signup",  s.handleSignUp()).Methods("POST", "OPTIONS")
+	s.router.HandleFunc("/signin",  s.handleSignIn()).Methods("POST", "OPTIONS")
+	s.router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods("POST", "OPTIONS")
+	s.router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods("POST", "OPTIONS")
 	s.router.Use(mux.CORSMethodMiddleware(s.router))
 
 }
