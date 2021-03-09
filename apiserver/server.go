@@ -39,10 +39,10 @@ func (s *server) ServeHTTP (w http.ResponseWriter, r *http.Request){
 }
 
 func (s *server) configureRouter(){
-	s.router.HandleFunc("/signup",  s.handleSignUp()).Methods("POST", "OPTIONS")
-	s.router.HandleFunc("/signin",  s.handleSignIn()).Methods("POST", "OPTIONS")
-	s.router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods("POST", "OPTIONS")
-	s.router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods("POST", "OPTIONS")
+	s.router.HandleFunc("/signup",  s.handleSignUp()).Methods(http.MethodPost, http.MethodOptions)
+	s.router.HandleFunc("/signin",  s.handleSignIn()).Methods(http.MethodPost, http.MethodOptions)
+	s.router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods(http.MethodPost, http.MethodOptions)
+	s.router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods(http.MethodPost, http.MethodOptions)
 	s.router.Use(mux.CORSMethodMiddleware(s.router))
 
 }
@@ -67,6 +67,7 @@ func (s *server) handleSignUp() http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
 		test := r.Header.Get("Origin")
 		println(test)
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Origin",  r.Header.Get("Origin"))
 		u := &model.User{}
 		if err := json.NewDecoder(r.Body).Decode(u) ;err != nil{
