@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fl_ru/model"
 	"fl_ru/store"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -39,12 +40,19 @@ func (s *server) ServeHTTP (w http.ResponseWriter, r *http.Request){
 }
 
 func (s *server) configureRouter(){
-	s.router.HandleFunc("/signup",  s.handleSignUp()).Methods(http.MethodPost, http.MethodOptions)
-	s.router.HandleFunc("/signin",  s.handleSignIn()).Methods(http.MethodPost, http.MethodOptions)
-	s.router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods(http.MethodPost, http.MethodOptions)
-	s.router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods(http.MethodPost, http.MethodOptions)
-	s.router.Use(mux.CORSMethodMiddleware(s.router))
+	s.router.HandleFunc("/signup",  s.handleSignUp()).Methods(http.MethodPost)
+	s.router.HandleFunc("/signin",  s.handleSignIn()).Methods(http.MethodPost)
+	s.router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods(http.MethodPost)
+	s.router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods(http.MethodPost)
+	//s.router.Use(mux.CORSMethodMiddleware(s.router))
+	var (
+		originsOk   = handlers.AllowedOrigins([]string{"*"})
+		//credentials = handlers.AllowCredentials()
+		headersOk   = handlers.AllowedHeaders([]string{"id", "Content-Type", "session", "Origin", "Accept", "executor"})
+		methodsOk   = handlers.AllowedMethods([]string{http.MethodGet, http.MethodOptions, http.MethodPost, http.MethodPatch})
+	)
 
+	handlers.CORS(/*credentials,*/ originsOk, headersOk, methodsOk)(s.router)
 }
 
 
