@@ -124,5 +124,39 @@ function alldrop()
     session:drop()
 end
 
+function GetOrders(num, spec)
+    local count = 0;
+    for _, v in pairs(spec) do
+        spec[v] = true
+    end
+    local result = {}
+    for _, v in order:pairs() do
+        if count == num then
+            break
+        end
+        local specialize = v[5]
+        for _, elem in pairs(specialize) do
+            local flag = spec[elem]
+            if flag then
+                table.insert(result, count, v)
+                break
+            end
+        end
+        count = count + 1
+    end
+    return box.tuple.new(result)
+end
+
+function Test()
+    local testTuple = box.tuple.new()
+    local count = 0
+
+    --for _, v in order:pairs() do
+    --    testTuple[count] = v
+    --    count = count + 1
+    --end
+
+    return testTuple
+end
 
 require'console'.start()
