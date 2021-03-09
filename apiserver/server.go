@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fl_ru/model"
 	"fl_ru/store"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -50,13 +51,18 @@ func (s *server) configureRouter(){
 
 func (s *server) setOptions(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		setupSimpleResponse(&w, r)
-		next.ServeHTTP(w, r)
+		println("1")
+		fmt.Println(r.Header)
+		if r.Method != "OPTIONS" {
+			setupSimpleResponse(&w, r)
+			next.ServeHTTP(w, r)
+		}
 	})
 }
 
 func (s *server) handleOptions() http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
+		println("2")
 		setupDifficultResponse(&w, r)
 		s.respond(w, r, http.StatusOK, nil)
 	}
