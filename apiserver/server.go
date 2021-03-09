@@ -27,6 +27,7 @@ type server struct{
 
 func newServer(store store.Store) *server {
 	s := &server{
+		router: mux.NewRouter(),
 		logger: logrus.New(),
 		store: store,
 	}
@@ -48,7 +49,7 @@ func (s *server) configureRouter(){
 	var (
 		originsOk   = handlers.AllowedOrigins([]string{"localhost:63342"})
 		credentials = handlers.AllowCredentials()
-		headersOk   = handlers.AllowedHeaders([]string{"id", "Content-Type", "session", "Origin", "Accept", "executor"})
+		headersOk   = handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", "Origin", "Accept"})
 		methodsOk   = handlers.AllowedMethods([]string{http.MethodGet, http.MethodOptions, http.MethodPost, http.MethodPatch})
 	)
 
