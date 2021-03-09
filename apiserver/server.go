@@ -39,6 +39,7 @@ func (s *server) ServeHTTP (w http.ResponseWriter, r *http.Request){
 }
 
 func (s *server) configureRouter(){
+	s.router.HandleFunc("/*", s.handleOptions())
 	s.router.HandleFunc("/signup",  s.handleSignUp()).Methods("POST")
 	s.router.HandleFunc("/signin",  s.handleSignIn()).Methods("POST")
 	s.router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods("POST")
@@ -48,14 +49,16 @@ func (s *server) configureRouter(){
 
 func (s *server) setOptions(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if (*r).Method == "OPTIONS" {
-			setupDifficultResponse(&w, r)
-			s.respond(w, r, http.StatusOK, nil)
-			return
-		}
 		setupSimpleResponse(&w, r)
 		next.ServeHTTP(w, r)
 	})
+}
+
+func (s *server) handleOptions() http.HandlerFunc{
+	return func(w http.ResponseWriter, r *http.Request){
+		setupDifficultResponse(&w, r)
+		s.respond(w, r, http.StatusOK, nil)
+	}
 }
 
 func (s *server) handleSignUp() http.HandlerFunc{

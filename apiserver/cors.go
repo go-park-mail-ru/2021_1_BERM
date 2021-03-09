@@ -1,18 +1,13 @@
 package apiserver
 
 import (
-	"fmt"
 	"net/http"
 )
 
 
 
 func setupSimpleResponse(w *http.ResponseWriter, req *http.Request) {
-	print("1: ")
-	fmt.Println(req.Header.Values("Origin"))
-	print("2: ")
-	fmt.Println(req.Header.Values("origin"))
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Origin", req.Header.Get("Origin"))
 	if cookie := req.Cookies(); len(cookie) != 0 {
 		(*w).Header().Set("Access-Control-Allow-Credentials", "true")
 	}
