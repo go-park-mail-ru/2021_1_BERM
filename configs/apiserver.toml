@@ -1,0 +1,3 @@
+bind_addr = ":8080"
+log_level = "error"
+database_url = "127.0.0.1:3000"
