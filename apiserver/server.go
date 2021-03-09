@@ -20,14 +20,13 @@ const(
 
 
 type server struct{
-	router *mux.Router
+	router http.Handler
 	logger *logrus.Logger
 	store  store.Store
 }
 
 func newServer(store store.Store) *server {
 	s := &server{
-		router: mux.NewRouter(),
 		logger: logrus.New(),
 		store: store,
 	}
@@ -40,19 +39,20 @@ func (s *server) ServeHTTP (w http.ResponseWriter, r *http.Request){
 }
 
 func (s *server) configureRouter(){
-	s.router.HandleFunc("/signup",  s.handleSignUp()).Methods(http.MethodPost)
-	s.router.HandleFunc("/signin",  s.handleSignIn()).Methods(http.MethodPost)
-	s.router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods(http.MethodPost)
-	s.router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods(http.MethodPost)
+	router := mux.NewRouter()
+	router.HandleFunc("/signup",  s.handleSignUp()).Methods(http.MethodPost)
+	router.HandleFunc("/signin",  s.handleSignIn()).Methods(http.MethodPost)
+	router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods(http.MethodPost)
+	router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods(http.MethodPost)
 	//s.router.Use(mux.CORSMethodMiddleware(s.router))
 	var (
-		originsOk   = handlers.AllowedOrigins([]string{"*"})
-		//credentials = handlers.AllowCredentials()
+		originsOk   = handlers.AllowedOrigins([]string{"localhost:63342"})
+		credentials = handlers.AllowCredentials()
 		headersOk   = handlers.AllowedHeaders([]string{"id", "Content-Type", "session", "Origin", "Accept", "executor"})
 		methodsOk   = handlers.AllowedMethods([]string{http.MethodGet, http.MethodOptions, http.MethodPost, http.MethodPatch})
 	)
 
-	handlers.CORS(/*credentials,*/ originsOk, headersOk, methodsOk)(s.router)
+	s.router = handlers.CORS(credentials, originsOk, headersOk, methodsOk)(router)
 }
 
 
