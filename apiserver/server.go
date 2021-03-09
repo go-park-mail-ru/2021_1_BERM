@@ -39,13 +39,14 @@ func (s *server) ServeHTTP (w http.ResponseWriter, r *http.Request){
 }
 
 func (s *server) configureRouter(){
-	s.router.HandleFunc("/*", s.handleOptions())
+	s.router.HandleFunc("/*", s.handleOptions()).Methods("OPTIONS")
 	s.router.HandleFunc("/signup",  s.handleSignUp()).Methods("POST")
 	s.router.HandleFunc("/signin",  s.handleSignIn()).Methods("POST")
 	s.router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods("POST")
 	s.router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods("POST")
 	s.router.Use(s.setOptions)
 }
+
 
 func (s *server) setOptions(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
