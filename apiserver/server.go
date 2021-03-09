@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fl_ru/model"
 	"fl_ru/store"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -40,37 +39,35 @@ func (s *server) ServeHTTP (w http.ResponseWriter, r *http.Request){
 }
 
 func (s *server) configureRouter(){
-	s.router.HandleFunc("", s.handleOptions()).Methods("OPTIONS")
 	s.router.HandleFunc("/signup",  s.handleSignUp()).Methods("POST")
 	s.router.HandleFunc("/signin",  s.handleSignIn()).Methods("POST")
 	s.router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods("POST")
 	s.router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods("POST")
-	s.router.Use(s.setOptions)
+	s.router.Use(mux.CORSMethodMiddleware(s.router))
+
 }
 
 
-func (s *server) setOptions(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		println("1")
-		fmt.Println(r.Header)
-		if r.Method != "OPTIONS" {
-			println(3)
-			setupSimpleResponse(&w, r)
-			next.ServeHTTP(w, r)
-		}
-	})
-}
 
-func (s *server) handleOptions() http.HandlerFunc{
-	return func(w http.ResponseWriter, r *http.Request){
-		println("2")
-		setupDifficultResponse(&w, r)
-		s.respond(w, r, http.StatusOK, nil)
-	}
-}
+//func (s *server) setOptions(next http.Handler) http.Handler {
+//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//		setupSimpleResponse(&w, r)
+//		next.ServeHTTP(w, r)
+//	})
+//}
+//
+//func (s *server) handleOptions() http.HandlerFunc{
+//	return func(w http.ResponseWriter, r *http.Request){
+//		setupDifficultResponse(&w, r)
+//		s.respond(w, r, http.StatusOK, nil)
+//	}
+//}
 
 func (s *server) handleSignUp() http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
+		test := r.Header.Get("Origin")
+		println(test)
+		w.Header().Set("Access-Control-Allow-Origin",  r.Header.Get("Origin"))
 		u := &model.User{}
 		if err := json.NewDecoder(r.Body).Decode(u) ;err != nil{
 			s.error(w, r, http.StatusBadRequest, err)
@@ -110,6 +107,10 @@ func (s *server) handleSignIn() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request){
 		request := &Request{}
+		var b []byte
+
+		n, _ := r.Body.Read(b)
+		println(n)
 		if err := json.NewDecoder(r.Body).Decode(request) ;err != nil{
 			s.error(w, r, http.StatusBadRequest, err)
 			return
