@@ -11,7 +11,7 @@ func Start(config *Config) error{
 	if err != nil{
 		log.Fatal(err)
 	}
-	s:=newServer(store)
+	s:=newServer(store, config)
 	return http.ListenAndServe(config.BindAddr, s)
 }
 
