@@ -30,6 +30,21 @@ func (r *UserRepository)FindByEmail(user *model.User) error{
 	return nil
 }
 
+func (r *UserRepository)Find(user *model.User) error{
+	resp, err := r.store.conn.Select("user", "primary",
+		0, 1,  tarantool.IterEq, []interface{}{
+			user.Id,
+		})
+	if err != nil{
+		return err
+	}
+	if len(resp.Tuples()) == 0{
+		return errors.New("Bad password")
+	}
+	*user = *tarantoolDataToUser(resp.Tuples()[0])
+	return nil
+}
+
 func (u *UserRepository)ChangeUser(user *model.User) error{
 
 	resp, err := u.store.conn.Update("user", "primary", []interface{}{user.Id}, userToTarantoolChangeData(user))

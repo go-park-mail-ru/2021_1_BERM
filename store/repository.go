@@ -5,6 +5,7 @@ import "fl_ru/model"
 type UserRepository interface {
 	Create(user *model.User) error
 	FindByEmail(user *model.User) error
+	Find(user *model.User) error
 	ChangeUser(user *model.User) error
 }
 
