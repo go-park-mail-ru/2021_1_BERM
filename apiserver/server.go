@@ -309,13 +309,13 @@ func (s *server)createCookies(u *model.User) ([]http.Cookie, error){
 		{
 			Name:  "id",
 			Value: strconv.FormatUint(u.Id, 10),
-			SameSite: http.SameSiteNoneMode,
+			SameSite: http.SameSiteDefaultMode,
 
 		},
 		{
 			Name: "executor",
 			Value: strconv.FormatBool(u.Executor),
-			SameSite: http.SameSiteNoneMode,
+			SameSite: http.SameSiteLaxMode,
 		},
 	}
 	return cookies, nil
