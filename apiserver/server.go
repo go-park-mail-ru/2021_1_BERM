@@ -68,8 +68,8 @@ func (s *server) handleLogout() http.HandlerFunc{
 		cookies := r.Cookies()
 		s.delCookies(cookies)
 
-		var cookie *http.Cookie
-		for cookie = range cookies{
+
+		for _, cookie := range cookies{
 			http.SetCookie(w, cookie)
 		}
 	}
@@ -310,8 +310,7 @@ func (s* server) respond(w http.ResponseWriter, r *http.Request, code int, data 
 	}
 }
 func (s *server)delCookies(cookies []*http.Cookie){
-	var cookie http.Cookie
-	for cookie = range cookies{
+	for _, cookie := range cookies{
 		cookie.Expires = time.Now().AddDate(0,0,-1)
 	}
 
