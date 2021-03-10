@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -48,6 +49,7 @@ func (s *server) configureRouter(config* Config){
 	router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods(http.MethodPost)
 	router.HandleFunc("/profile/avatar", s.authenticateUser(s.handlePutAvatar(config.ContentDir))).Methods(http.MethodPost)
 	router.HandleFunc("/profile", s.authenticateUser(s.handleGetProfile())).Methods(http.MethodGet)
+	router.HandleFunc("/profile/avatar", s.authenticateUser(s.handlePutAvatar(config.ContentDir))).Methods(http.MethodPost)
 	c := cors.New(cors.Options{
 		AllowedOrigins: config.Origin,
 		AllowedMethods: []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
@@ -58,6 +60,52 @@ func (s *server) configureRouter(config* Config){
 
 
 }
+
+func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc{
+	return func(w http.ResponseWriter, r *http.Request){
+		u := &model.User{}
+		userIdCookie, _ := r.Cookie("id")
+		id, _ := strconv.Atoi(userIdCookie.Value)
+		u.Id = uint64(id)
+		var avatar []byte
+		if   r.Body.Read == nil{
+			s.error(w, r, http.StatusBadRequest, errors.New("HUETA =("))
+			return
+		}
+		avatar, err := ioutil.ReadAll(r.Body)
+		if   err != nil{
+			s.error(w, r, http.StatusBadRequest, errors.New("HUETA =("))
+			return
+		}
+		pathLen := len(contentDir)
+		if contentDir[pathLen - 1] == '/'{
+			contentDir = contentDir + userIdCookie.Value + ".jpg"
+		}else{
+			contentDir = contentDir + "/" + userIdCookie.Value + ".jpg"
+		}
+		file, err := os.Create(contentDir)
+		if err != nil{
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+		if _, err = file.Write(avatar); err != nil{
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+		if err = file.Close(); err != nil{
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+		u.ImgUrl = contentDir
+		if err = s.store.User().ChangeUser(u); err != nil{
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+		u.Sanitize()
+		s.respond(w, r, http.StatusOK, u)
+	}
+}
+
 
 func (s *server) handleSignUp() http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
