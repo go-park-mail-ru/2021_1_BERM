@@ -45,11 +45,13 @@ func (s *server) configureRouter(config* Config){
 	router := mux.NewRouter()
 	router.HandleFunc("/signup",  s.handleSignUp()).Methods(http.MethodPost)
 	router.HandleFunc("/signin",  s.handleSignIn()).Methods(http.MethodPost)
+	router.HandleFunc("/logout",  s.handleLogout()).Methods(http.MethodPost)
 	router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods(http.MethodPost)
 	router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods(http.MethodPost)
 	router.HandleFunc("/profile/avatar", s.authenticateUser(s.handlePutAvatar(config.ContentDir))).Methods(http.MethodPost)
 	router.HandleFunc("/profile", s.authenticateUser(s.handleGetProfile())).Methods(http.MethodGet)
 	router.HandleFunc("/profile/avatar", s.authenticateUser(s.handlePutAvatar(config.ContentDir))).Methods(http.MethodPost)
+
 	c := cors.New(cors.Options{
 		AllowedOrigins: config.Origin,
 		AllowedMethods: []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
@@ -59,6 +61,18 @@ func (s *server) configureRouter(config* Config){
 	s.router =  c.Handler(router)
 
 
+}
+
+func (s *server) handleLogout() http.HandlerFunc{
+	return func(w http.ResponseWriter, r *http.Request) {
+		cookies := r.Cookies()
+		s.delCookies(cookies)
+
+		var cookie *http.Cookie
+		for cookie = range cookies{
+			http.SetCookie(w, cookie)
+		}
+	}
 }
 
 func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc{
@@ -295,6 +309,14 @@ func (s* server) respond(w http.ResponseWriter, r *http.Request, code int, data 
 
 	}
 }
+func (s *server)delCookies(cookies []*http.Cookie){
+	var cookie http.Cookie
+	for cookie = range cookies{
+		cookie.Expires = time.Now().AddDate(0,0,-1)
+	}
+
+}
+
 
 func (s *server)createCookies(u *model.User) ([]http.Cookie, error){
 
