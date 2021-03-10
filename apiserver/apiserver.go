@@ -12,6 +12,6 @@ func Start(config *Config) error{
 		log.Fatal(err)
 	}
 	s:=newServer(store, config)
-	return http.ListenAndServe(config.BindAddr, s)
+	return http.ListenAndServeTLS(config.BindAddr,"../server.crt", "../server.key", s)
 }
 
