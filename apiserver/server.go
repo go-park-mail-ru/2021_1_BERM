@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fl_ru/model"
 	"fl_ru/store"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
@@ -66,23 +65,8 @@ func (s *server) configureRouter(config* Config){
 
 func (s *server) handleLogout() http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(r.Header)
-		session, err := r.Cookie("session")
-		if err != nil{
-			println(err)
-		}
-		id, err := r.Cookie("id")
-		if err != nil{
-			println(err)
-		}
-		executor, err := r.Cookie("executor")
-		if err != nil{
-			println(err)
-		}
-		cookies := []*http.Cookie{session, id, executor}
+		cookies := r.Cookies()
 		s.delCookies(cookies)
-
-
 		for _, cookie := range cookies{
 			http.SetCookie(w, cookie)
 		}
@@ -325,6 +309,8 @@ func (s* server) respond(w http.ResponseWriter, r *http.Request, code int, data 
 func (s *server)delCookies(cookies []*http.Cookie){
 	for _, cookie := range cookies{
 		cookie.Expires = time.Now().AddDate(0,0,-1)
+		cookie.SameSite = http.SameSiteNoneMode
+		cookie.Secure = true
 	}
 
 }
@@ -344,7 +330,6 @@ func (s *server)createCookies(u *model.User) ([]http.Cookie, error){
 		Name: "session",
 		Value: session.SessionId,
 		SameSite: http.SameSiteNoneMode,
-		HttpOnly: true,
 		Secure: true,
 		Expires: time.Now().AddDate(0, 1, 0),
 	}
@@ -355,7 +340,6 @@ func (s *server)createCookies(u *model.User) ([]http.Cookie, error){
 			Name:  "id",
 			Value: strconv.FormatUint(u.Id, 10),
 			SameSite: http.SameSiteNoneMode,
-			HttpOnly: true,
 			Secure: true,
 			Expires: time.Now().AddDate(0, 1, 0),
 
@@ -364,7 +348,6 @@ func (s *server)createCookies(u *model.User) ([]http.Cookie, error){
 			Name: "executor",
 			Value: strconv.FormatBool(u.Executor),
 			SameSite: http.SameSiteNoneMode,
-			HttpOnly: true,
 			Secure: true,
 			Expires: time.Now().AddDate(0, 1, 0),
 		},
