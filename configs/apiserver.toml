@@ -1,3 +1,5 @@
 bind_addr = ":8080"
 log_level = "error"
-database_url = "127.0.0.1:3000"
+database_url = "127.0.0.1:3001"
+origin = ["localhost:63342"]
+content_dir = "/home/anton/project/test"

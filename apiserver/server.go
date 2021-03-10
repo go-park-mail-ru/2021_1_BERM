@@ -95,6 +95,18 @@ func (s *server) handleSignUp() http.HandlerFunc{
 
 func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
+		u := &model.User{}
+		userIdCookie, _ := r.Cookie("id")
+		id, _ := strconv.Atoi(userIdCookie.Value)
+		u.Id = uint64(id)
+		var avatar []byte
+		if _, err := r.Body.Read(avatar); err != nil{
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+		//pathLen := len(contentDir)
+		//if contentDir
+		//
 
 	}
 }
