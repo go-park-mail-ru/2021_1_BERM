@@ -43,9 +43,9 @@ func (s *server) ServeHTTP (w http.ResponseWriter, r *http.Request){
 
 func (s *server) configureRouter(config* Config){
 	router := mux.NewRouter()
-	router.HandleFunc("/signup",  s.handleSignUp()).Methods(http.MethodGet)
+	router.HandleFunc("/signup",  s.handleSignUp()).Methods(http.MethodPost)
 	router.HandleFunc("/signin",  s.handleSignIn()).Methods(http.MethodPost)
-	router.HandleFunc("/logout",  s.handleLogout()).Methods(http.MethodPost)
+	router.HandleFunc("/logout",  s.handleLogout()).Methods(http.MethodGet)
 	router.HandleFunc("/profile/change",  s.authenticateUser(s.handleChangeProfile())).Methods(http.MethodPost)
 	router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods(http.MethodPost)
 	router.HandleFunc("/profile/avatar", s.authenticateUser(s.handlePutAvatar(config.ContentDir))).Methods(http.MethodPost)
