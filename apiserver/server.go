@@ -142,46 +142,6 @@ func (s *server) handleSignUp() http.HandlerFunc{
 	}
 }
 
-func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc{
-	return func(w http.ResponseWriter, r *http.Request){
-		u := &model.User{}
-		userIdCookie, _ := r.Cookie("id")
-		id, _ := strconv.Atoi(userIdCookie.Value)
-		u.Id = uint64(id)
-		var avatar []byte
-		if  n, err:= r.Body.Read(avatar); err != nil{
-			s.error(w, r, http.StatusBadRequest, err)
-			println(n)
-			return
-		}
-		pathLen := len(contentDir)
-		if contentDir[pathLen - 1] == '/'{
-			contentDir = contentDir + userIdCookie.Value + ".jpg"
-		}else{
-			contentDir = contentDir + "/" + userIdCookie.Value + ".jpg"
-		}
-		file, err := os.Create(contentDir)
-		if err != nil{
-			s.error(w, r, http.StatusInternalServerError, err)
-			return
-		}
-		if _, err = file.Write(avatar); err != nil{
-			s.error(w, r, http.StatusInternalServerError, err)
-			return
-		}
-		if err = file.Close(); err != nil{
-			s.error(w, r, http.StatusInternalServerError, err)
-			return
-		}
-		u.ImgUrl = contentDir
-		if err = s.store.User().ChangeUser(u); err != nil{
-			s.error(w, r, http.StatusInternalServerError, err)
-			return
-		}
-		u.Sanitize()
-		s.respond(w, r, http.StatusOK, u)
-	}
-}
 
 func (s *server) handleGetProfile() http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
