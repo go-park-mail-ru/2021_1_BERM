@@ -301,6 +301,7 @@ func (s *server)createCookies(u *model.User) ([]http.Cookie, error){
 	cookie := http.Cookie{
 		Name: "session",
 		Value: session.SessionId,
+		SameSite: http.SameSiteNoneMode,
 	}
 
 	cookies := []http.Cookie{
@@ -309,20 +310,12 @@ func (s *server)createCookies(u *model.User) ([]http.Cookie, error){
 			Name:  "id",
 			Value: strconv.FormatUint(u.Id, 10),
 			SameSite: http.SameSiteNoneMode,
-			Secure: true,
 
 		},
 		{
 			Name: "executor",
 			Value: strconv.FormatBool(u.Executor),
 			SameSite: http.SameSiteNoneMode,
-			Secure: true,
-		},
-		{
-			Name: "SameSite",
-			Value: "None",
-			SameSite: http.SameSiteNoneMode,
-			Secure: true,
 		},
 	}
 	return cookies, nil
