@@ -56,7 +56,15 @@ func (s *server) configureRouter(){
 	//
 	//s.router = handlers.CORS(credentials, originsOk, headersOk, methodsOk)(router)
 
-	s.router = cors.Default().Handler(router)
+
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"localhost:63342"},
+		AllowedMethods: []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
+		AllowedHeaders: []string{"Content-Type", "session", "id", "executor","X-Requested-With", "Accept",  },
+		AllowCredentials: true,
+	})
+	s.router =  c.Handler(router)
+
 
 }
 
