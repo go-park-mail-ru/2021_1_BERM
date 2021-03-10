@@ -56,28 +56,12 @@ func (s *server) configureRouter(){
 	s.router = handlers.CORS(credentials, originsOk, headersOk, methodsOk)(router)
 }
 
-
-
-//func (s *server) setOptions(next http.Handler) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		setupSimpleResponse(&w, r)
-//		next.ServeHTTP(w, r)
-//	})
-//}
-//
-//func (s *server) handleOptions() http.HandlerFunc{
-//	return func(w http.ResponseWriter, r *http.Request){
-//		setupDifficultResponse(&w, r)
-//		s.respond(w, r, http.StatusOK, nil)
-//	}
-//}
-
 func (s *server) handleSignUp() http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
-		test := r.Header.Get("Origin")
-		println(test)
+
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Origin",  r.Header.Get("Origin"))
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
 		u := &model.User{}
 		if err := json.NewDecoder(r.Body).Decode(u) ;err != nil{
 			s.error(w, r, http.StatusBadRequest, err)
@@ -105,6 +89,7 @@ func (s *server) handleSignUp() http.HandlerFunc{
 		for _, cookie := range cookies {
 			http.SetCookie(w, &cookie)
 		}
+		w.Header().Set("Content-Type", "application/json; charset=utf-8", )
 		s.respond(w, r, http.StatusCreated, u)
 	}
 }
