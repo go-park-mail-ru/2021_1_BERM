@@ -11,7 +11,9 @@ type UserRepository struct {
 }
 func (u *UserRepository)Create(user *model.User) error{
 	resp, err := u.store.conn.Insert("user", userToTarantoolData(user))
-	*user = *tarantoolDataToUser(resp.Tuples()[0])
+	if err == nil {
+		*user = *tarantoolDataToUser(resp.Tuples()[0])
+	}
 	return err
 }
 

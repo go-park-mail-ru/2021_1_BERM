@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fl_ru/model"
 	"fl_ru/store"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
@@ -65,7 +66,20 @@ func (s *server) configureRouter(config* Config){
 
 func (s *server) handleLogout() http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request) {
-		cookies := r.Cookies()
+		fmt.Println(r.Header)
+		session, err := r.Cookie("session")
+		if err != nil{
+			println(err)
+		}
+		id, err := r.Cookie("id")
+		if err != nil{
+			println(err)
+		}
+		executor, err := r.Cookie("executor")
+		if err != nil{
+			println(err)
+		}
+		cookies := []*http.Cookie{session, id, executor}
 		s.delCookies(cookies)
 
 
@@ -151,7 +165,6 @@ func (s *server) handleSignUp() http.HandlerFunc{
 		for _, cookie := range cookies {
 			http.SetCookie(w, &cookie)
 		}
-		w.Header().Set("Content-Type", "application/json; charset=utf-8", )
 		s.respond(w, r, http.StatusCreated, u)
 	}
 }
