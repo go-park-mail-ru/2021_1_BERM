@@ -12,6 +12,6 @@ func Start(config *Config) error{
 		log.Fatal(err)
 	}
 	s:=newServer(store, config)
-	return http.ListenAndServeTLS(config.BindAddr,"../server.crt", "../server.key", s)
+	return http.ListenAndServeTLS(config.BindAddr, "/etc/letsencrypt/live/findfreelancer.ru/cert.pem", "/etc/letsencrypt/live/findfreelancer.ru/privkey.pem", s)
 }
 
