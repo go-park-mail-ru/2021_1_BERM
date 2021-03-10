@@ -304,6 +304,7 @@ func (s *server)createCookies(u *model.User) ([]http.Cookie, error){
 		SameSite: http.SameSiteNoneMode,
 		HttpOnly: true,
 		Secure: true,
+		Expires: time.Now().AddDate(0, 1, 0),
 	}
 
 	cookies := []http.Cookie{
@@ -314,6 +315,7 @@ func (s *server)createCookies(u *model.User) ([]http.Cookie, error){
 			SameSite: http.SameSiteNoneMode,
 			HttpOnly: true,
 			Secure: true,
+			Expires: time.Now().AddDate(0, 1, 0),
 
 		},
 		{
@@ -322,6 +324,7 @@ func (s *server)createCookies(u *model.User) ([]http.Cookie, error){
 			SameSite: http.SameSiteNoneMode,
 			HttpOnly: true,
 			Secure: true,
+			Expires: time.Now().AddDate(0, 1, 0),
 		},
 	}
 	return cookies, nil
