@@ -50,7 +50,6 @@ func (s *server) configureRouter(config* Config){
 	router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods(http.MethodPost)
 	router.HandleFunc("/profile/avatar", s.authenticateUser(s.handlePutAvatar(config.ContentDir))).Methods(http.MethodPost)
 	router.HandleFunc("/profile", s.authenticateUser(s.handleGetProfile())).Methods(http.MethodGet)
-	router.HandleFunc("/profile/avatar", s.authenticateUser(s.handlePutAvatar(config.ContentDir))).Methods(http.MethodPost)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: config.Origin,
@@ -303,7 +302,6 @@ func (s *server)delCookies(cookies []*http.Cookie){
 		cookie.SameSite = http.SameSiteNoneMode
 		cookie.Secure = true
 	}
-
 }
 
 

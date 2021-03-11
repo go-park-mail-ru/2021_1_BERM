@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"testing"
+	"time"
 )
 
 func TestHandle_SignUp(t *testing.T){
@@ -201,10 +202,67 @@ func TestHandle_GetProfile(t *testing.T){
 	}
 }
 
-func TestHandle_CreateProfile(t *testing.T){
+func TestHandle_CreateOrder(t *testing.T){
+	s := &teststore.Store{}
+	server := &server{
+		store: s,
+	}
+	o := model.TestOrder(t)
+	bCorrectOrder, err := json.Marshal(o)
+	assert.NoError(t, err)
+	testCases := []struct{
+		Name    string
+		ReqBody []byte
+	}{
+		{
+			Name :   "CorrectGetReq",
+			ReqBody: bCorrectOrder,
+		},
+	}
+
+
+	handler := http.HandlerFunc(server.handleCreateOrder())
+
+	for _, testCase := range testCases {
+		t.Run(testCase.Name, func(t *testing.T) {
+			rec := httptest.NewRecorder()
+			req, _ := http.NewRequest("POST", "/order", bytes.NewReader(testCase.ReqBody))
+			req.AddCookie(&http.Cookie{
+				Name: "id",
+				Value: "1",
+			})
+			handler.ServeHTTP(rec, req)
+			var testOrder model.Order
+			err = json.Unmarshal(rec.Body.Bytes(), &testOrder)
+
+			assert.Equal(t, http.StatusAccepted, rec.Code)
+			assert.NoError(t, err)
+			assert.NotEmpty(t, testOrder.Id)
+		})
+	}
+}
+
+func TestCreate_Cookie(t *testing.T){
+	s := &teststore.Store{}
+	server := &server{
+		store: s,
+	}
+	u := model.TestUser(t)
+	cookies, err := server.createCookies(u)
+	assert.NoError(t, err)
+	expires := time.Now().AddDate(0, 1, 0)
+	for _, cookie := range cookies{
+		assert.Equal(t, cookie.Expires.Month(), expires.Month())
+	}
+}
+
+func TestDel_Cookie(t *testing.T){
 	//s := &teststore.Store{}
 	//server := &server{
 	//	store: s,
 	//}
-	//
+	//u := model.TestUser(t)
+	//cookies, err := server.createCookies(u)
+	//assert.NoError(t, err)
+
 }

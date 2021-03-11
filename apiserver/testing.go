@@ -20,3 +20,15 @@ func TestCreateCorrectUserInStore(t *testing.T, server *server){
 	handler.ServeHTTP(rec, req)
 	assert.Equal(t, http.StatusCreated, rec.Code)
 }
+
+
+func TestCreateCorrectOrder(t *testing.T, server *server){
+	o := model.TestOrder(t)
+	bCorrectOrder, err := json.Marshal(o)
+	assert.NoError(t, err)
+	handler := http.HandlerFunc(server.handleCreateOrder())
+	rec := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/order", bytes.NewReader(bCorrectOrder))
+	handler.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusCreated, rec.Code)
+}
