@@ -155,7 +155,7 @@ func (s *server) handleSignUp() http.HandlerFunc{
 }
 
 
-func (s *server) handleGetProfile() http.HandlerFunc{
+func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
 		u := &model.User{}
 		userIdCookie, _ := r.Cookie("id")
