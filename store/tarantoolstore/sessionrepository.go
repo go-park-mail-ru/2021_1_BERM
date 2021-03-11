@@ -10,28 +10,28 @@ type SessionRepository struct {
 	store *Store
 }
 
-func (s *SessionRepository)Create(session *model.Session) error{
+func (s *SessionRepository) Create(session *model.Session) error {
 	resp, err := s.store.conn.Insert("session", sessionToTarantoolData(session))
 	println(resp)
 	return err
 }
 
-func (s *SessionRepository)Find(session *model.Session) error{
+func (s *SessionRepository) Find(session *model.Session) error {
 	resp, err := s.store.conn.Select("session", "primary",
-		0, 1,  tarantool.IterEq, []interface{}{
+		0, 1, tarantool.IterEq, []interface{}{
 			session.SessionId,
 		})
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	if len(resp.Tuples()) == 0{
+	if len(resp.Tuples()) == 0 {
 		return errors.New("Not autorizate")
 	}
 	*session = *tarantoolDataToSession(resp.Tuples()[0])
 	return nil
 }
 
-func sessionToTarantoolData(s *model.Session) []interface{}{
+func sessionToTarantoolData(s *model.Session) []interface{} {
 	return []interface{}{s.SessionId, s.UserId}
 }
 

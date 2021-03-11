@@ -5,9 +5,9 @@ import (
 	"github.com/tarantool/go-tarantool"
 )
 
-type Store struct{
+type Store struct {
 	conn              *tarantool.Connection
-	UserRepository 	  *UserRepository
+	UserRepository    *UserRepository
 	SessionRepository *SessionRepository
 	OrderRepository   *OrderRepository
 }
@@ -22,9 +22,8 @@ func New(dbUrl string) (*Store, error) {
 	}, nil
 }
 
-
-func (s*Store) User() store.UserRepository {
-	if s.UserRepository != nil{
+func (s *Store) User() store.UserRepository {
+	if s.UserRepository != nil {
 		return s.UserRepository
 	}
 	s.UserRepository = &UserRepository{
@@ -33,8 +32,8 @@ func (s*Store) User() store.UserRepository {
 	return s.UserRepository
 }
 
-func (s *Store) Session() store.SessionRepository{
-	if s.SessionRepository != nil{
+func (s *Store) Session() store.SessionRepository {
+	if s.SessionRepository != nil {
 		return s.SessionRepository
 	}
 	s.SessionRepository = &SessionRepository{
@@ -43,8 +42,8 @@ func (s *Store) Session() store.SessionRepository{
 	return s.SessionRepository
 }
 
-func (s *Store) Order() store.OrderRepository{
-	if s.OrderRepository != nil{
+func (s *Store) Order() store.OrderRepository {
+	if s.OrderRepository != nil {
 		return s.OrderRepository
 	}
 	s.OrderRepository = &OrderRepository{
@@ -52,7 +51,6 @@ func (s *Store) Order() store.OrderRepository{
 	}
 	return s.OrderRepository
 }
-
 
 func newTarantoolConnect(dbUrl string) (*tarantool.Connection, error) {
 	opts := tarantool.Opts{User: "guest"}

@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestCreateCorrectUserInStore(t *testing.T, server *server){
+func TestCreateCorrectUserInStore(t *testing.T, server *server) {
 	u := model.TestUser(t)
 	bCorrectUser, err := json.Marshal(u)
 	assert.NoError(t, err)
@@ -21,8 +21,7 @@ func TestCreateCorrectUserInStore(t *testing.T, server *server){
 	assert.Equal(t, http.StatusCreated, rec.Code)
 }
 
-
-func TestCreateCorrectOrder(t *testing.T, server *server){
+func TestCreateCorrectOrder(t *testing.T, server *server) {
 	o := model.TestOrder(t)
 	bCorrectOrder, err := json.Marshal(o)
 	assert.NoError(t, err)

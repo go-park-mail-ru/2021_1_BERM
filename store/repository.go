@@ -14,7 +14,7 @@ type SessionRepository interface {
 	Find(session *model.Session) error
 }
 
-type OrderRepository interface{
-	Create(order*model.Order) error
+type OrderRepository interface {
+	Create(order *model.Order) error
 	Find(order *model.Order) error
 }

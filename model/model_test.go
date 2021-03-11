@@ -10,11 +10,10 @@ func TestUser_BeforeCreate(t *testing.T) {
 	assert.NoError(t, u.BeforeCreate())
 }
 
-func TestUser_Validate	(t *testing.T) {
+func TestUser_Validate(t *testing.T) {
 	u := TestUser(t)
 	assert.NoError(t, u.Validate())
 }
-
 
 func TestUser_EncryptString(t *testing.T) {
 	encrypt, err := encryptString("122131", "sdsadasd")

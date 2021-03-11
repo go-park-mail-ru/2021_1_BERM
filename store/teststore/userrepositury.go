@@ -22,18 +22,18 @@ func (r *UserRepository) Find(user *model.User) error {
 	return nil
 }
 
-func (r *UserRepository) FindByEmail(user *model.User)  error {
+func (r *UserRepository) FindByEmail(user *model.User) error {
 	for _, u := range r.users {
 		if u.Email == user.Email {
 			*user = u
-			return  nil
+			return nil
 		}
 	}
 
 	return nil
 }
 
-func (r *UserRepository) ChangeUser(user *model.User) error{
+func (r *UserRepository) ChangeUser(user *model.User) error {
 	r.users[user.Id] = *user
 	return nil
 }

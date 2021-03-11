@@ -6,14 +6,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const(
+const (
 	passwordSalt = "asdknj279312kasl0sshALkMnHG"
 )
 
-
 type User struct {
 	Id          uint64   `json:"id,omitempty"`
- 	Email       string   `json:"email"`
+	Email       string   `json:"email"`
 	Password    string   `json:"password,omitempty"`
 	UserName    string   `json:"user_name,omitempty"`
 	FirstName   string   `json:"first_name,omitempty"`
@@ -28,15 +27,14 @@ func (u *User) Validate() error {
 	return validation.ValidateStruct(
 		u,
 		validation.Field(&u.Email, validation.Required, is.Email),
-		validation.Field(&u.Password,validation.Required, validation.Length(6, 100)),
+		validation.Field(&u.Password, validation.Required, validation.Length(6, 100)),
 		validation.Field(&u.UserName, validation.Required),
 		validation.Field(&u.FirstName, validation.Required),
 		validation.Field(&u.SecondName, validation.Required),
 	)
 }
 
-
-func (u *User) BeforeCreate() error{
+func (u *User) BeforeCreate() error {
 	if len(u.Password) > 0 {
 		enc, err := encryptString(u.Password, passwordSalt)
 		if err != nil {
@@ -50,10 +48,9 @@ func (u *User) BeforeCreate() error{
 }
 
 func (u *User) ComparePassword(password string) bool {
-	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password + passwordSalt)) == nil
+	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password+passwordSalt)) == nil
 }
 
-func(u *User)Sanitize(){
+func (u *User) Sanitize() {
 	u.Password = ""
 }
-

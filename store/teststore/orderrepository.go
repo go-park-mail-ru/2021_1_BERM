@@ -7,14 +7,14 @@ type OrderRepository struct {
 	order map[uint64]*model.Order
 }
 
-func (r *OrderRepository)Create(order *model.Order) error{
+func (r *OrderRepository) Create(order *model.Order) error {
 	order.Id = 1
 	r.order[1] = order
 
 	return nil
 }
 
-func (r *OrderRepository)Find(order *model.Order) error{
+func (r *OrderRepository) Find(order *model.Order) error {
 
 	return nil
 }

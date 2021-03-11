@@ -1,15 +1,14 @@
 package model
 
-const(
+const (
 	cookieSalt = "wdsamlsdm2094dmfh"
 )
+
 type Session struct {
 	SessionId string
-	UserId uint64
+	UserId    uint64
 }
 
-
-func (s *Session) BeforeChange(){
+func (s *Session) BeforeChange() {
 	s.SessionId, _ = encryptString(s.SessionId, cookieSalt)
 }
-

@@ -13,49 +13,48 @@ import (
 	"time"
 )
 
-func TestHandle_SignUp(t *testing.T){
+func TestHandle_SignUp(t *testing.T) {
 
 	s := &teststore.Store{}
 	server := &server{
 		store: s,
 	}
 
-
 	u := model.TestUser(t)
 	bCorrectUser, err := json.Marshal(u)
 	assert.NoError(t, err)
 	u.Email = "asdasd"
-	bIncorrectUser , err := json.Marshal(u)
+	bIncorrectUser, err := json.Marshal(u)
 	assert.NoError(t, err)
 	u.Email = "asdasd@gmail.com"
 	u.Password = "sada"
-	bIncorrectPassword , err := json.Marshal(u)
-	testCases := []struct{
+	bIncorrectPassword, err := json.Marshal(u)
+	testCases := []struct {
 		Name    string
 		ReqBody []byte
 	}{
 		{
-			Name :   "CorrectRequest",
+			Name:    "CorrectRequest",
 			ReqBody: bCorrectUser,
 		},
 		{
-			Name :   "IncorrectBodyRequest",
+			Name:    "IncorrectBodyRequest",
 			ReqBody: []byte("ADSSADAS"),
 		},
 		{
-			Name :   "IncorrectEmailRequest",
+			Name:    "IncorrectEmailRequest",
 			ReqBody: bIncorrectUser,
 		},
 		{
-			Name :   "IncorrectPasswordRequest",
+			Name:    "IncorrectPasswordRequest",
 			ReqBody: bIncorrectPassword,
 		},
 	}
 
 	handler := http.HandlerFunc(server.handleSignUp())
 
-	for _, testCase := range testCases{
-		t.Run(testCase.Name, func(t *testing.T){
+	for _, testCase := range testCases {
+		t.Run(testCase.Name, func(t *testing.T) {
 			rec := httptest.NewRecorder()
 			req, _ := http.NewRequest("POST", "/signup", bytes.NewReader(testCase.ReqBody))
 			handler.ServeHTTP(rec, req)
@@ -79,8 +78,7 @@ func TestHandle_SignUp(t *testing.T){
 	}
 }
 
-
-func TestHandle_SignIn(t *testing.T){
+func TestHandle_SignIn(t *testing.T) {
 	s := &teststore.Store{}
 	server := &server{
 		store: s,
@@ -88,21 +86,21 @@ func TestHandle_SignIn(t *testing.T){
 	TestCreateCorrectUserInStore(t, server)
 	u := model.TestUser(t)
 	bCorrectLogin, err := json.Marshal(&model.User{
-		Email: u.Email,
+		Email:    u.Email,
 		Password: u.Password,
 	})
-	testCases := []struct{
+	testCases := []struct {
 		Name    string
 		ReqBody []byte
 	}{
 		{
-			Name :   "CorrectRequest",
+			Name:    "CorrectRequest",
 			ReqBody: bCorrectLogin,
 		},
 	}
 	handler := http.HandlerFunc(server.handleSignIn())
-	for _, testCase := range testCases{
-		t.Run(testCase.Name, func(t *testing.T){
+	for _, testCase := range testCases {
+		t.Run(testCase.Name, func(t *testing.T) {
 			rec := httptest.NewRecorder()
 			req, _ := http.NewRequest("POST", "/signin", bytes.NewReader(testCase.ReqBody))
 			handler.ServeHTTP(rec, req)
@@ -119,7 +117,7 @@ func TestHandle_SignIn(t *testing.T){
 	}
 }
 
-func TestHandle_ChangeProfile(t *testing.T){
+func TestHandle_ChangeProfile(t *testing.T) {
 	s := &teststore.Store{}
 	server := &server{
 		store: s,
@@ -129,18 +127,18 @@ func TestHandle_ChangeProfile(t *testing.T){
 	u.Description = "1234"
 	bChangeDescription, err := json.Marshal(u)
 	assert.NoError(t, err)
-	testCases := []struct{
+	testCases := []struct {
 		Name    string
 		ReqBody []byte
 	}{
 		{
-			Name :   "ChangeDescription",
+			Name:    "ChangeDescription",
 			ReqBody: bChangeDescription,
 		},
 	}
 	handler := http.HandlerFunc(server.handleChangeProfile())
-	for _, testCase := range testCases{
-		t.Run(testCase.Name, func(t *testing.T){
+	for _, testCase := range testCases {
+		t.Run(testCase.Name, func(t *testing.T) {
 			rec := httptest.NewRecorder()
 			req, _ := http.NewRequest("POST", "/signin", bytes.NewReader(testCase.ReqBody))
 			req.AddCookie(&http.Cookie{
@@ -162,7 +160,7 @@ func TestHandle_ChangeProfile(t *testing.T){
 	}
 }
 
-func TestHandle_GetProfile(t *testing.T){
+func TestHandle_GetProfile(t *testing.T) {
 	s := &teststore.Store{}
 	server := &server{
 		store: s,
@@ -171,12 +169,12 @@ func TestHandle_GetProfile(t *testing.T){
 	u := model.TestUser(t)
 	bCorrectGetReq, err := json.Marshal(u)
 	assert.NoError(t, err)
-	testCases := []struct{
+	testCases := []struct {
 		Name    string
 		ReqBody []byte
 	}{
 		{
-			Name :   "CorrectGetReq",
+			Name:    "CorrectGetReq",
 			ReqBody: bCorrectGetReq,
 		},
 	}
@@ -202,7 +200,7 @@ func TestHandle_GetProfile(t *testing.T){
 	}
 }
 
-func TestHandle_CreateOrder(t *testing.T){
+func TestHandle_CreateOrder(t *testing.T) {
 	s := &teststore.Store{}
 	server := &server{
 		store: s,
@@ -210,16 +208,15 @@ func TestHandle_CreateOrder(t *testing.T){
 	o := model.TestOrder(t)
 	bCorrectOrder, err := json.Marshal(o)
 	assert.NoError(t, err)
-	testCases := []struct{
+	testCases := []struct {
 		Name    string
 		ReqBody []byte
 	}{
 		{
-			Name :   "CorrectGetReq",
+			Name:    "CorrectGetReq",
 			ReqBody: bCorrectOrder,
 		},
 	}
-
 
 	handler := http.HandlerFunc(server.handleCreateOrder())
 
@@ -228,7 +225,7 @@ func TestHandle_CreateOrder(t *testing.T){
 			rec := httptest.NewRecorder()
 			req, _ := http.NewRequest("POST", "/order", bytes.NewReader(testCase.ReqBody))
 			req.AddCookie(&http.Cookie{
-				Name: "id",
+				Name:  "id",
 				Value: "1",
 			})
 			handler.ServeHTTP(rec, req)
@@ -242,7 +239,7 @@ func TestHandle_CreateOrder(t *testing.T){
 	}
 }
 
-func TestCreate_Cookie(t *testing.T){
+func TestCreate_Cookie(t *testing.T) {
 	s := &teststore.Store{}
 	server := &server{
 		store: s,
@@ -251,12 +248,12 @@ func TestCreate_Cookie(t *testing.T){
 	cookies, err := server.createCookies(u)
 	assert.NoError(t, err)
 	expires := time.Now().AddDate(0, 1, 0)
-	for _, cookie := range cookies{
+	for _, cookie := range cookies {
 		assert.Equal(t, cookie.Expires.Month(), expires.Month())
 	}
 }
 
-func TestDel_Cookie(t *testing.T){
+func TestDel_Cookie(t *testing.T) {
 	s := &teststore.Store{}
 	server := &server{
 		store: s,
@@ -264,13 +261,13 @@ func TestDel_Cookie(t *testing.T){
 	u := model.TestUser(t)
 	cookies, err := server.createCookies(u)
 	var cookiesTest []*http.Cookie
-	for _, cookie := range cookies{
+	for _, cookie := range cookies {
 		cookiesTest = append(cookiesTest, &cookie)
 	}
 	assert.NoError(t, err)
 	expires := time.Now().AddDate(0, 0, -1)
 	server.delCookies(cookiesTest)
-	for _, cookie := range cookiesTest{
+	for _, cookie := range cookiesTest {
 		assert.Equal(t, cookie.Expires.Month(), expires.Month())
 	}
 }
@@ -292,22 +289,22 @@ func TestHandle_Authenticate(t *testing.T) {
 
 	cookies := []*http.Cookie{
 		{
-			Name: "id",
+			Name:  "id",
 			Value: "1",
 		},
 		{
-			Name: "session",
+			Name:  "session",
 			Value: "1",
 		},
 		{
-			Name: "executor",
+			Name:  "executor",
 			Value: "false",
 		},
 	}
 
 	rec := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodPost, "/", nil)
-	for _, cookie := range cookies{
+	for _, cookie := range cookies {
 		req.AddCookie(cookie)
 	}
 	mw.ServeHTTP(rec, req)
@@ -325,7 +322,7 @@ func TestHandle_LogOut(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/logout", nil)
 	handler := http.HandlerFunc(server.handleLogout())
-	for _, cookie := range cookies{
+	for _, cookie := range cookies {
 		req.AddCookie(&cookie)
 	}
 

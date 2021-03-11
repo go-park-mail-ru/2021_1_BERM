@@ -1,4 +1,3 @@
-
 package teststore
 
 import (
@@ -29,20 +28,20 @@ func (s *Store) User() store.UserRepository {
 	return s.UserRepository
 }
 
-func (s *Store) Session() store.SessionRepository{
+func (s *Store) Session() store.SessionRepository {
 	if s.SessionRepository != nil {
 		return s.SessionRepository
 	}
 
 	s.SessionRepository = &SessionRepository{
-		store: s,
+		store:    s,
 		sessions: make(map[string]*model.Session),
 	}
 
 	return s.SessionRepository
 }
 
-func (s *Store) Order() store.OrderRepository{
+func (s *Store) Order() store.OrderRepository {
 	if s.OrderRepository != nil {
 		return s.OrderRepository
 	}
@@ -54,4 +53,3 @@ func (s *Store) Order() store.OrderRepository{
 
 	return s.OrderRepository
 }
-
