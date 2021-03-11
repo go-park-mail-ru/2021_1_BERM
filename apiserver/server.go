@@ -48,7 +48,7 @@ func (s *server) configureRouter(config *Config) {
 	router.HandleFunc("/order", s.authenticateUser(s.handleCreateOrder())).Methods(http.MethodPost)
 	router.HandleFunc("/profile/avatar", s.authenticateUser(s.handlePutAvatar(config.ContentDir))).Methods(http.MethodPost)
 	router.HandleFunc("/profile", s.authenticateUser(s.handleGetProfile())).Methods(http.MethodGet)
-	router.HandleFunc("/profile/img", s.authenticateUser(s.handleGetImg())).Methods(http.MethodGet)
+	//router.HandleFunc("/profile/img", s.authenticateUser(s.handleGetImg())).Methods(http.MethodGet)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   config.Origin,
@@ -70,26 +70,26 @@ func (s *server) handleLogout() http.HandlerFunc {
 	}
 }
 
-func (s *server) handleGetImg() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		u := &model.User{}
-		userIdCookie, _ := r.Cookie("id")
-		id, _ := strconv.Atoi(userIdCookie.Value)
-		u.Id = uint64(id)
-		file, err := os.Open(u.ImgUrl)
-		if err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
-			return
-		}
-		avatar, err := ioutil.ReadAll(file)
-		if err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
-			return
-		}
-		w.Header().Set("Content-Type", "image/jpeg")
-		s.respond(w, r, http.StatusOK, avatar)
-	}
-}
+//func (s *server) handleGetImg() http.HandlerFunc {
+//	return func(w http.ResponseWriter, r *http.Request) {
+//		u := &model.User{}
+//		userIdCookie, _ := r.Cookie("id")
+//		id, _ := strconv.Atoi(userIdCookie.Value)
+//		u.Id = uint64(id)
+//		file, err := os.Open(u.ImgUrl)
+//		if err != nil {
+//			s.error(w, r, http.StatusBadRequest, err)
+//			return
+//		}
+//		avatar, err := ioutil.ReadAll(file)
+//		if err != nil {
+//			s.error(w, r, http.StatusBadRequest, err)
+//			return
+//		}
+//		w.Header().Set("Content-Type", "image/jpeg")
+//		s.respond(w, r, http.StatusOK, avatar)
+//	}
+//}
 
 func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc {
 	type Request struct{
@@ -186,6 +186,17 @@ func (s *server) handleGetProfile() http.HandlerFunc {
 			return
 		}
 		u.Sanitize()
+		file, err := os.Open(u.ImgUrl)
+		if err != nil{
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+		avatar, err := ioutil.ReadAll(file)
+		if err != nil{
+			s.error(w, r, http.StatusInternalServerError, err)
+			return
+		}
+		u.ImgUrl = string(avatar)
 		s.respond(w, r, http.StatusOK, u)
 	}
 }
