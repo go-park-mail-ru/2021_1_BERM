@@ -92,34 +92,37 @@ func (s *server) handleGetImg() http.HandlerFunc {
 }
 
 func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc {
+	type Request struct{
+		Img []byte `json:"img"`
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		currentDir := contentDir
 		u := &model.User{}
 		userIdCookie, _ := r.Cookie("id")
 		id, _ := strconv.Atoi(userIdCookie.Value)
 		u.Id = uint64(id)
-		var avatar []byte
 		if r.Body == nil {
 			s.error(w, r, http.StatusBadRequest, errors.New("No body"))
 			return
 		}
-		avatar, err := ioutil.ReadAll(r.Body)
+		req := &Request{}
+		err := json.NewDecoder(r.Body).Decode(req)
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, errors.New("Bad body"))
 			return
 		}
 		pathLen := len(currentDir)
 		if currentDir[pathLen-1] == '/' {
-			currentDir = currentDir + userIdCookie.Value + ".jpg"
+			currentDir = currentDir + userIdCookie.Value + ".base64"
 		} else {
-			currentDir = currentDir + "/" + userIdCookie.Value + ".jpg"
+			currentDir = currentDir + "/" + userIdCookie.Value + ".base64"
 		}
 		file, err := os.Create(currentDir)
 		if err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
-		if _, err = file.Write(avatar); err != nil {
+		if _, err = file.Write(req.Img); err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
