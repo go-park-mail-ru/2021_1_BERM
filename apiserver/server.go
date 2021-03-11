@@ -185,12 +185,12 @@ func (s *server) handleGetProfile() http.HandlerFunc {
 			return
 		}
 		u.Sanitize()
-		file, err := os.Open(u.ImgUrl)
-		if err != nil{
-			s.error(w, r, http.StatusInternalServerError, err)
-			return
-		}
 		if len(u.ImgUrl) != 0 {
+			file, err := os.Open(u.ImgUrl)
+			if err != nil{
+				s.error(w, r, http.StatusInternalServerError, err)
+				return
+			}
 			avatar, err := ioutil.ReadAll(file)
 			if err != nil{
 				s.error(w, r, http.StatusInternalServerError, err)
