@@ -7,7 +7,9 @@ import (
 )
 
 type Store struct {
-	userRepository *UserRepository
+	UserRepository    *UserRepository
+	SessionRepository *SessionRepository
+	OrderRepository   *OrderRepository
 }
 
 func New() *Store {
@@ -15,14 +17,41 @@ func New() *Store {
 }
 
 func (s *Store) User() store.UserRepository {
-	if s.userRepository != nil {
-		return s.userRepository
+	if s.UserRepository != nil {
+		return s.UserRepository
 	}
 
-	s.userRepository = &UserRepository{
+	s.UserRepository = &UserRepository{
 		store: s,
-		users: make(map[uint64]*model.User),
+		users: make(map[uint64]model.User),
 	}
 
-	return s.userRepository
+	return s.UserRepository
 }
+
+func (s *Store) Session() store.SessionRepository{
+	if s.SessionRepository != nil {
+		return s.SessionRepository
+	}
+
+	s.SessionRepository = &SessionRepository{
+		store: s,
+		sessions: make(map[string]*model.Session),
+	}
+
+	return s.SessionRepository
+}
+
+func (s *Store) Order() store.OrderRepository{
+	if s.OrderRepository != nil {
+		return s.OrderRepository
+	}
+
+	s.OrderRepository = &OrderRepository{
+		store: s,
+		order: make(map[uint64]*model.Order),
+	}
+
+	return s.OrderRepository
+}
+

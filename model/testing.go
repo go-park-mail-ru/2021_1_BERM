@@ -14,6 +14,27 @@ func TestUser(t *testing.T) *User {
 		SecondName: "Man2",
 		Executor: false,
 		Specializes: nil,
+	}
+}
 
+func TestOrder(t *testing.T) *Order{
+	return &Order{
+		Id : 1,
+		OrderName: "ABC4544",
+		CustomerId: 5,
+		Description: "qwdqdqDDSADA",
+		Specializes: []string{
+			"НЕНАВИЖУ",
+			"ПИСАТЬ",
+			"СУКА",
+			"ТЕСТЫ",
+		},
+	}
+}
+
+func TestSession(t *testing.T) *Session{
+	return &Session{
+		SessionId: "asdadsa",
+		UserId: 12,
 	}
 }

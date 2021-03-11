@@ -12,16 +12,16 @@ const(
 
 
 type User struct {
-	Id          uint64   `json:"id"`
+	Id          uint64   `json:"id,omitempty"`
  	Email       string   `json:"email"`
 	Password    string   `json:"password,omitempty"`
-	UserName    string   `json:"user_name,"`
-	FirstName   string   `json:"first_name"`
-	SecondName  string   `json:"second_name"`
-	Executor    bool     `json:"executor"`
-	Description string   `json:"description,omitempty"`
-	Specializes []string `json:"specializes,omitempty"`
-	ImgUrl      string   `json:"img_url,omitempty"`
+	UserName    string   `json:"user_name,omitempty"`
+	FirstName   string   `json:"first_name,omitempty"`
+	SecondName  string   `json:"second_name,omitempty"`
+	Executor    bool     `json:"executor,omitempty"`
+	Description string   `json:"description,omitempty,omitempty"`
+	Specializes []string `json:"specializes,omitempty,omitempty"`
+	ImgUrl      string   `json:"img_url,omitempty,omitempty"`
 }
 
 func (u *User) Validate() error {

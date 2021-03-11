@@ -75,18 +75,19 @@ func (s *server) handleLogout() http.HandlerFunc{
 
 func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
+		defer r.Body.Close()
 		u := &model.User{}
 		userIdCookie, _ := r.Cookie("id")
 		id, _ := strconv.Atoi(userIdCookie.Value)
 		u.Id = uint64(id)
 		var avatar []byte
-		if   r.Body.Read == nil{
-			s.error(w, r, http.StatusBadRequest, errors.New("HUETA =("))
+		if   r.Body == nil{
+			s.error(w, r, http.StatusBadRequest, errors.New("No body"))
 			return
 		}
 		avatar, err := ioutil.ReadAll(r.Body)
 		if   err != nil{
-			s.error(w, r, http.StatusBadRequest, errors.New("HUETA =("))
+			s.error(w, r, http.StatusBadRequest, errors.New("Bad body"))
 			return
 		}
 		pathLen := len(contentDir)
@@ -121,7 +122,7 @@ func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc{
 
 func (s *server) handleSignUp() http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
-
+		defer r.Body.Close()
 		u := &model.User{}
 		if err := json.NewDecoder(r.Body).Decode(u) ;err != nil{
 			s.error(w, r, http.StatusBadRequest, err)
@@ -171,30 +172,19 @@ func (s *server) handleGetProfile() http.HandlerFunc{
 
 
 func (s *server) handleSignIn() http.HandlerFunc {
-	type Request struct{
-		Email string `json:"email"`
-		Password string `json:"password"`
-	}
-
 	return func(w http.ResponseWriter, r *http.Request){
-		request := &Request{}
-		var b []byte
-
-		n, _ := r.Body.Read(b)
-		println(n)
-		if err := json.NewDecoder(r.Body).Decode(request) ;err != nil{
+		u := &model.User{
+		}
+		if err := json.NewDecoder(r.Body).Decode(u) ;err != nil{
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
-		u := &model.User{
-			Email: request.Email,
-			Password: request.Password,
-		}
+		pass := u.Password
 		if err := s.store.User().FindByEmail(u); err != nil {
 			s.error(w, r, http.StatusConflict, err)
 			return
 		}
-		if u.ComparePassword(request.Password) == false{
+		if u.ComparePassword(pass) == false{
 			s.error(w, r, http.StatusConflict, errors.New("Bad password"))
 			return
 		}
@@ -285,7 +275,7 @@ func (s *server) authenticateUser(next http.Handler) http.HandlerFunc{
 		}
 		userIdInt, _ := strconv.Atoi(userId.Value)
 		if uint64(userIdInt) !=  session.UserId {
-			s.error(w, r, http.StatusUnauthorized, errors.New("Bad id"))
+			s.error(w, r, http.StatusForbidden, errors.New("Bad id"))
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -296,6 +286,7 @@ func (s *server) authenticateUser(next http.Handler) http.HandlerFunc{
 
 
 func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err error){
+	logrus.Error(err)
 	s.respond(w, r, code, map[string]string{"error" : err.Error()})
 }
 
