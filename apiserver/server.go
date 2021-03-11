@@ -197,8 +197,8 @@ func (s *server) handleGetProfile() http.HandlerFunc {
 				return
 			}
 			u.ImgUrl = string(avatar)
-			s.respond(w, r, http.StatusOK, u)
 		}
+		s.respond(w, r, http.StatusOK, u)
 	}
 }
 
