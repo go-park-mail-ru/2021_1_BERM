@@ -75,9 +75,22 @@ func (s *server) handleLogout() http.HandlerFunc{
 }
 
 func (s *server) handleGetImg(w http.ResponseWriter, r *http.Request){
-	//u := &model.User{}
-	//userIdCookie, _ := r.Cookie("id")
-	//id, _ := strconv.Atoi(userIdCookie.Value)
+	u := &model.User{}
+	userIdCookie, _ := r.Cookie("id")
+	id, _ := strconv.Atoi(userIdCookie.Value)
+	u.Id = uint64(id)
+	file, err := os.Open(u.ImgUrl)
+	if err != nil{
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+	avatar, err := ioutil.ReadAll(file)
+	if err != nil{
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+	w.Header().Set("Content-Type", "image/jpeg")
+	s.respond(w, r, http.StatusOK, avatar)
 
 }
 
