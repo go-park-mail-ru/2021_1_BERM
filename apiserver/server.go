@@ -70,26 +70,27 @@ func (s *server) handleLogout() http.HandlerFunc {
 	}
 }
 
-//func (s *server) handleGetImg() http.HandlerFunc {
-//	return func(w http.ResponseWriter, r *http.Request) {
-//		u := &model.User{}
-//		userIdCookie, _ := r.Cookie("id")
-//		id, _ := strconv.Atoi(userIdCookie.Value)
-//		u.Id = uint64(id)
-//		file, err := os.Open(u.ImgUrl)
-//		if err != nil {
-//			s.error(w, r, http.StatusBadRequest, err)
-//			return
-//		}
-//		avatar, err := ioutil.ReadAll(file)
-//		if err != nil {
-//			s.error(w, r, http.StatusBadRequest, err)
-//			return
-//		}
-//		w.Header().Set("Content-Type", "image/jpeg")
-//		s.respond(w, r, http.StatusOK, avatar)
-//	}
-//}
+func (s *server) handleGetImg() http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		u := &model.User{}
+		userIdCookie, _ := r.Cookie("id")
+		id, _ := strconv.Atoi(userIdCookie.Value)
+		u.Id = uint64(id)
+		file, err := os.Open(u.ImgUrl)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+		avatar, err := ioutil.ReadAll(file)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		s.respond(w, r, http.StatusOK, avatar)
+	}
+}
 
 func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc {
 	type Request struct{
@@ -130,6 +131,7 @@ func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
+		u.ImgUrl = currentDir
 		if err = s.store.User().ChangeUser(u); err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
