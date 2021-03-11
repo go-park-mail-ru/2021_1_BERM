@@ -130,7 +130,6 @@ func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
-		u.ImgUrl = currentDir
 		if err = s.store.User().ChangeUser(u); err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
@@ -191,13 +190,15 @@ func (s *server) handleGetProfile() http.HandlerFunc {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
-		avatar, err := ioutil.ReadAll(file)
-		if err != nil{
-			s.error(w, r, http.StatusInternalServerError, err)
-			return
+		if len(u.ImgUrl) != 0 {
+			avatar, err := ioutil.ReadAll(file)
+			if err != nil{
+				s.error(w, r, http.StatusInternalServerError, err)
+				return
+			}
+			u.ImgUrl = string(avatar)
+			s.respond(w, r, http.StatusOK, u)
 		}
-		u.ImgUrl = string(avatar)
-		s.respond(w, r, http.StatusOK, u)
 	}
 }
 
