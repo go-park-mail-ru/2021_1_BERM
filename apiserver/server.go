@@ -93,7 +93,7 @@ func (s *server) handleGetImg() http.HandlerFunc {
 
 func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc {
 	type Request struct{
-		Img []byte `json:"img"`
+		Img []string `json:"img"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		currentDir := contentDir
