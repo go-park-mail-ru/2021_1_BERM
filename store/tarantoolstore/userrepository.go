@@ -144,7 +144,11 @@ func tarantoolDataToUser(data []interface{}) *model.User{
 	u.SecondName, _ =  data[5].(string)
 	u.Executor, _ =    data[6].(bool)
 	u.Description, _ = data[7].(string)
-	u.Specializes, _ = data[8].([]string)
+	specializes, _ := data[8].([]interface{})
+	for _, elem := range specializes{
+		specialize, _ := elem.(string)
+		u.Specializes = append(u.Specializes, specialize)
+	}
 	u.ImgUrl, _ =      data[9].(string)
 	return u
 }
