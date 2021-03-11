@@ -74,9 +74,16 @@ func (s *server) handleLogout() http.HandlerFunc{
 	}
 }
 
+func (s *server) handleGetImg(w http.ResponseWriter, r *http.Request){
+	//u := &model.User{}
+	//userIdCookie, _ := r.Cookie("id")
+	//id, _ := strconv.Atoi(userIdCookie.Value)
+
+}
+
 func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
-
+		currentDir := contentDir
 		u := &model.User{}
 		userIdCookie, _ := r.Cookie("id")
 		id, _ := strconv.Atoi(userIdCookie.Value)
@@ -91,13 +98,13 @@ func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc{
 			s.error(w, r, http.StatusBadRequest, errors.New("Bad body"))
 			return
 		}
-		pathLen := len(contentDir)
-		if contentDir[pathLen - 1] == '/'{
-			contentDir = contentDir + userIdCookie.Value + ".jpg"
+		pathLen := len(currentDir)
+		if currentDir[pathLen - 1] == '/'{
+			currentDir = currentDir + userIdCookie.Value + ".jpg"
 		}else{
-			contentDir = contentDir + "/" + userIdCookie.Value + ".jpg"
+			currentDir = currentDir + "/" + userIdCookie.Value + ".jpg"
 		}
-		file, err := os.Create(contentDir)
+		file, err := os.Create(currentDir)
 		if err != nil{
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
@@ -110,7 +117,7 @@ func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc{
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
-		u.ImgUrl = contentDir
+		u.ImgUrl = currentDir
 		if err = s.store.User().ChangeUser(u); err != nil{
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
