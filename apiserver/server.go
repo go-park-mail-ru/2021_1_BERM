@@ -297,6 +297,8 @@ func (s *server) authenticateUser(next http.Handler) http.HandlerFunc {
 
 }
 
+
+
 func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err error) {
 	logrus.Error(err)
 	s.respond(w, r, code, map[string]string{"error": err.Error()})

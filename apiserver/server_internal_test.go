@@ -89,6 +89,10 @@ func TestHandle_SignIn(t *testing.T) {
 		Email:    u.Email,
 		Password: u.Password,
 	})
+	bIncorrectLogin, err :=  json.Marshal(&model.User{
+		Email:    "12313",
+		Password: u.Password,
+	})
 	testCases := []struct {
 		Name    string
 		ReqBody []byte
@@ -96,6 +100,14 @@ func TestHandle_SignIn(t *testing.T) {
 		{
 			Name:    "CorrectRequest",
 			ReqBody: bCorrectLogin,
+		},
+		{
+			Name:    "IncorrectRequest",
+			ReqBody: []byte("1231123"),
+		},
+		{
+			Name:    "IncorrectLoginRequest",
+			ReqBody: bIncorrectLogin,
 		},
 	}
 	handler := http.HandlerFunc(server.handleSignIn())
@@ -105,13 +117,17 @@ func TestHandle_SignIn(t *testing.T) {
 			req, _ := http.NewRequest("POST", "/signin", bytes.NewReader(testCase.ReqBody))
 			handler.ServeHTTP(rec, req)
 			var testUser model.User
-			err = json.Unmarshal(rec.Body.Bytes(), &testUser)
-			assert.NoError(t, err)
 			switch testCase.Name {
 			case "CorrectRequest":
+				err = json.Unmarshal(rec.Body.Bytes(), &testUser)
+				assert.NoError(t, err)
 				assert.NotEmpty(t, testUser.Id)
 				assert.Empty(t, testUser.Password)
 				assert.Equal(t, http.StatusAccepted, rec.Code)
+			case "IncorrectRequest":
+				assert.Equal(t, http.StatusBadRequest, rec.Code)
+			case "IncorrectLoginRequest":
+				assert.Equal(t, http.StatusConflict, rec.Code)
 			}
 		})
 	}
@@ -132,8 +148,12 @@ func TestHandle_ChangeProfile(t *testing.T) {
 		ReqBody []byte
 	}{
 		{
-			Name:    "ChangeDescription",
+			Name:    "CorrectChangeDescriptionRequest",
 			ReqBody: bChangeDescription,
+		},
+		{
+			Name:    "BadRequestChangeDescriptionRequest",
+			ReqBody: []byte("sdadasdsa"),
 		},
 	}
 	handler := http.HandlerFunc(server.handleChangeProfile())
@@ -155,6 +175,8 @@ func TestHandle_ChangeProfile(t *testing.T) {
 				assert.Empty(t, testUser.Password)
 				assert.Equal(t, http.StatusAccepted, rec.Code)
 				assert.Equal(t, testUser.Description, u.Description)
+			case "BadRequestChangeDescriptionRequest":
+				assert.Equal(t, rec.Code, http.StatusBadRequest)
 			}
 		})
 	}
@@ -208,6 +230,8 @@ func TestHandle_CreateOrder(t *testing.T) {
 	o := model.TestOrder(t)
 	bCorrectOrder, err := json.Marshal(o)
 	assert.NoError(t, err)
+	o.OrderName = "1"
+	bBadNameOrder, err := json.Marshal(o)
 	testCases := []struct {
 		Name    string
 		ReqBody []byte
@@ -215,6 +239,14 @@ func TestHandle_CreateOrder(t *testing.T) {
 		{
 			Name:    "CorrectGetReq",
 			ReqBody: bCorrectOrder,
+		},
+		{
+			Name:    "BadReqGetReq",
+			ReqBody: []byte("baasdasd"),
+		},
+		{
+			Name:    "BadNameGetReq",
+			ReqBody: bBadNameOrder,
 		},
 	}
 
@@ -231,10 +263,17 @@ func TestHandle_CreateOrder(t *testing.T) {
 			handler.ServeHTTP(rec, req)
 			var testOrder model.Order
 			err = json.Unmarshal(rec.Body.Bytes(), &testOrder)
+			switch testCase.Name {
+			case "CorrectGetReq":
+				assert.Equal(t, http.StatusAccepted, rec.Code)
+				assert.NoError(t, err)
+				assert.NotEmpty(t, testOrder.Id)
+			case "BadReqGetReq":
+				assert.Equal(t, http.StatusBadRequest, rec.Code)
+			case "BadNameGetReq":
+				assert.Equal(t, http.StatusBadRequest, rec.Code)
+			}
 
-			assert.Equal(t, http.StatusAccepted, rec.Code)
-			assert.NoError(t, err)
-			assert.NotEmpty(t, testOrder.Id)
 		})
 	}
 }
@@ -249,25 +288,6 @@ func TestCreate_Cookie(t *testing.T) {
 	assert.NoError(t, err)
 	expires := time.Now().AddDate(0, 1, 0)
 	for _, cookie := range cookies {
-		assert.Equal(t, cookie.Expires.Month(), expires.Month())
-	}
-}
-
-func TestDel_Cookie(t *testing.T) {
-	s := &teststore.Store{}
-	server := &server{
-		store: s,
-	}
-	u := model.TestUser(t)
-	cookies, err := server.createCookies(u)
-	var cookiesTest []*http.Cookie
-	for _, cookie := range cookies {
-		cookiesTest = append(cookiesTest, &cookie)
-	}
-	assert.NoError(t, err)
-	expires := time.Now().AddDate(0, 0, -1)
-	server.delCookies(cookiesTest)
-	for _, cookie := range cookiesTest {
 		assert.Equal(t, cookie.Expires.Month(), expires.Month())
 	}
 }
@@ -310,6 +330,172 @@ func TestHandle_Authenticate(t *testing.T) {
 	mw.ServeHTTP(rec, req)
 	assert.Equal(t, rec.Code, http.StatusOK)
 }
+
+func TestHandle_AuthenticateNoSession(t *testing.T) {
+	s := &teststore.Store{}
+	server := &server{
+		store: s,
+	}
+	session := model.TestSession(t)
+
+	err := s.Session().Create(session)
+	assert.NoError(t, err)
+
+	mw := server.authenticateUser(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+
+	}))
+
+	cookies := []*http.Cookie{
+		{
+			Name:  "id",
+			Value: "1",
+		},
+		{
+			Name:  "session",
+			Value: "12",
+		},
+		{
+			Name:  "executor",
+			Value: "false",
+		},
+	}
+
+	rec := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodPost, "/", nil)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
+	mw.ServeHTTP(rec, req)
+	assert.Equal(t, rec.Code, 403)
+}
+
+func TestHandle_AuthenticateBadId(t *testing.T) {
+	s := &teststore.Store{}
+	server := &server{
+		store: s,
+	}
+	session := model.TestSession(t)
+
+	err := s.Session().Create(session)
+	assert.NoError(t, err)
+
+	mw := server.authenticateUser(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+
+	}))
+
+	cookies := []*http.Cookie{
+		{
+			Name:  "session",
+			Value: "1",
+		},
+		{
+			Name:  "executor",
+			Value: "false",
+		},
+	}
+
+	rec := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodPost, "/", nil)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
+	mw.ServeHTTP(rec, req)
+	assert.Equal(t, rec.Code, http.StatusUnauthorized)
+}
+
+func TestHandle_AuthenticateBadSession(t *testing.T) {
+	s := &teststore.Store{}
+	server := &server{
+		store: s,
+	}
+	session := model.TestSession(t)
+
+	err := s.Session().Create(session)
+	assert.NoError(t, err)
+
+	mw := server.authenticateUser(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+
+	}))
+
+	cookies := []*http.Cookie{
+		{
+			Name:  "id",
+			Value: "1",
+		},
+		{
+			Name:  "executor",
+			Value: "false",
+		},
+	}
+
+	rec := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodPost, "/", nil)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
+	mw.ServeHTTP(rec, req)
+	assert.Equal(t, rec.Code, http.StatusUnauthorized)
+}
+
+func TestHandle_AuthenticateBadExecutor(t *testing.T) {
+	s := &teststore.Store{}
+	server := &server{
+		store: s,
+	}
+	session := model.TestSession(t)
+
+	err := s.Session().Create(session)
+	assert.NoError(t, err)
+
+	mw := server.authenticateUser(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+
+	}))
+
+	cookies := []*http.Cookie{
+		{
+			Name:  "id",
+			Value: "1",
+		},
+		{
+			Name:  "session",
+			Value: "1",
+		},
+
+	}
+
+	rec := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodPost, "/", nil)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
+	mw.ServeHTTP(rec, req)
+	assert.Equal(t, rec.Code, http.StatusUnauthorized)
+}
+
+func TestDel_Cookie(t *testing.T) {
+	s := &teststore.Store{}
+	server := &server{
+		store: s,
+	}
+	u := model.TestUser(t)
+	cookies, err := server.createCookies(u)
+	var cookiesTest []*http.Cookie
+	for _, cookie := range cookies {
+		cookiesTest = append(cookiesTest, &cookie)
+	}
+	assert.NoError(t, err)
+	expires := time.Now().AddDate(0, 0, -1)
+	server.delCookies(cookiesTest)
+	for _, cookie := range cookiesTest {
+		assert.Equal(t, cookie.Expires.Month(), expires.Month())
+	}
+}
+
+
 
 func TestHandle_LogOut(t *testing.T) {
 	s := &teststore.Store{}
