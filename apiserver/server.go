@@ -51,6 +51,7 @@ func (s *server) configureRouter(config* Config){
 	router.HandleFunc("/profile/avatar", s.authenticateUser(s.handlePutAvatar(config.ContentDir))).Methods(http.MethodPost)
 	router.HandleFunc("/profile", s.authenticateUser(s.handleGetProfile())).Methods(http.MethodGet)
 
+
 	c := cors.New(cors.Options{
 		AllowedOrigins: config.Origin,
 		AllowedMethods: []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
@@ -61,6 +62,7 @@ func (s *server) configureRouter(config* Config){
 
 
 }
+
 
 func (s *server) handleLogout() http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +76,7 @@ func (s *server) handleLogout() http.HandlerFunc{
 
 func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc{
 	return func(w http.ResponseWriter, r *http.Request){
-		defer r.Body.Close()
+
 		u := &model.User{}
 		userIdCookie, _ := r.Cookie("id")
 		id, _ := strconv.Atoi(userIdCookie.Value)
@@ -115,6 +117,7 @@ func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc{
 		}
 		u.Sanitize()
 		s.respond(w, r, http.StatusOK, u)
+		defer r.Body.Close()
 	}
 }
 

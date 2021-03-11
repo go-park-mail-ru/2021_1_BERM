@@ -34,7 +34,7 @@ func TestOrder(t *testing.T) *Order{
 
 func TestSession(t *testing.T) *Session{
 	return &Session{
-		SessionId: "asdadsa",
-		UserId: 12,
+		SessionId: "1",
+		UserId: 1,
 	}
 }

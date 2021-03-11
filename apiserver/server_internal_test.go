@@ -257,12 +257,79 @@ func TestCreate_Cookie(t *testing.T){
 }
 
 func TestDel_Cookie(t *testing.T){
-	//s := &teststore.Store{}
-	//server := &server{
-	//	store: s,
-	//}
-	//u := model.TestUser(t)
-	//cookies, err := server.createCookies(u)
-	//assert.NoError(t, err)
+	s := &teststore.Store{}
+	server := &server{
+		store: s,
+	}
+	u := model.TestUser(t)
+	cookies, err := server.createCookies(u)
+	var cookiesTest []*http.Cookie
+	for _, cookie := range cookies{
+		cookiesTest = append(cookiesTest, &cookie)
+	}
+	assert.NoError(t, err)
+	expires := time.Now().AddDate(0, 0, -1)
+	server.delCookies(cookiesTest)
+	for _, cookie := range cookiesTest{
+		assert.Equal(t, cookie.Expires.Month(), expires.Month())
+	}
+}
+
+func TestHandle_Authenticate(t *testing.T) {
+	s := &teststore.Store{}
+	server := &server{
+		store: s,
+	}
+	session := model.TestSession(t)
+
+	err := s.Session().Create(session)
+	assert.NoError(t, err)
+
+	mw := server.authenticateUser(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+
+	}))
+
+	cookies := []*http.Cookie{
+		{
+			Name: "id",
+			Value: "1",
+		},
+		{
+			Name: "session",
+			Value: "1",
+		},
+		{
+			Name: "executor",
+			Value: "false",
+		},
+	}
+
+	rec := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodPost, "/", nil)
+	for _, cookie := range cookies{
+		req.AddCookie(cookie)
+	}
+	mw.ServeHTTP(rec, req)
+	assert.Equal(t, rec.Code, http.StatusOK)
+}
+
+func TestHandle_LogOut(t *testing.T) {
+	s := &teststore.Store{}
+	server := &server{
+		store: s,
+	}
+
+	u := model.TestUser(t)
+	cookies, _ := server.createCookies(u)
+	rec := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/logout", nil)
+	handler := http.HandlerFunc(server.handleLogout())
+	for _, cookie := range cookies{
+		req.AddCookie(&cookie)
+	}
+
+	handler.ServeHTTP(rec, req)
+	assert.Equal(t, rec.Code, http.StatusOK)
 
 }
