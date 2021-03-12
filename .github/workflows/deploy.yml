@@ -11,6 +11,7 @@ jobs:
 
       - run: mkdir "$HOME/.ssh"
       - run: echo "${{ secrets.key }}" > "$HOME/.ssh/key.pem"
+      - run: chmod 400 $HOME/.ssh/key.pem
 
       - run: |
            ssh -i $HOME/.ssh/key.pem ubuntu@95.163.212.121
