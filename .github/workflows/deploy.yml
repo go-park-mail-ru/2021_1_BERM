@@ -9,13 +9,25 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - run: mkdir "$HOME/.ssh"
-      - run: sudo echo "${{ secrets.key }}" > "$HOME/.ssh/key.pem"
-      - run: sudo chmod 600 $HOME/.ssh/key.pem
-
-      - run: |
-           sudo ssh -i $HOME/.ssh/key.pem ubuntu@95.163.212.121
-           sudo killall -9 main
-           cd 2021_1_BERM
-           git checkout development && git pull origin development
-           sudo go run 2021_1_BERM/fl/main.go
+#      - run: mkdir "$HOME/.ssh"
+#      - run: sudo echo "${{ secrets.key }}" > "$HOME/.ssh/key.pem"
+#      - run: sudo chmod 600 $HOME/.ssh/key.pem
+#
+#      - run: |
+#           sudo ssh -i $HOME/.ssh/key.pem ubuntu@95.163.212.121
+#           sudo killall -9 main
+#           cd 2021_1_BERM
+#           git checkout development && git pull origin development
+#           sudo go run 2021_1_BERM/fl/main.go
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
+        with:
+          host: 95.163.212.121
+          username: ubuntu
+          key: ${{ secrets.KEY }}
+          script: |
+            sudo ssh -i $HOME/.ssh/key.pem ubuntu@95.163.212.121
+            sudo killall -9 main
+            cd 2021_1_BERM
+            git checkout development && git pull origin development
+            sudo go run 2021_1_BERM/fl/main.go
