@@ -26,7 +26,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.KEY }}
           script: |
-            sudo ssh -i $HOME/.ssh/key.pem ubuntu@95.163.212.121
             sudo killall -9 main
             cd 2021_1_BERM
             git checkout development && git pull origin development
