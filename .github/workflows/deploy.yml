@@ -27,6 +27,5 @@ jobs:
           key: ${{ secrets.KEY }}
           script: |
             sudo killall -9 main
-            cd 2021_1_BERM
-            git checkout development && git pull origin development
+            cd 2021_1_BERM && git checkout development && git pull origin development
             sudo go run 2021_1_BERM/fl/main.go
