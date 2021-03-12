@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - run: mkdir "$HOME/.ssh"
-      - run: echo "${{ secrets.MySecret }}" > "$HOME/.ssh/key.pem"
+      - run: echo "${{ secrets.key }}" > "$HOME/.ssh/key.pem"
 
       - run: |
            ssh -i $HOME/.ssh/key.pem ubuntu@95.163.212.121
