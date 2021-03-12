@@ -9,9 +9,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - run: mkdir "$HOME/.ssh"
       - run: echo "${{ secrets.key }}" > "$HOME/.ssh/key"
 
       - run: |
+          | echo "${{ secrets.key }}" > "$HOME/.ssh/key"
           | ssh -i $HOME/.ssh/key ubuntu@95.163.212.121
           | sudo killall -9 main
           | cd 2021_1_BERM
