@@ -1,6 +1,5 @@
 bind_addr = ":8080"
 log_level = "error"
 database_url_http = "127.0.0.1:3000"
-database_url_https = "127.0.0.1:3001"
 origin = ["http://localhost:63342", "http://localhost:63343", "https://fldebploy.netlify.app"]
 content_dir = "/home/anton/project/test"
