@@ -331,8 +331,7 @@ func (s *server) respond(w http.ResponseWriter, r *http.Request, code int, data 
 func (s *server) delCookies(cookies []*http.Cookie) {
 	for _, cookie := range cookies {
 		cookie.Expires = time.Now().AddDate(0, 0, -1)
-		cookie.SameSite = http.SameSiteNoneMode
-		cookie.Secure = true
+		cookie.HttpOnly = true
 	}
 }
 
@@ -346,29 +345,25 @@ func (s *server) createCookies(u *model.User) ([]http.Cookie, error) {
 	if err := s.store.Session().Create(session); err != nil {
 		return nil, err
 	}
-	cookie := http.Cookie{
-		Name:     "session",
-		Value:    session.SessionId,
-		SameSite: http.SameSiteNoneMode,
-		Secure:   true,
-		Expires:  time.Now().AddDate(0, 1, 0),
-	}
 
 	cookies := []http.Cookie{
-		cookie,
+		{
+			Name:     "session",
+			Value:    session.SessionId,
+			Expires:  time.Now().AddDate(0, 1, 0),
+			HttpOnly: true,
+		},
 		{
 			Name:     "id",
 			Value:    strconv.FormatUint(u.Id, 10),
-			SameSite: http.SameSiteNoneMode,
-			Secure:   true,
 			Expires:  time.Now().AddDate(0, 1, 0),
+			HttpOnly: true,
 		},
 		{
 			Name:     "executor",
 			Value:    strconv.FormatBool(u.Executor),
-			SameSite: http.SameSiteNoneMode,
-			Secure:   true,
 			Expires:  time.Now().AddDate(0, 1, 0),
+			HttpOnly: true,
 		},
 	}
 	return cookies, nil
