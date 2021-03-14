@@ -20,6 +20,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.KEY }}
           script: |
-            sudo killall -9 main
+            sudo killall -9 https
             cd 2021_1_BERM && git checkout development && git pull origin development
             sudo go run fl/https.go &>/dev/null&
