@@ -1,0 +1,25 @@
+name: CI
+on:
+  push:
+    branches:
+      - development
+  pull_request:
+    branches:
+      - development
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
+        with:
+          host: 95.163.212.121
+          username: ubuntu
+          key: ${{ secrets.KEY }}
+          script: |
+            sudo killall -9 main
+            cd 2021_1_BERM && git checkout development && git pull origin development
+            sudo go run fl/main.go &>/dev/null&
