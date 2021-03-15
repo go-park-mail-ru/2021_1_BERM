@@ -94,10 +94,10 @@ func userToTarantoolData(user *model.User) []interface{} {
 		user.Executor = true
 	}
 	data = append(data, user.Executor)
-	if user.Description == "" {
+	if user.About == "" {
 		data = append(data, nil)
 	} else {
-		data = append(data, user.Description)
+		data = append(data, user.About)
 	}
 	if len(user.Specializes) == 0 {
 		data = append(data, nil)
@@ -130,8 +130,8 @@ func userToTarantoolChangeData(user *model.User) []interface{} {
 	if user.Executor {
 		data = append(data, []interface{}{"=", 6, user.Executor})
 	}
-	if len(user.Description) != 0 {
-		data = append(data, []interface{}{"=", 7, user.Description})
+	if len(user.About) != 0 {
+		data = append(data, []interface{}{"=", 7, user.About})
 	}
 	if user.Specializes != nil {
 		data = append(data, []interface{}{"=", 8, user.Specializes})
@@ -152,7 +152,7 @@ func tarantoolDataToUser(data []interface{}) *model.User {
 	u.FirstName, _ = data[4].(string)
 	u.SecondName, _ = data[5].(string)
 	u.Executor, _ = data[6].(bool)
-	u.Description, _ = data[7].(string)
+	u.About, _ = data[7].(string)
 	specializes, _ := data[8].([]interface{})
 	for _, elem := range specializes {
 		specialize, _ := elem.(string)

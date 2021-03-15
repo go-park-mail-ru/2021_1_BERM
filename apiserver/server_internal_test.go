@@ -144,7 +144,7 @@ func TestHandle_ChangeProfile(t *testing.T) {
 	}
 	TestCreateCorrectUserInStore(t, server)
 	u := model.TestUser(t)
-	u.Description = "1234"
+	u.About = "1234"
 	bChangeDescription, err := json.Marshal(u)
 	assert.NoError(t, err)
 	testCases := []struct {
@@ -178,7 +178,7 @@ func TestHandle_ChangeProfile(t *testing.T) {
 				assert.NotEmpty(t, testUser.ID)
 				assert.Empty(t, testUser.Password)
 				assert.Equal(t, http.StatusAccepted, rec.Code)
-				assert.Equal(t, testUser.Description, u.Description)
+				assert.Equal(t, testUser.About, u.About)
 			case "BadRequestChangeDescriptionRequest":
 				assert.Equal(t, rec.Code, http.StatusBadRequest)
 			}
