@@ -28,7 +28,6 @@ jobs:
       - name: tests
         run: go test ./...
 
-
       - name: deploy
         uses: appleboy/ssh-action@master
         with:
