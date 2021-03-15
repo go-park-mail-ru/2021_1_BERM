@@ -5,10 +5,10 @@ const (
 )
 
 type Session struct {
-	SessionId string
-	UserId    uint64
+	SessionID string
+	UserID    uint64
 }
 
 func (s *Session) BeforeChange() {
-	s.SessionId, _ = encryptString(s.SessionId, cookieSalt)
+	s.SessionID, _ = EncryptString(s.SessionID, cookieSalt)
 }

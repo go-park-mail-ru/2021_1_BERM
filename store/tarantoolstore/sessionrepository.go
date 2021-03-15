@@ -13,13 +13,14 @@ type SessionRepository struct {
 func (s *SessionRepository) Create(session *model.Session) error {
 	resp, err := s.store.conn.Insert("session", sessionToTarantoolData(session))
 	println(resp)
+
 	return err
 }
 
 func (s *SessionRepository) Find(session *model.Session) error {
 	resp, err := s.store.conn.Select("session", "primary",
 		0, 1, tarantool.IterEq, []interface{}{
-			session.SessionId,
+			session.SessionID,
 		})
 	if err != nil {
 		return err
@@ -28,16 +29,18 @@ func (s *SessionRepository) Find(session *model.Session) error {
 		return errors.New("Not autorizate")
 	}
 	*session = *tarantoolDataToSession(resp.Tuples()[0])
+
 	return nil
 }
 
 func sessionToTarantoolData(s *model.Session) []interface{} {
-	return []interface{}{s.SessionId, s.UserId}
+	return []interface{}{s.SessionID, s.UserID}
 }
 
 func tarantoolDataToSession(data []interface{}) *model.Session {
 	s := &model.Session{}
-	s.SessionId, _ = data[0].(string)
-	s.UserId, _ = data[1].(uint64)
+	s.SessionID, _ = data[0].(string)
+	s.UserID, _ = data[1].(uint64)
+
 	return s
 }

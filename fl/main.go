@@ -23,8 +23,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := apiserver.Start(config, true); err != nil {
+	if err := apiserver.Start(config, config.HTTPS); err != nil {
 		log.Fatal(err)
 	}
-
 }

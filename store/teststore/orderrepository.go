@@ -8,13 +8,12 @@ type OrderRepository struct {
 }
 
 func (r *OrderRepository) Create(order *model.Order) error {
-	order.Id = 1
+	order.ID = 1
 	r.order[1] = order
 
 	return nil
 }
 
 func (r *OrderRepository) Find(order *model.Order) error {
-
 	return nil
 }

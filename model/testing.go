@@ -4,9 +4,13 @@ import (
 	"testing"
 )
 
+const (
+	CustomerID uint64 = 5
+)
+
 func TestUser(t *testing.T) *User {
 	return &User{
-		Id:          1,
+		ID:          1,
 		Email:       "Mman221@gmail.com",
 		Password:    "sadasds123",
 		UserName:    "Man",
@@ -19,9 +23,9 @@ func TestUser(t *testing.T) *User {
 
 func TestOrder(t *testing.T) *Order {
 	return &Order{
-		Id:          1,
+		ID:          1,
 		OrderName:   "ABC4544",
-		CustomerId:  5,
+		CustomerID:  CustomerID,
 		Description: "qwdqdqDDSADA",
 		Specializes: []string{
 			"НЕНАВИЖУ",
@@ -34,7 +38,7 @@ func TestOrder(t *testing.T) *Order {
 
 func TestSession(t *testing.T) *Session {
 	return &Session{
-		SessionId: "1",
-		UserId:    1,
+		SessionID: "1",
+		UserID:    1,
 	}
 }
