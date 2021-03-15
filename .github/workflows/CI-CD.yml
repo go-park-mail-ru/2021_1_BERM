@@ -20,10 +20,10 @@ jobs:
 
       - name: linters
         uses: golangci/golangci-lint-action@v2
-          with:
-            version: v1.29
-            working-directory: ./...
-            args: -E golint -E lll -E prealloc -E unconvert -E unparam -E whitespace -E gomnd -E nlreturn -E testpackage  -D deadcode -D varcheck -D unused -D structcheck
+        with:
+          version: v1.29
+          working-directory: ./...
+          args: -E golint -E lll -E prealloc -E unconvert -E unparam -E whitespace -E gomnd -E nlreturn -E testpackage  -D deadcode -D varcheck -D unused -D structcheck
 
       - name: tests
         run: go test ./...
