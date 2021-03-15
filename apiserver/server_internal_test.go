@@ -481,8 +481,8 @@ func TestDel_Cookie(t *testing.T) {
 	u := model.TestUser(t)
 	cookies, err := server.createCookies(u)
 	cookiesTest := make([]*http.Cookie, len(cookies))
-	for _, cookie := range cookies {
-		cookiesTest = append(cookiesTest, &cookie)
+	for i := range cookies {
+		cookiesTest[i] = &cookies[i]
 	}
 	assert.NoError(t, err)
 	expires := time.Now().AddDate(0, 0, -1)

@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	MaxOrderNameLength int = 5
-	MinOrderNameLength int = 300
+	MinOrderNameLength int = 5
+	MaxOrderNameLength int = 300
 )
 
 type Order struct {
