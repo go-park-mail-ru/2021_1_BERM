@@ -23,7 +23,7 @@ type User struct {
 	FirstName   string   `json:"first_name,omitempty"`
 	SecondName  string   `json:"second_name,omitempty"`
 	Executor    bool     `json:"executor,omitempty"`
-	Description string   `json:"description,omitempty"`
+	About       string   `json:"about,omitempty"`
 	Specializes []string `json:"specializes,omitempty"`
 	ImgURL      string   `json:"img_url,omitempty"`
 }
