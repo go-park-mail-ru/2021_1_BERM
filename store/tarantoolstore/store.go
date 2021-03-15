@@ -12,11 +12,12 @@ type Store struct {
 	OrderRepository   *OrderRepository
 }
 
-func New(dbUrl string) (*Store, error) {
-	conn, err := newTarantoolConnect(dbUrl)
+func New(dbURL string) (*Store, error) {
+	conn, err := newTarantoolConnect(dbURL)
 	if err != nil {
 		return nil, err
 	}
+
 	return &Store{
 		conn: conn,
 	}, nil
@@ -29,6 +30,7 @@ func (s *Store) User() store.UserRepository {
 	s.UserRepository = &UserRepository{
 		store: s,
 	}
+
 	return s.UserRepository
 }
 
@@ -39,6 +41,7 @@ func (s *Store) Session() store.SessionRepository {
 	s.SessionRepository = &SessionRepository{
 		store: s,
 	}
+
 	return s.SessionRepository
 }
 
@@ -49,11 +52,13 @@ func (s *Store) Order() store.OrderRepository {
 	s.OrderRepository = &OrderRepository{
 		store: s,
 	}
+
 	return s.OrderRepository
 }
 
-func newTarantoolConnect(dbUrl string) (*tarantool.Connection, error) {
+func newTarantoolConnect(dbURL string) (*tarantool.Connection, error) {
 	opts := tarantool.Opts{User: "guest"}
-	db, err := tarantool.Connect(dbUrl, opts)
+	db, err := tarantool.Connect(dbURL, opts)
+
 	return db, err
 }

@@ -8,15 +8,17 @@ type SessionRepository struct {
 }
 
 func (r *SessionRepository) Create(session *model.Session) error {
-	r.sessions[session.SessionId] = session
+	r.sessions[session.SessionID] = session
+
 	return nil
 }
 
 func (r *SessionRepository) Find(session *model.Session) error {
-	s, ok := r.sessions[session.SessionId]
+	s, ok := r.sessions[session.SessionID]
 	if !ok {
 		return nil
 	}
 	*session = *s
+
 	return nil
 }
