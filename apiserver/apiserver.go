@@ -12,7 +12,6 @@ func Start(config *Config, https bool) error {
 		log.Fatal(err)
 	}
 	s := newServer(store, config)
-
 	if https {
 		return http.ListenAndServeTLS(config.BindAddr,
 			"/etc/letsencrypt/live/findfreelancer.ru/cert.pem",
