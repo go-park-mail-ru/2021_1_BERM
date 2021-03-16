@@ -1,6 +1,6 @@
 bind_addr = ":8080"
 log_level = "error"
 database_url = "127.0.0.1:3000"
-origin = ["http://localhost:63342", "http://localhost:63343", "https://fldebploy.netlify.app"]
+origin = ["http://localhost:63342", "http://localhost:63343", "https://fldebploy.netlify.app", "https://findfreelancer.ru"]
 content_dir = "/home/ubuntu/2021_1_BERM/imgUsrs"
 https = true
