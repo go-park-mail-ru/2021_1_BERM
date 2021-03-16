@@ -53,8 +53,8 @@ func (s *server) configureRouter(config *Config) {
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   config.Origin,
-		AllowedMethods:   []string{"POST", "GET", "OPTIONS", "PUT", "DELETE"},
-		AllowedHeaders:   []string{"Content-Type", "session", "id", "executor", "X-Requested-With", "Accept"},
+		AllowedMethods:   []string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "PATCH"},
+		AllowedHeaders:   []string{"Content-Type", "X-Requested-With", "Accept"},
 		AllowCredentials: true,
 	})
 	s.router = c.Handler(router)
