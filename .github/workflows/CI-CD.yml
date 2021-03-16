@@ -33,7 +33,4 @@ jobs:
           host: 95.163.212.121
           username: ubuntu
           key: ${{ secrets.KEY }}
-          script: |
-            sudo killall -9 main
-            cd 2021_1_BERM && git checkout development && git pull origin development
-            sudo go run fl/main.go &>/dev/null&
+          script: ./deploy_back.sh
