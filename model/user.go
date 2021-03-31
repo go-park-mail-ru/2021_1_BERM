@@ -3,6 +3,7 @@ package model
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
+	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -16,16 +17,16 @@ const (
 )
 
 type User struct {
-	ID          uint64   `json:"id,omitempty"`
-	Email       string   `json:"email"`
-	Password    string   `json:"password,omitempty"`
-	UserName    string   `json:"user_name,omitempty"`
-	FirstName   string   `json:"first_name,omitempty"`
-	SecondName  string   `json:"second_name,omitempty"`
-	Executor    bool     `json:"executor,omitempty"`
-	About       string   `json:"about,omitempty"`
-	Specializes []string `json:"specializes,omitempty"`
-	ImgURL      string   `json:"img_url,omitempty"`
+	ID          uint64   `json:"id,omitempty" db:"id"`
+	Email       string   `json:"email" db:"email"`
+	Password    string   `json:"password,omitempty" db:"password"`
+	Login       string   `json:"login,omitempty" db:"login"`
+	NameSurname string   `json:"name_surname,omitempty" db:"name_surname"`
+	Executor    bool     `json:"executor,omitempty" db:"executor"`
+	About       string   `json:"about,omitempty" db:"about"`
+	Specializes pq.StringArray `json:"specializes,omitempty" db:"specializes"`
+	Img         string   `json:"img,omitempty" db:"img"`
+	Rating		int		 `json:"rating" db:"rating"`
 }
 
 func (u *User) Validate() error {
@@ -33,9 +34,8 @@ func (u *User) Validate() error {
 		u,
 		validation.Field(&u.Email, validation.Required, is.Email),
 		validation.Field(&u.Password, validation.Required, validation.Length(MinPswdLenght, MaxPswdLength)),
-		validation.Field(&u.UserName, validation.Required),
-		validation.Field(&u.FirstName, validation.Required),
-		validation.Field(&u.SecondName, validation.Required),
+		validation.Field(&u.Login, validation.Required),
+		validation.Field(&u.NameSurname, validation.Required),
 	)
 }
 

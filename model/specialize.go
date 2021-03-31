@@ -1,7 +1,6 @@
 package model
 
 type Specialize struct {
-	specializeName string
-	customerList   []string
-	orderList      []string
+	ID             uint64 `db:"id"`
+	SpecializeName string `db:"specialize_name"`
 }

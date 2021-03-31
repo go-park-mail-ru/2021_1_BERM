@@ -80,7 +80,7 @@ func (s *server) handleGetImg() http.HandlerFunc {
 		userIDCookie, _ := r.Cookie("id")
 		id, _ := strconv.Atoi(userIDCookie.Value)
 		u.ID = uint64(id)
-		file, err := os.Open(u.ImgURL)
+		file, err := os.Open(u.Img)
 		if err != nil {
 			s.error(w, http.StatusBadRequest, err)
 
@@ -142,8 +142,10 @@ func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc {
 
 			return
 		}
-		u.ImgURL = currentDir
-		if err = s.store.User().ChangeUser(u); err != nil {
+		u.Img = currentDir
+
+		u, err = s.store.User().ChangeUser(u)
+		if err != nil {
 			s.error(w, http.StatusInternalServerError, errors.New("Internal server error"))
 
 			return
@@ -173,7 +175,10 @@ func (s *server) handleSignUp() http.HandlerFunc {
 
 			return
 		}
-		err := s.store.User().Create(u)
+
+		var err error
+
+		u.ID, err = s.store.User().Create(u)
 		if err != nil {
 			s.error(w, http.StatusBadRequest, errors.New("Email duplicate")) //Такой имейл уже существует
 
@@ -209,14 +214,16 @@ func (s *server) handleGetProfile() http.HandlerFunc {
 			return
 		}
 		u.ID = uint64(id)
-		if err := s.store.User().Find(u); err != nil {
+
+		u, err = s.store.User().FindById(u.ID)
+		if err != nil {
 			s.error(w, http.StatusUnauthorized, errors.New("Unauthorized")) //Unauthorized
 
 			return
 		}
 		u.Sanitize()
-		if len(u.ImgURL) != 0 {
-			file, err := os.Open(u.ImgURL)
+		if len(u.Img) != 0 {
+			file, err := os.Open(u.Img)
 			if err != nil {
 				s.error(w, http.StatusInternalServerError, errors.New("Internal server error")) //Bad img url
 
@@ -228,7 +235,7 @@ func (s *server) handleGetProfile() http.HandlerFunc {
 
 				return
 			}
-			u.ImgURL = string(avatar)
+			u.Img = string(avatar)
 		}
 		s.respond(w, http.StatusOK, u)
 	}
@@ -243,7 +250,9 @@ func (s *server) handleSignIn() http.HandlerFunc {
 			return
 		}
 		pass := u.Password
-		if err := s.store.User().FindByEmail(u); err != nil {
+		var err error
+		u, err = s.store.User().FindByEmail(u.Email)
+		if err != nil {
 			s.error(w, http.StatusUnauthorized, errors.New("Unauthorized")) //Unauthorized
 
 			return
@@ -283,7 +292,9 @@ func (s *server) handleChangeProfile() http.HandlerFunc {
 
 			return
 		}
-		if err := s.store.User().ChangeUser(u); err != nil {
+		var err error
+		u, err = s.store.User().ChangeUser(u)
+		if err != nil {
 			// некоректные данные о пользователе
 			s.error(w, http.StatusBadRequest, errors.New("Incorrect user data"))
 

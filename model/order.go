@@ -10,9 +10,11 @@ const (
 )
 
 type Order struct {
-	ID          uint64   `json:"id"`
+	ID          uint64   `json:"id,omitempty"`
 	OrderName   string   `json:"order_name"`
 	CustomerID  uint64   `json:"customer_id"`
+	Budget      uint64   `json:"budget"`
+	Deadline    uint64   `json:"deadline"`
 	Description string   `json:"description"`
 	Specializes []string `json:"specializes"`
 }

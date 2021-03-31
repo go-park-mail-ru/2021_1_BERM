@@ -7,6 +7,7 @@ type Config struct {
 	Origin      []string `toml:"origin"`
 	ContentDir  string   `toml:"content_dir"`
 	HTTPS       bool     `toml:"https"`
+	DSN         string   `toml:"dsn"`
 }
 
 func NewConfig() *Config {

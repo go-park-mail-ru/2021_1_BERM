@@ -1,16 +1,17 @@
 package apiserver
 
 import (
-	"fl_ru/store/tarantoolstore"
+	"fl_ru/store/postgresstore"
 	"log"
 	"net/http"
 )
 
 func Start(config *Config, https bool) error {
-	store, err := tarantoolstore.New(config.DatabaseURL)
-	if err != nil {
+	store  := postgresstore.New(config.DSN)
+	if err := store.Open(); err != nil {
 		log.Fatal(err)
 	}
+
 	s := newServer(store, config)
 	if https {
 		return http.ListenAndServeTLS(config.BindAddr,

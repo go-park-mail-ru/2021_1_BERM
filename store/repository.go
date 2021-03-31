@@ -1,17 +1,14 @@
 package store
 
-import "fl_ru/model"
+import (
+	"fl_ru/model"
+)
 
 type UserRepository interface {
-	Create(user *model.User) error
-	FindByEmail(user *model.User) error
-	Find(user *model.User) error
-	ChangeUser(user *model.User) error
-}
-
-type SessionRepository interface {
-	Create(session *model.Session) error
-	Find(session *model.Session) error
+	Create(user *model.User) (uint64, error)
+	FindByEmail(email string) (*model.User, error)
+	FindById(id uint64) (*model.User, error)
+	ChangeUser(user *model.User) (*model.User, error)
 }
 
 type OrderRepository interface {
