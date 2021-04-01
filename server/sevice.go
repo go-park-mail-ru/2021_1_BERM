@@ -55,15 +55,15 @@ func (s *server) configureRouter(config *Config) {
 
 	profile := router.PathPrefix("/profile/").Subrouter()
 	profile.Use(s.authenticateUser)
-	profile.HandleFunc("profile/{id:[0-9]+}", s.handleChangeProfile).Methods(http.MethodPut)
-	profile.HandleFunc("profile/{id:[0-9]+}", s.handleGetProfile).Methods(http.MethodGet)
-	profile.HandleFunc("profile/authorized", s.handleCheckAuthorized).Methods(http.MethodGet)
+	profile.HandleFunc("/{id:[0-9]+}", s.handleChangeProfile).Methods(http.MethodPut)
+	profile.HandleFunc("/{id:[0-9]+}", s.handleGetProfile).Methods(http.MethodGet)
+	profile.HandleFunc("/authorized", s.handleCheckAuthorized).Methods(http.MethodGet)
 
 	order := router.PathPrefix("/order").Subrouter()
 	order.Use(s.authenticateUser)
 	order.HandleFunc("/", s.handleCreateOrder).Methods(http.MethodPost)
-	order.HandleFunc("order/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodPut)
-	order.HandleFunc("order/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodGet)
+	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodPut)
+	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodGet)
 	c := cors.New(cors.Options{
 		AllowedOrigins:   config.Origin,
 		AllowedMethods:   []string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "PATCH"},
