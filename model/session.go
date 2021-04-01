@@ -1,14 +1,20 @@
 package model
 
-const (
+import "golang.org/x/crypto/bcrypt"
+
+const(
 	cookieSalt = "wdsamlsdm2094dmfh"
 )
-
 type Session struct {
-	SessionID string
-	UserID    uint64
+	SessionId string
+	UserId uint64    `json:"id,omitempty"`
 }
 
-func (s *Session) BeforeChange() {
-	s.SessionID, _ = EncryptString(s.SessionID, cookieSalt)
+
+func (s *Session) BeforeChange(){
+	s.SessionId, _ = EncryptString(s.SessionId, cookieSalt)
+}
+
+func (u *Session) CompareSessionId(sessionId string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(u.SessionId), []byte(sessionId)) == nil
 }

@@ -1,7 +1,7 @@
 package postgresstore
 
 import (
-	"fl_ru/model"
+	"FL_2/model"
 	"strconv"
 )
 
@@ -140,16 +140,17 @@ func (u *UserRepository) ChangeUser(user *model.User) (*model.User, error) {
 	//
 	//tx := u.store.db.MustBegin()
 	//tx.NamedExec(`UPDATE users SET
-    //             password =:password,
-    //             login =:login,
-    //             name_surname =:name_surname,
-    //             about=:about,
-    //             executor=:executor,
-    //             img=:img,
-    //             rating=:rating
+	//             password =:password,
+	//             login =:login,
+	//             name_surname =:name_surname,
+	//             about=:about,
+	//             executor=:executor,
+	//             img=:img,
+	//             rating=:rating
 	//			 WHERE id = :id`, &user)
 	//if err := tx.Commit(); err != nil {
 	//	return nil, err
 	//}
 	return &model.User{}, nil
 }
+

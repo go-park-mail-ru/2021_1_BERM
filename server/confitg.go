@@ -1,4 +1,4 @@
-package apiserver
+package server
 
 type Config struct {
 	BindAddr    string   `toml:"bind_addr"`
@@ -16,3 +16,4 @@ func NewConfig() *Config {
 		LogLevel: "debug",
 	}
 }
+

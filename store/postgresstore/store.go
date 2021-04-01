@@ -1,9 +1,8 @@
 package postgresstore
 
 import (
-	"fl_ru/store"
+	"FL_2/store"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 )
 
 type Store struct {
@@ -53,3 +52,4 @@ func (s *Store) Order() store.OrderRepository {
 
 	return s.orderRepository
 }
+

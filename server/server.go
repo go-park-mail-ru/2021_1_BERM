@@ -1,18 +1,23 @@
-package apiserver
+package server
 
 import (
-	"fl_ru/store/postgresstore"
+	"FL_2/cache/tarantoolcache"
+	"FL_2/store/postgresstore"
 	"log"
 	"net/http"
 )
 
 func Start(config *Config, https bool) error {
 	store  := postgresstore.New(config.DSN)
-	if err := store.Open(); err != nil {
+	cache, err := tarantoolcache.New(config.DatabaseURL)
+	if err != nil{
+		log.Fatal(err)
+	}
+	if err = store.Open(); err != nil {
 		log.Fatal(err)
 	}
 
-	s := newServer(store, config)
+	s := newServer(store,cache, config)
 	if https {
 		return http.ListenAndServeTLS(config.BindAddr,
 			"/etc/letsencrypt/live/findfreelancer.ru/cert.pem",
@@ -22,3 +27,4 @@ func Start(config *Config, https bool) error {
 
 	return http.ListenAndServe(config.BindAddr, s)
 }
+

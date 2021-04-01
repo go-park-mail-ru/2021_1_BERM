@@ -1,8 +1,6 @@
 package postgresstore
 
-import (
-	"fl_ru/model"
-)
+import "FL_2/model"
 
 type OrderRepository struct {
 	store *Store
@@ -15,3 +13,4 @@ func (o *OrderRepository) Create(order *model.Order) error {
 func (o *OrderRepository) Find(order *model.Order) error {
 	return nil
 }
+
