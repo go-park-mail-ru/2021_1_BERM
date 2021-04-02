@@ -24,7 +24,7 @@ func (u *UserRepository) insertToUserSpecTable(userID uint64, specID uint64) err
 	return err
 }
 
-func (u *UserRepository) Create(user *model.User) (uint64, error) {
+func (u *UserRepository) Create(user model.User) (uint64, error) {
 	var userID uint64
 	err := u.store.db.QueryRow(
 		`INSERT INTO users (
@@ -115,7 +115,7 @@ func (u *UserRepository) FindByEmail(email string) (*model.User, error) {
 	return user, nil
 }
 
-func (u *UserRepository) FindById(id uint64) (*model.User, error) {
+func (u *UserRepository) FindByID(id uint64) (*model.User, error) {
 	user := &model.User{}
 	rows, err := u.store.db.Queryx("SELECT users.*, array_agg(specialize_name) AS specializes from users "+
 		"INNER JOIN user_specializes ON users.id = user_specializes.user_id "+
@@ -135,22 +135,59 @@ func (u *UserRepository) FindById(id uint64) (*model.User, error) {
 	return user, nil
 }
 
-func (u *UserRepository) ChangeUser(user *model.User) (*model.User, error) {
-	//userU, _:= u.FindById(user.ID)
-	//
-	//tx := u.store.db.MustBegin()
-	//tx.NamedExec(`UPDATE users SET
-	//             password =:password,
-	//             login =:login,
-	//             name_surname =:name_surname,
-	//             about=:about,
-	//             executor=:executor,
-	//             img=:img,
-	//             rating=:rating
-	//			 WHERE id = :id`, &user)
-	//if err := tx.Commit(); err != nil {
-	//	return nil, err
-	//}
+func (u *UserRepository) ChangeUser(user model.User) (*model.User, error) {
+	oldUser, err := u.FindByID(user.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if user.Email == "" {
+		user.Email = oldUser.Email
+	}
+
+	if user.About == "" {
+		user.About = oldUser.About
+	}
+
+	if user.Password == "" {
+		user.Password =oldUser.Password
+	}
+
+	if user.Login == "" {
+		user.Login = oldUser.Login
+	}
+
+	if user.Img == "" {
+		user.Img = oldUser.Img
+	}
+
+	if user.NameSurname == "" {
+		user.NameSurname = oldUser.NameSurname
+	}
+
+	if user.Rating == 0 {
+		user.Rating = oldUser.Rating
+	}
+
+	user.Executor = oldUser.Executor
+
+	tx := u.store.db.MustBegin()
+	_, err = tx.NamedExec(`UPDATE users SET 
+                 password =:password,
+                 login =:login,
+                 name_surname =:name_surname,
+                 about=:about,
+                 executor=:executor,
+                 img=:img,
+                 rating=:rating
+				 WHERE id = :id`, &user)
+	if err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
 	return &model.User{}, nil
 }
 

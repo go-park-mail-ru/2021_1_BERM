@@ -39,20 +39,12 @@ CREATE TABLE orders
     customer_id INTEGER            NOT NULL,
     executor_id INTEGER,
     order_name  VARCHAR            NOT NULL,
+    category    VARCHAR            NOT NULL,
     budget      INTEGER            NOT NULL,
     deadline    BIGINT             NOT NULL,
     description VARCHAR            NOT NULL
 );
 
-CREATE TABLE order_specializes
-(
-    order_id      INTEGER NOT NULL,
-    specialize_id INTEGER NOT NULL,
-    FOREIGN KEY (order_id)
-        REFERENCES orders (id),
-    FOREIGN KEY (specialize_id)
-        REFERENCES specializes (id)
-);
 
 CREATE TABLE user_reviews
 (
@@ -69,11 +61,13 @@ CREATE TABLE user_reviews
 
 
 
-
 -- SELECT users.*, array_agg(specialize_name) AS specializes from users
 -- INNER JOIN user_specializes ON users.id = user_specializes.user_id
 -- INNER JOIN specializes ON user_specializes.specialize_id = specializes.id
 -- WHERE users.email = 'kek@mem.ru'
 -- GROUP BY users.id
+
+-- SELECT * from orders
+-- WHERE id = 1
 
 

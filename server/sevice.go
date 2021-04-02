@@ -94,7 +94,7 @@ func (s *server) handleProfile(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
-	u.ID, err = s.store.User().Create(u)
+	u.ID, err = s.store.User().Create(*u)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Email duplicate")) //Такой имейл уже существует
 
@@ -190,7 +190,7 @@ func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	u, err = s.store.User().ChangeUser(u)
+	u, err = s.store.User().ChangeUser(*u)
 	if err != nil {
 		// некоректные данные о пользователе
 		s.error(w, http.StatusBadRequest, errors.New("Incorrect user data"))
@@ -207,7 +207,7 @@ func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request){
 		return;
 	}
 	u := &model.User{}
-	u, err = s.store.User().FindById(id);
+	u, err = s.store.User().FindByID(id);
 	if err != nil{
 		s.error(w,  404, errors.New("user not found"))
 		return;
@@ -236,8 +236,10 @@ func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request){
 		s.error(w, http.StatusBadRequest, errors.New("Invalid data")) //Invalid data
 		return
 	}
-	o.CustomerId = id;
-	if err := s.store.Order().Create(o); err != nil {
+	o.CustomerID = id;
+	var err error
+	o.ID, err = s.store.Order().Create(*o)
+	if err != nil {
 		s.error(w, http.StatusInternalServerError, errors.New("Internal server error")) //500
 		return
 	}
@@ -256,9 +258,9 @@ func (s *server) handleGetOrder(w http.ResponseWriter, r *http.Request){
 		return;
 	}
 	o := &model.Order{
-		Id: id,
+		ID: id,
 	}
-	err = s.store.Order().Find(o)
+	o, err = s.store.Order().FindByID(o.ID)
 	if err != nil{
 		s.error(w,  404, errors.New("Not found"))
 		return;
