@@ -2,6 +2,7 @@ package postgresstore
 
 import (
 	"FL_2/model"
+	"database/sql"
 	"strconv"
 )
 
@@ -22,6 +23,18 @@ func (u *UserRepository) insertToUserSpecTable(userID uint64, specID uint64) err
 			"specID": strconv.FormatUint(specID, 10),
 		})
 	return err
+}
+
+func (u *UserRepository) insertToSpecTable(specName string) (uint64, error) {
+	var specID uint64 = 0
+	err := u.store.db.QueryRow(
+		`INSERT INTO specializes (
+    						specialize_name
+    					) 
+    					VALUES (
+    						$1
+    					)  RETURNING id`, specName).Scan(&specID)
+	return specID, err
 }
 
 func (u *UserRepository) Create(user model.User) (uint64, error) {
@@ -61,19 +74,11 @@ func (u *UserRepository) Create(user model.User) (uint64, error) {
 
 		// если в таблице специализации нет данной специализации - добавляем ее в таблицу специализацй
 		// а затем добаляем в талбицу соответствия юзер-специализация
-		var specID uint64
 		if rows.Next() == false {
-			err := u.store.db.QueryRow(
-				`INSERT INTO specializes (
-    						specialize_name
-    					) 
-    					VALUES (
-    						$1
-    					)  RETURNING id`, spec).Scan(&specID)
+			specID, err := u.insertToSpecTable(spec)
 			if err != nil {
 				return 0, err
 			}
-
 			if err := u.insertToUserSpecTable(userID, specID); err != nil {
 				return 0, err
 			}
@@ -151,7 +156,7 @@ func (u *UserRepository) ChangeUser(user model.User) (*model.User, error) {
 	}
 
 	if user.Password == "" {
-		user.Password =oldUser.Password
+		user.Password = oldUser.Password
 	}
 
 	if user.Login == "" {
@@ -171,6 +176,9 @@ func (u *UserRepository) ChangeUser(user model.User) (*model.User, error) {
 	}
 
 	user.Executor = oldUser.Executor
+	for _, spec := range(oldUser.Specializes) {
+		user.Specializes = append(user.Specializes, spec)
+	}
 
 	tx := u.store.db.MustBegin()
 	_, err = tx.NamedExec(`UPDATE users SET 
@@ -188,6 +196,41 @@ func (u *UserRepository) ChangeUser(user model.User) (*model.User, error) {
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
-	return &model.User{}, nil
+	return &user, nil
 }
 
+func (u *UserRepository) AddSpecialize(specName string, userID uint64) error {
+	specialize := model.Specialize{}
+	err := u.store.db.Get(&specialize, "SELECT * FROM specializes WHERE specialize_name=$1", specName)
+
+	if err != sql.ErrNoRows || err != nil {
+		return err
+	}
+	var specID uint64
+	if err == sql.ErrNoRows {
+		specID, err = u.insertToSpecTable(specName)
+		if err != nil {
+			return err
+		}
+	}
+	if err = u.insertToUserSpecTable(userID, specID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *UserRepository) DelSpecialize(specName string, userID uint64) error {
+	specialize := model.Specialize{}
+	err := u.store.db.Get(&specialize, "SELECT * FROM specializes WHERE specialize_name=$1", specName)
+	if err != nil {
+		return err
+	}
+
+	_, err = u.store.db.Queryx("DELETE FROM user_specializes WHERE specialize_id=$1 AND user_id =$2", specialize.Name, userID)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}

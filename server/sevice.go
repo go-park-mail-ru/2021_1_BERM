@@ -15,11 +15,11 @@ import (
 	"time"
 )
 
-type ctxKey uint8;
-const (
-	ctxKeySession ctxKey = iota;
-)
+type ctxKey uint8
 
+const (
+	ctxKeySession ctxKey = iota
+)
 
 type server struct {
 	router http.Handler
@@ -33,7 +33,7 @@ func newServer(store store.Store, cache cache.Cash, config *Config) *server {
 		router: mux.NewRouter(),
 		logger: logrus.New(),
 		store:  store,
-		cache: cache,
+		cache:  cache,
 	}
 	s.configureRouter(config)
 
@@ -53,11 +53,13 @@ func (s *server) configureRouter(config *Config) {
 	logout.Use(s.authenticateUser)
 	logout.HandleFunc("/logout", s.handleLogout).Methods(http.MethodDelete)
 
-	profile := router.PathPrefix("/profile/").Subrouter()
+	profile := router.PathPrefix("/profile").Subrouter()
 	profile.Use(s.authenticateUser)
 	profile.HandleFunc("/{id:[0-9]+}", s.handleChangeProfile).Methods(http.MethodPut)
 	profile.HandleFunc("/{id:[0-9]+}", s.handleGetProfile).Methods(http.MethodGet)
 	profile.HandleFunc("/authorized", s.handleCheckAuthorized).Methods(http.MethodGet)
+	profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleAddSpecialize).Methods(http.MethodPost)
+	profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleDelSpecialize).Methods(http.MethodDelete)
 
 	order := router.PathPrefix("/order").Subrouter()
 	order.Use(s.authenticateUser)
@@ -154,7 +156,6 @@ func (s *server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func (s *server) authenticateUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -177,11 +178,22 @@ func (s *server) authenticateUser(next http.Handler) http.Handler {
 	})
 }
 
-func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request){
-	id, err := strconv.ParseUint(r.FormValue("id"), 10, 64)
+func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err:= strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
+		return
+	}
 	u := &model.User{}
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
+		return
+	}
+	userCookieID := r.Context().Value(ctxKeySession).(*model.Session).UserId
+
+	if userCookieID != id {
+		s.error(w, http.StatusBadRequest, errors.New("No right to modify")) //Bad json
 		return
 	}
 	u.ID = id
@@ -200,32 +212,72 @@ func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request){
 	s.respond(w, http.StatusOK, u)
 }
 
-func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request){
-	id, err := strconv.ParseUint(r.FormValue("id"), 10, 64)
-	if err != nil{
-		s.error(w,  404, errors.New("incorrect id"))
-		return;
+func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err:= strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id"))
+		return
 	}
 	u := &model.User{}
-	u, err = s.store.User().FindByID(id);
-	if err != nil{
-		s.error(w,  404, errors.New("user not found"))
-		return;
+	u, err = s.store.User().FindByID(id)
+	if err != nil {
+		s.error(w, http.StatusNotFound, errors.New("user not found"))
+		return
 	}
 	u.Sanitize()
 	s.respond(w, http.StatusOK, u)
 }
 
-func (s *server) handleCheckAuthorized(w http.ResponseWriter, r *http.Request){
-	s.respond(w, http.StatusOK, r.Context().Value(ctxKeySession).(*model.Session))
+func (s *server) handleCheckAuthorized(w http.ResponseWriter, r *http.Request) {
+	u := &model.User{
+		ID: r.Context().Value(ctxKeySession).(*model.Session).UserId,
+	}
+
+	s.respond(w, http.StatusOK, u)
 }
 
+func (s *server) handleAddSpecialize(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(ctxKeySession).(*model.Session).UserId
+	specialize := &model.Specialize{}
 
-func (s *server) handleAvatar(w http.ResponseWriter, r *http.Request){
+	if err := json.NewDecoder(r.Body).Decode(specialize); err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad json"))
+		return
+	}
+
+	if err := s.store.User().AddSpecialize(specialize.Name, userID); err != nil {
+		s.error(w, http.StatusInternalServerError, errors.New("Internal server error"))
+		return
+	}
+
+	var emptyInterface interface{}
+	s.respond(w, http.StatusCreated, emptyInterface)
+}
+
+func (s *server) handleDelSpecialize(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(ctxKeySession).(*model.Session).UserId
+	specialize := &model.Specialize{}
+
+	if err := json.NewDecoder(r.Body).Decode(specialize); err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad json"))
+		return
+	}
+
+	if err := s.store.User().DelSpecialize(specialize.Name, userID); err != nil {
+		s.error(w, http.StatusInternalServerError, errors.New("Internal server error"))
+		return
+	}
+
+	var emptyInterface interface{}
+	s.respond(w, http.StatusCreated, emptyInterface)
+}
+
+func (s *server) handleAvatar(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request){
+func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value(ctxKeySession).(*model.Session).UserId
 	o := &model.Order{}
 	if err := json.NewDecoder(r.Body).Decode(o); err != nil {
@@ -236,7 +288,7 @@ func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request){
 		s.error(w, http.StatusBadRequest, errors.New("Invalid data")) //Invalid data
 		return
 	}
-	o.CustomerID = id;
+	o.CustomerID = id
 	var err error
 	o.ID, err = s.store.Order().Create(*o)
 	if err != nil {
@@ -247,30 +299,30 @@ func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request){
 	s.respond(w, http.StatusCreated, o)
 }
 
-func (s *server) handleChangeOrder(w http.ResponseWriter, r *http.Request){
+func (s *server) handleChangeOrder(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (s *server) handleGetOrder(w http.ResponseWriter, r *http.Request){
-	id, err := strconv.ParseUint(r.FormValue("id"), 10, 64)
-	if err != nil{
-		s.error(w,  404, errors.New("incorrect id"))
-		return;
+func (s *server) handleGetOrder(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err:= strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id"))
+		return
 	}
 	o := &model.Order{
 		ID: id,
 	}
 	o, err = s.store.Order().FindByID(o.ID)
-	if err != nil{
-		s.error(w,  404, errors.New("Not found"))
-		return;
+	if err != nil {
+		s.error(w, http.StatusNotFound, errors.New("Order not found"))
+		return
 	}
 	s.respond(w, http.StatusOK, o)
 }
 
-
 func (s *server) error(w http.ResponseWriter, code int, err error) {
-	logrus.Error(err)
+	s.logger.Error(err)
 	s.respond(w, code, map[string]string{"error": err.Error()})
 }
 
@@ -292,7 +344,7 @@ func (s *server) createCookies(u *model.User) ([]http.Cookie, error) {
 
 	session := &model.Session{}
 	session.UserId = u.ID
-	session.SessionId =  u.Email + time.Now().String()
+	session.SessionId = u.Email + time.Now().String()
 	session.BeforeChange()
 	if err := s.cache.Session().Create(session); err != nil {
 		return nil, err
