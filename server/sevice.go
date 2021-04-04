@@ -64,8 +64,10 @@ func (s *server) configureRouter(config *Config) {
 	order := router.PathPrefix("/order").Subrouter()
 	order.Use(s.authenticateUser)
 	order.HandleFunc("/", s.handleCreateOrder).Methods(http.MethodPost)
+	order.HandleFunc("/", s.handleGetActualOrder).Methods(http.MethodGet)
 	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodPut)
 	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodGet)
+
 	c := cors.New(cors.Options{
 		AllowedOrigins:   config.Origin,
 		AllowedMethods:   []string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "PATCH"},
@@ -321,6 +323,15 @@ func (s *server) handleGetOrder(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, http.StatusOK, o)
 }
 
+func (s *server) handleGetActualOrder(w http.ResponseWriter, r *http.Request) {
+	o, err := s.store.Order().GetActualOrders()
+	if err != nil {
+		s.error(w, http.StatusNotFound, errors.New("Orders not found"))
+		return
+	}
+	s.respond(w, http.StatusOK, o)
+}
+
 func (s *server) error(w http.ResponseWriter, code int, err error) {
 	s.logger.Error(err)
 	s.respond(w, code, map[string]string{"error": err.Error()})
@@ -361,3 +372,5 @@ func (s *server) createCookies(u *model.User) ([]http.Cookie, error) {
 
 	return cookies, nil
 }
+
+

@@ -7,6 +7,7 @@ type OrderRepository interface {
 	FindByID(id uint64) (*model.Order, error)
 	FindByExecutorID(executorID uint64) ([]model.Order, error)
 	FindByCustomerID(customerID uint64) ([]model.Order, error)
+	GetActualOrders()([]model.Order, error)
 }
 
 
