@@ -11,6 +11,7 @@ import (
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -60,7 +61,7 @@ func (s *server) configureRouter(config *Config) {
 	profile.HandleFunc("/authorized", s.handleCheckAuthorized).Methods(http.MethodGet)
 	profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleAddSpecialize).Methods(http.MethodPost)
 	profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleDelSpecialize).Methods(http.MethodDelete)
-
+	profile.HandleFunc("/avatar", s.handlePutAvatar(config.ContentDir)).Methods(http.MethodPut)
 	order := router.PathPrefix("/order").Subrouter()
 	order.Use(s.authenticateUser)
 	order.HandleFunc("/", s.handleCreateOrder).Methods(http.MethodPost)
@@ -275,8 +276,50 @@ func (s *server) handleDelSpecialize(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, http.StatusCreated, emptyInterface)
 }
 
-func (s *server) handleAvatar(w http.ResponseWriter, r *http.Request) {
+func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc {
+	type Request struct{
+		Img string `json:"img"`
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		currentDir := contentDir
+		u := &model.User{
+			ID: r.Context().Value(ctxKeySession).(*model.Session).UserId,
+		}
 
+		req := &Request{}
+		err := json.NewDecoder(r.Body).Decode(req)
+		if err != nil {
+			s.error(w, http.StatusBadRequest, errors.New("Bad body"))
+			return
+		}
+		pathLen := len(currentDir)
+		if currentDir[pathLen-1] == '/' {
+			currentDir = currentDir + strconv.FormatUint(u.ID, 10) + ".base64"
+		} else {
+			currentDir = currentDir + "/" + strconv.FormatUint(u.ID, 10) + ".base64"
+		}
+		file, err := os.Create(currentDir)
+		if err != nil {
+			s.error(w, http.StatusInternalServerError, err)
+			return
+		}
+		if _, err = file.Write([]byte(req.Img)); err != nil {
+			s.error(w, http.StatusInternalServerError, err)
+			return
+		}
+		if err = file.Close(); err != nil {
+			s.error(w, http.StatusInternalServerError, err)
+			return
+		}
+		u.Img = currentDir
+		if u, err = s.store.User().ChangeUser(*u); err != nil {
+			s.error(w, http.StatusInternalServerError, err)
+			return
+		}
+		u.Sanitize()
+		s.respond(w, http.StatusOK, u)
+		defer r.Body.Close()
+	}
 }
 
 func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
