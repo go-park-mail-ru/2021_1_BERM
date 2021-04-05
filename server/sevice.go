@@ -68,6 +68,10 @@ func (s *server) configureRouter(config *Config) {
 	order.HandleFunc("/", s.handleGetActualOrder).Methods(http.MethodGet)
 	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodPut)
 	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodGet)
+	vacancy := router.PathPrefix("/vacancy").Subrouter()
+	vacancy.Use(s.authenticateUser)
+	vacancy.HandleFunc("/", s.handleCreateVacancy).Methods(http.MethodPost)
+	vacancy.HandleFunc("/{id:[0-9]+}", s.handleGetVacancy).Methods(http.MethodGet)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   config.Origin,
@@ -373,6 +377,37 @@ func (s *server) handleGetActualOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.respond(w, http.StatusOK, o)
+}
+
+func (s *server)handleCreateVacancy(w http.ResponseWriter, r *http.Request){
+	v := &model.Vacancy{}
+	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
+		return
+	}
+	var err error
+	if v.Id, err = s.store.Vacancy().Create(*v); err != nil{
+		s.error(w, http.StatusInternalServerError, errors.New("ops"))
+	}
+	s.respond(w, http.StatusCreated, v)
+}
+
+func (s *server)handleGetVacancy(w http.ResponseWriter, r *http.Request){
+	params := mux.Vars(r)
+	id, err:= strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id"))
+		return
+	}
+	v := &model.Vacancy{
+		Id: id,
+	}
+	v, err = s.store.Vacancy().FindByID(v.Id)
+	if err != nil {
+		s.error(w, http.StatusNotFound, errors.New("Vacancy not found"))
+		return
+	}
+	s.respond(w, http.StatusOK, v)
 }
 
 func (s *server) error(w http.ResponseWriter, code int, err error) {
