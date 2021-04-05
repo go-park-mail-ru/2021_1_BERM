@@ -52,7 +52,7 @@ func (s *server) configureRouter(config *Config) {
 
 	logout := router.PathPrefix("/logout").Subrouter()
 	logout.Use(s.authenticateUser)
-	logout.HandleFunc("/logout", s.handleLogout).Methods(http.MethodDelete)
+	logout.HandleFunc("/", s.handleLogout).Methods(http.MethodDelete)
 
 	profile := router.PathPrefix("/profile").Subrouter()
 	profile.Use(s.authenticateUser)
