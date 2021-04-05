@@ -6,10 +6,11 @@ import (
 )
 
 type Store struct {
-	db              *sqlx.DB
-	dsn             string
-	userRepository  *UserRepository
-	orderRepository *OrderRepository
+	db                *sqlx.DB
+	dsn               string
+	userRepository    *UserRepository
+	orderRepository   *OrderRepository
+	vacancyRepository *VacancyRepository
 }
 
 func New(dsn string) *Store {
@@ -52,4 +53,15 @@ func (s *Store) Order() store.OrderRepository {
 
 	return s.orderRepository
 }
+
+func (s *Store) Vacancy() store.VacancyRepository {
+	if s.vacancyRepository == nil {
+		s.vacancyRepository = &VacancyRepository{
+			store: s,
+		}
+	}
+
+	return s.vacancyRepository
+}
+
 

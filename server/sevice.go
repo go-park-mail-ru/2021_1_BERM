@@ -11,6 +11,7 @@ import (
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -51,7 +52,7 @@ func (s *server) configureRouter(config *Config) {
 
 	logout := router.PathPrefix("/logout").Subrouter()
 	logout.Use(s.authenticateUser)
-	logout.HandleFunc("/logout", s.handleLogout).Methods(http.MethodDelete)
+	logout.HandleFunc("/", s.handleLogout).Methods(http.MethodDelete)
 
 	profile := router.PathPrefix("/profile").Subrouter()
 	profile.Use(s.authenticateUser)
@@ -60,12 +61,18 @@ func (s *server) configureRouter(config *Config) {
 	profile.HandleFunc("/authorized", s.handleCheckAuthorized).Methods(http.MethodGet)
 	profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleAddSpecialize).Methods(http.MethodPost)
 	profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleDelSpecialize).Methods(http.MethodDelete)
-
+	profile.HandleFunc("/avatar", s.handlePutAvatar(config.ContentDir)).Methods(http.MethodPut)
 	order := router.PathPrefix("/order").Subrouter()
 	order.Use(s.authenticateUser)
 	order.HandleFunc("/", s.handleCreateOrder).Methods(http.MethodPost)
+	order.HandleFunc("/", s.handleGetActualOrder).Methods(http.MethodGet)
 	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodPut)
 	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodGet)
+	vacancy := router.PathPrefix("/vacancy").Subrouter()
+	vacancy.Use(s.authenticateUser)
+	vacancy.HandleFunc("/", s.handleCreateVacancy).Methods(http.MethodPost)
+	vacancy.HandleFunc("/{id:[0-9]+}", s.handleGetVacancy).Methods(http.MethodGet)
+
 	c := cors.New(cors.Options{
 		AllowedOrigins:   config.Origin,
 		AllowedMethods:   []string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "PATCH"},
@@ -273,8 +280,50 @@ func (s *server) handleDelSpecialize(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, http.StatusCreated, emptyInterface)
 }
 
-func (s *server) handleAvatar(w http.ResponseWriter, r *http.Request) {
+func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc {
+	type Request struct{
+		Img string `json:"img"`
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		currentDir := contentDir
+		u := &model.User{
+			ID: r.Context().Value(ctxKeySession).(*model.Session).UserId,
+		}
 
+		req := &Request{}
+		err := json.NewDecoder(r.Body).Decode(req)
+		if err != nil {
+			s.error(w, http.StatusBadRequest, errors.New("Bad body"))
+			return
+		}
+		pathLen := len(currentDir)
+		if currentDir[pathLen-1] == '/' {
+			currentDir = currentDir + strconv.FormatUint(u.ID, 10) + ".base64"
+		} else {
+			currentDir = currentDir + "/" + strconv.FormatUint(u.ID, 10) + ".base64"
+		}
+		file, err := os.Create(currentDir)
+		if err != nil {
+			s.error(w, http.StatusInternalServerError, err)
+			return
+		}
+		if _, err = file.Write([]byte(req.Img)); err != nil {
+			s.error(w, http.StatusInternalServerError, err)
+			return
+		}
+		if err = file.Close(); err != nil {
+			s.error(w, http.StatusInternalServerError, err)
+			return
+		}
+		u.Img = currentDir
+		if u, err = s.store.User().ChangeUser(*u); err != nil {
+			s.error(w, http.StatusInternalServerError, err)
+			return
+		}
+		u.Sanitize()
+		s.respond(w, http.StatusOK, u)
+		defer r.Body.Close()
+	}
 }
 
 func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
@@ -321,6 +370,46 @@ func (s *server) handleGetOrder(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, http.StatusOK, o)
 }
 
+func (s *server) handleGetActualOrder(w http.ResponseWriter, r *http.Request) {
+	o, err := s.store.Order().GetActualOrders()
+	if err != nil {
+		s.error(w, http.StatusNotFound, errors.New("Orders not found"))
+		return
+	}
+	s.respond(w, http.StatusOK, o)
+}
+
+func (s *server)handleCreateVacancy(w http.ResponseWriter, r *http.Request){
+	v := &model.Vacancy{}
+	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
+		return
+	}
+	var err error
+	if v.Id, err = s.store.Vacancy().Create(*v); err != nil{
+		s.error(w, http.StatusInternalServerError, errors.New("ops"))
+	}
+	s.respond(w, http.StatusCreated, v)
+}
+
+func (s *server)handleGetVacancy(w http.ResponseWriter, r *http.Request){
+	params := mux.Vars(r)
+	id, err:= strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id"))
+		return
+	}
+	v := &model.Vacancy{
+		Id: id,
+	}
+	v, err = s.store.Vacancy().FindByID(v.Id)
+	if err != nil {
+		s.error(w, http.StatusNotFound, errors.New("Vacancy not found"))
+		return
+	}
+	s.respond(w, http.StatusOK, v)
+}
+
 func (s *server) error(w http.ResponseWriter, code int, err error) {
 	s.logger.Error(err)
 	s.respond(w, code, map[string]string{"error": err.Error()})
@@ -361,3 +450,5 @@ func (s *server) createCookies(u *model.User) ([]http.Cookie, error) {
 
 	return cookies, nil
 }
+
+

@@ -63,3 +63,10 @@ func (o *OrderRepository) FindByCustomerID(customerID uint64) ([]model.Order, er
 	return orders, nil
 }
 
+func (o *OrderRepository)GetActualOrders()([]model.Order, error){
+	var orders []model.Order
+	if err := o.store.db.Select(&orders, "SELECT * FROM orders"); err != nil {
+		return nil, err
+	}
+	return orders, nil
+}

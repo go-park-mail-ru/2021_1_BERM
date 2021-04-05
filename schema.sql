@@ -45,6 +45,16 @@ CREATE TABLE orders
     description VARCHAR            NOT NULL
 );
 
+CREATE TABLE vacancy
+(
+    id             SERIAL       PRIMARY KEY NOT NULL,
+    category       VARCHAR      NOT NULL,
+    vacancy_name   VARCHAR      NOT NULL,
+    description    VARCHAR      NOT NULL,
+    salary         INTEGER      NOT NULL
+)
+
+
 
 CREATE TABLE user_reviews
 (
@@ -58,7 +68,6 @@ CREATE TABLE user_reviews
     FOREIGN KEY (order_id)
         REFERENCES orders (id)
 );
-
 
 
 -- SELECT users.*, array_agg(specialize_name) AS specializes from users
