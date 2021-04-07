@@ -45,7 +45,7 @@ func (s *Store) User() store.UserRepository {
 }
 
 func (s *Store) Order() store.OrderRepository {
-	if s.userRepository == nil {
+	if s.orderRepository == nil {
 		s.orderRepository = &OrderRepository{
 			store: s,
 		}

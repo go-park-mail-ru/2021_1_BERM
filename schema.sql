@@ -4,6 +4,7 @@ drop table if exists user_specializes cascade;
 drop table if exists orders cascade;
 drop table if exists order_specializes cascade;
 drop table if exists user_reviews cascade;
+drop table if exists vacancy cascade;
 CREATE TABLE users
 (
     id           SERIAL PRIMARY KEY NOT NULL,
@@ -37,7 +38,7 @@ CREATE TABLE orders
 (
     id          SERIAL PRIMARY KEY NOT NULL,
     customer_id INTEGER            NOT NULL,
-    executor_id INTEGER,
+    executor_id INTEGER DEFAULT 0,
     order_name  VARCHAR            NOT NULL,
     category    VARCHAR            NOT NULL,
     budget      INTEGER            NOT NULL,
@@ -52,7 +53,7 @@ CREATE TABLE vacancy
     vacancy_name   VARCHAR      NOT NULL,
     description    VARCHAR      NOT NULL,
     salary         INTEGER      NOT NULL
-)
+);
 
 
 

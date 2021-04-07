@@ -32,6 +32,7 @@ func (o *OrderRepository) Create(order model.Order) (uint64, error) {
 		order.OrderName,
 		order.Category,
 		order.Budget,
+		order.Deadline,
 		order.Description).Scan(&orderID)
 	if err != nil {
 		return 0, err

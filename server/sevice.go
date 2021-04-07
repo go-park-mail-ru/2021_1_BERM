@@ -4,6 +4,7 @@ import (
 	"FL_2/cache"
 	"FL_2/model"
 	"FL_2/store"
+	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
@@ -52,7 +53,7 @@ func (s *server) configureRouter(config *Config) {
 
 	logout := router.PathPrefix("/logout").Subrouter()
 	logout.Use(s.authenticateUser)
-	logout.HandleFunc("/", s.handleLogout).Methods(http.MethodDelete)
+	logout.HandleFunc("", s.handleLogout).Methods(http.MethodDelete)
 
 	profile := router.PathPrefix("/profile").Subrouter()
 	profile.Use(s.authenticateUser)
@@ -64,13 +65,13 @@ func (s *server) configureRouter(config *Config) {
 	profile.HandleFunc("/avatar", s.handlePutAvatar(config.ContentDir)).Methods(http.MethodPut)
 	order := router.PathPrefix("/order").Subrouter()
 	order.Use(s.authenticateUser)
-	order.HandleFunc("/", s.handleCreateOrder).Methods(http.MethodPost)
-	order.HandleFunc("/", s.handleGetActualOrder).Methods(http.MethodGet)
+	order.HandleFunc("", s.handleCreateOrder).Methods(http.MethodPost)
+	order.HandleFunc("", s.handleGetActualOrder).Methods(http.MethodGet)
 	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodPut)
 	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodGet)
 	vacancy := router.PathPrefix("/vacancy").Subrouter()
 	vacancy.Use(s.authenticateUser)
-	vacancy.HandleFunc("/", s.handleCreateVacancy).Methods(http.MethodPost)
+	vacancy.HandleFunc("", s.handleCreateVacancy).Methods(http.MethodPost)
 	vacancy.HandleFunc("/{id:[0-9]+}", s.handleGetVacancy).Methods(http.MethodGet)
 
 	c := cors.New(cors.Options{
@@ -233,6 +234,14 @@ func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u.Sanitize()
+
+	fileRead, err := os.Open(u.Img)
+	u.Img = ""
+	fileScanner := bufio.NewScanner(fileRead)
+	for fileScanner.Scan() {
+		u.Img += fileScanner.Text()
+	}
+
 	s.respond(w, http.StatusOK, u)
 }
 
@@ -321,6 +330,15 @@ func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc {
 			return
 		}
 		u.Sanitize()
+
+		fileRead, err := os.Open(u.Img)
+		u.Img = ""
+		fileScanner := bufio.NewScanner(fileRead)
+		for fileScanner.Scan() {
+			u.Img += fileScanner.Text()
+		}
+
+		defer fileRead.Close()
 		s.respond(w, http.StatusOK, u)
 		defer r.Body.Close()
 	}
