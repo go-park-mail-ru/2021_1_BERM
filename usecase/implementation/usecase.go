@@ -11,6 +11,7 @@ type UseCase struct {
 	mediaUseCase  	*MediaUseCase
 	sessionUseCase  *SessionUseCase
 	vacancyUseCase  *VacancyUseCase
+	responseUseCase *ResponseUseCase
 }
 
 func New(store store.Store, cache store.Cash, mediaStore store.MediaStore) *UseCase{
@@ -32,6 +33,10 @@ func New(store store.Store, cache store.Cash, mediaStore store.MediaStore) *UseC
 		},
   		vacancyUseCase: &VacancyUseCase{
   			store: store,
+		},
+		responseUseCase: &ResponseUseCase{
+  			store: store,
+  			mediaStore: mediaStore,
 		},
   	}
 

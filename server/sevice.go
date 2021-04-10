@@ -57,6 +57,8 @@ func (s *server) configureRouter(config *Config) {
 	profile.HandleFunc("/authorized", s.handleCheckAuthorized).Methods(http.MethodGet)
 	profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleAddSpecialize).Methods(http.MethodPost)
 	profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleDelSpecialize).Methods(http.MethodDelete)
+	profile.HandleFunc("/{id:[0-9]+}/response", s.handleCreateResponse).Methods(http.MethodPost)
+	profile.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllResponses).Methods(http.MethodGet)
 	profile.HandleFunc("/avatar", s.handlePutAvatar).Methods(http.MethodPut)
 	order := router.PathPrefix("/order").Subrouter()
 	order.Use(s.authenticateUser)
@@ -76,6 +78,35 @@ func (s *server) configureRouter(config *Config) {
 		AllowCredentials: true,
 	})
 	s.router = c.Handler(router)
+}
+
+func (s *server) handleCreateResponse(w http.ResponseWriter, r *http.Request){
+	response := &model.Response{}
+	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
+		return
+	}
+	response, err := s.useCase.Response().Create(*response)
+	if err != nil{
+		s.error(w, http.StatusBadRequest, errors.New("Bad body"))
+		return
+	}
+	s.respond(w, http.StatusCreated, response)
+}
+
+func (s *server) handleGetAllResponses(w http.ResponseWriter, r *http.Request){
+	params := mux.Vars(r)
+	id, err:= strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
+		return
+	}
+	responses, err := s.useCase.Response().FindByID(id)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
+		return
+	}
+	s.respond(w, http.StatusCreated, responses)
 }
 
 func (s *server) handleProfile(w http.ResponseWriter, r *http.Request) {

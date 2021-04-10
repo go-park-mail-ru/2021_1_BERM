@@ -34,7 +34,7 @@ func (i *ImageRepository)SetImage(imageInfo interface{}, image []byte) (string, 
 		return "", err
 	}
 	_, err = file.Write(image)
-	return  imagePath, err
+	return  imageInfo.(string), err
 
 }
 

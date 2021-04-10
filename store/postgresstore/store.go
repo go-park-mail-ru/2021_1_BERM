@@ -11,6 +11,7 @@ type Store struct {
 	userRepository    *UserRepository
 	orderRepository   *OrderRepository
 	vacancyRepository *VacancyRepository
+	responseRepository *ResponseRepository
 }
 
 func New(dsn string) *Store {
@@ -62,6 +63,16 @@ func (s *Store) Vacancy() store.VacancyRepository {
 	}
 
 	return s.vacancyRepository
+}
+
+func (s *Store) Response() store.ResponseRepository {
+	if s.responseRepository == nil {
+		s.responseRepository = &ResponseRepository{
+			store: s,
+		}
+	}
+
+	return s.responseRepository
 }
 
 
