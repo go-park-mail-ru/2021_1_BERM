@@ -83,13 +83,12 @@ CREATE TABLE responses
     FOREIGN KEY (user_id)
         REFERENCES users (id),
     FOREIGN KEY (order_id)
-        REFERENCES orders (id),
-    FOREIGN KEY (user_login)
-        REFERENCES users (login),
-    FOREIGN KEY (user_img)
-        REFERENCES users (img)
+        REFERENCES orders (id)
 );
 
+SELECT array_agg(specialize_name) AS specializes FROM specializes
+INNER JOIN user_specializes us on specializes.id = us.specialize_id
+WHERE user_id = 1
 
 -- SELECT users.*, array_agg(specialize_name) AS specializes from users
 -- INNER JOIN user_specializes ON users.id = user_specializes.user_id

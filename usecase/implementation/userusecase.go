@@ -24,7 +24,7 @@ type UserUseCase struct {
 	mediaStore store.MediaStore
 }
 
-func(u *UserUseCase)Create(user *model.User) error{
+func(u *UserUseCase)Create(user *model.User) error {
 
 	if err := u.validate(user); err != nil {
 		return err
@@ -41,7 +41,7 @@ func(u *UserUseCase)Create(user *model.User) error{
 
 func(u *UserUseCase) validate(user *model.User) error {
 	return validation.ValidateStruct(
-		u,
+		user,
 		validation.Field(&user.Email, validation.Required, is.Email),
 		validation.Field(&user.Password, validation.Required, validation.Length(MinPswdLenght, MaxPswdLength)),
 		validation.Field(&user.Login, validation.Required),

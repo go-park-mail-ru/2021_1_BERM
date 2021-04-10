@@ -11,6 +11,9 @@ const (
 	imageExtend = ".base64"
 )
 func (i *ImageRepository)GetImage(imageInfo interface{}) ([]byte, error){
+	if imageName := imageInfo.(string); imageName == "" {
+		return nil, nil
+	}
 	imagePath := i.formImagePath(imageInfo.(string))
 	file, err := os.Open(imagePath)
 	defer file.Close()

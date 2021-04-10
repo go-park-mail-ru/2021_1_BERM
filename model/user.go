@@ -12,7 +12,7 @@ type User struct {
 	NameSurname string   `json:"name_surname,omitempty" db:"name_surname"`
 	Executor    bool     `json:"executor,omitempty" db:"executor"`
 	About       string   `json:"about,omitempty" db:"about"`
-	Specializes pq.StringArray `json:"specializes,omitempty" db:"specializes"`
+	Specializes pq.StringArray `json:"specializes,omitempty" db:"specializes,omitempty"`
 	Img         string   `json:"img,omitempty" db:"img"`
 	Rating		int		 `json:"rating,omitempty" db:"rating"`
 }

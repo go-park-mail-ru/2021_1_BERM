@@ -33,7 +33,9 @@ func (s *SessionUseCase)Create(u *model.User) (*model.Session, error){
 }
 
 func (s *SessionUseCase)FindBySessionID(sessionID string)  (*model.Session, error) {
-	session := &model.Session{}
+	session := &model.Session{
+		SessionId: sessionID,
+	}
 	err := s.cache.Session().Find(session)
 	if err != nil{
 		return nil, err
