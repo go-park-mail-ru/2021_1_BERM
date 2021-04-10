@@ -23,6 +23,7 @@ func (s *MediaUseCase)SetImage(imageInfo interface{}, image []byte) (*model.User
 	}
 	u.Img = imageId
 	u, err = s.store.User().ChangeUser(*u)
+	u.Img = string(image)
 	if err != nil{
 		return nil, err
 	}

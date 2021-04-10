@@ -33,6 +33,9 @@ func(u *UserUseCase)Create(user *model.User) error {
 		return err
 	}
 
+	if user.Specializes != nil {
+		user.Executor = true
+	}
 	id, err := u.store.User().Create(*user)
 	user.ID = id
 	return err

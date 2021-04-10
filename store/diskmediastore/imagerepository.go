@@ -30,8 +30,8 @@ func (i *ImageRepository)GetImage(imageInfo interface{}) ([]byte, error){
 }
 
 func (i *ImageRepository)SetImage(imageInfo interface{}, image []byte) (string, error){
-	imagePath := i.formImagePath(imageInfo.(string) + imageExtend)
-	file, err := os.Open(imagePath)
+	imagePath := i.formImagePath(imageInfo.(string))
+	file, err := os.Create(imagePath)
 	defer file.Close()
 	if err != nil {
 		return "", err
@@ -44,9 +44,9 @@ func (i *ImageRepository)SetImage(imageInfo interface{}, image []byte) (string, 
 func (i ImageRepository)formImagePath(imageName string) string{
 	var imagePath string
 	if imageName[0:1] != "/"{
-		imagePath = i.workDir + "/" + imageName
+		imagePath = i.workDir + "/" + imageName + imageExtend
 	} else{
-		imagePath = i.workDir + imageName
+		imagePath = i.workDir + imageName + imageExtend
 	}
 	return imagePath
 }

@@ -129,7 +129,7 @@ func (u *UserRepository) FindByID(id uint64) (*model.User, error) {
 	if user.Executor {
 		rows, err := u.store.db.Queryx("SELECT array_agg(specialize_name) AS specializes FROM specializes " +
 										"INNER JOIN user_specializes us on specializes.id = us.specialize_id " +
-										"WHERE user_id = &1", id)
+										"WHERE user_id = $1", id)
 		if err != nil {
 			return nil, err
 		}
