@@ -62,3 +62,7 @@ func (c *UseCase )Session() usecase.SessionUseCase{
 func (c *UseCase )Vacancy() usecase.VacancyUseCase{
 	return c.vacancyUseCase
 }
+
+func (c *UseCase) Response() usecase.ResponseUseCase {
+	return c.responseUseCase
+}
