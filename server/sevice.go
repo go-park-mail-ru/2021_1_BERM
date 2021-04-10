@@ -1,10 +1,8 @@
 package server
 
 import (
-	"FL_2/cache"
 	"FL_2/model"
-	"FL_2/store"
-	"bufio"
+	"FL_2/usecase"
 	"context"
 	"encoding/json"
 	"errors"
@@ -12,7 +10,6 @@ import (
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 )
@@ -24,18 +21,16 @@ const (
 )
 
 type server struct {
-	router http.Handler
-	logger *logrus.Logger
-	store  store.Store
-	cache  cache.Cash
+	router 	http.Handler
+	logger 	*logrus.Logger
+	useCase usecase.UseCase
 }
 
-func newServer(store store.Store, cache cache.Cash, config *Config) *server {
+func newServer(useCase usecase.UseCase, config *Config) *server {
 	s := &server{
 		router: mux.NewRouter(),
 		logger: logrus.New(),
-		store:  store,
-		cache:  cache,
+		useCase: useCase,
 	}
 	s.configureRouter(config)
 
@@ -62,7 +57,7 @@ func (s *server) configureRouter(config *Config) {
 	profile.HandleFunc("/authorized", s.handleCheckAuthorized).Methods(http.MethodGet)
 	profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleAddSpecialize).Methods(http.MethodPost)
 	profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleDelSpecialize).Methods(http.MethodDelete)
-	profile.HandleFunc("/avatar", s.handlePutAvatar(config.ContentDir)).Methods(http.MethodPut)
+	profile.HandleFunc("/avatar", s.handlePutAvatar).Methods(http.MethodPut)
 	order := router.PathPrefix("/order").Subrouter()
 	order.Use(s.authenticateUser)
 	order.HandleFunc("", s.handleCreateOrder).Methods(http.MethodPost)
@@ -88,33 +83,16 @@ func (s *server) handleProfile(w http.ResponseWriter, r *http.Request) {
 	u := &model.User{}
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
-
 		return
 	}
-	if err := u.Validate(); err != nil {
-		s.error(w, http.StatusBadRequest, errors.New("Invalid data")) //Invalid data
-
-		return
-	}
-	if err := u.BeforeCreate(); err != nil {
-		s.error(w, http.StatusInternalServerError, errors.New("Internal server error")) //Ошибка в закодировании пароля
-
-		return
-	}
-
-	var err error
-
-	u.ID, err = s.store.User().Create(*u)
+	err := s.useCase.User().Create(u)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Email duplicate")) //Такой имейл уже существует
-
 		return
 	}
-	u.Sanitize()
 	cookies, err := s.createCookies(u)
 	if err != nil {
 		s.error(w, http.StatusInternalServerError, errors.New("Internal server error")) //ошибка создания сессии
-
 		return
 	}
 	for _, cookie := range cookies {
@@ -127,27 +105,16 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	u := &model.User{}
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
-
 		return
 	}
-	pass := u.Password
-	var err error
-	u, err = s.store.User().FindByEmail(u.Email)
+	u, err := s.useCase.User().UserVerification(u.Email, u.Password)
 	if err != nil {
 		s.error(w, http.StatusUnauthorized, errors.New("Unauthorized")) //Unauthorized
-
 		return
 	}
-	if !u.ComparePassword(pass) {
-		s.error(w, http.StatusUnauthorized, errors.New("Bad password")) //bad paswd
-
-		return
-	}
-	u.Sanitize()
 	cookies, err := s.createCookies(u)
 	if err != nil {
 		s.error(w, http.StatusInternalServerError, errors.New("Internal server error")) // ошибка создания сессии
-
 		return
 	}
 	for _, cookie := range cookies {
@@ -173,14 +140,12 @@ func (s *server) authenticateUser(next http.Handler) http.Handler {
 			return
 		}
 
-		session := &model.Session{
-			SessionId: sessionID.Value,
-		}
-
-		if err = s.cache.Session().Find(session); err != nil {
+		session, err := s.useCase.Session().FindBySessionID(sessionID.Value)
+		if  err != nil {
 			s.error(w, http.StatusUnauthorized, errors.New("Unauthorized")) //Unauthorized
 			return
 		}
+
 
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeySession, session)))
 	})
@@ -199,24 +164,16 @@ func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userCookieID := r.Context().Value(ctxKeySession).(*model.Session).UserId
-
 	if userCookieID != id {
 		s.error(w, http.StatusBadRequest, errors.New("No right to modify")) //Bad json
 		return
 	}
 	u.ID = id
-	if err := u.BeforeCreate(); err != nil {
-		s.error(w, http.StatusInternalServerError, errors.New("Internal server error"))
-		return
-	}
-
-	u, err = s.store.User().ChangeUser(*u)
+	u, err = s.useCase.User().ChangeUser(*u)
 	if err != nil {
-		// некоректные данные о пользователе
 		s.error(w, http.StatusBadRequest, errors.New("Incorrect user data"))
 		return
 	}
-	u.Sanitize()
 	s.respond(w, http.StatusOK, u)
 }
 
@@ -227,21 +184,15 @@ func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request) {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id"))
 		return
 	}
-	u := &model.User{}
-	u, err = s.store.User().FindByID(id)
+	u, err := s.useCase.User().FindByID(id)
 	if err != nil {
-		s.error(w, http.StatusNotFound, errors.New("user not found"))
+		if u == nil {
+			s.error(w, http.StatusNotFound, errors.New("user not found"))
+		} else{
+			s.error(w, http.StatusInternalServerError, errors.New("InternalServerError"))
+		}
 		return
 	}
-	u.Sanitize()
-
-	fileRead, err := os.Open(u.Img)
-	u.Img = ""
-	fileScanner := bufio.NewScanner(fileRead)
-	for fileScanner.Scan() {
-		u.Img += fileScanner.Text()
-	}
-
 	s.respond(w, http.StatusOK, u)
 }
 
@@ -254,19 +205,17 @@ func (s *server) handleCheckAuthorized(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleAddSpecialize(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(ctxKeySession).(*model.Session).UserId
+	id := r.Context().Value(ctxKeySession).(*model.Session).UserId
 	specialize := &model.Specialize{}
-
 	if err := json.NewDecoder(r.Body).Decode(specialize); err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad json"))
 		return
 	}
 
-	if err := s.store.User().AddSpecialize(specialize.Name, userID); err != nil {
+	if err := s.useCase.User().AddSpecialize(specialize.Name, id); err != nil {
 		s.error(w, http.StatusInternalServerError, errors.New("Internal server error"))
 		return
 	}
-
 	var emptyInterface interface{}
 	s.respond(w, http.StatusCreated, emptyInterface)
 }
@@ -274,74 +223,35 @@ func (s *server) handleAddSpecialize(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleDelSpecialize(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(ctxKeySession).(*model.Session).UserId
 	specialize := &model.Specialize{}
-
 	if err := json.NewDecoder(r.Body).Decode(specialize); err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad json"))
 		return
 	}
-
-	if err := s.store.User().DelSpecialize(specialize.Name, userID); err != nil {
+	if err := s.useCase.User().DelSpecialize(specialize.Name, userID); err != nil {
 		s.error(w, http.StatusInternalServerError, errors.New("Internal server error"))
 		return
 	}
-
 	var emptyInterface interface{}
 	s.respond(w, http.StatusCreated, emptyInterface)
 }
 
-func (s *server) handlePutAvatar(contentDir string) http.HandlerFunc {
-	type Request struct{
-		Img string `json:"img"`
+func (s *server) handlePutAvatar(w http.ResponseWriter, r *http.Request){
+	defer r.Body.Close()
+	u := &model.User{}
+	err := json.NewDecoder(r.Body).Decode(u)
+	u.ID = r.Context().Value(ctxKeySession).(*model.Session).UserId
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad body"))
+		return
 	}
-	return func(w http.ResponseWriter, r *http.Request) {
-		currentDir := contentDir
-		u := &model.User{
-			ID: r.Context().Value(ctxKeySession).(*model.Session).UserId,
-		}
 
-		req := &Request{}
-		err := json.NewDecoder(r.Body).Decode(req)
-		if err != nil {
-			s.error(w, http.StatusBadRequest, errors.New("Bad body"))
-			return
-		}
-		pathLen := len(currentDir)
-		if currentDir[pathLen-1] == '/' {
-			currentDir = currentDir + strconv.FormatUint(u.ID, 10) + ".base64"
-		} else {
-			currentDir = currentDir + "/" + strconv.FormatUint(u.ID, 10) + ".base64"
-		}
-		file, err := os.Create(currentDir)
-		if err != nil {
-			s.error(w, http.StatusInternalServerError, err)
-			return
-		}
-		if _, err = file.Write([]byte(req.Img)); err != nil {
-			s.error(w, http.StatusInternalServerError, err)
-			return
-		}
-		if err = file.Close(); err != nil {
-			s.error(w, http.StatusInternalServerError, err)
-			return
-		}
-		u.Img = currentDir
-		if u, err = s.store.User().ChangeUser(*u); err != nil {
-			s.error(w, http.StatusInternalServerError, err)
-			return
-		}
-		u.Sanitize()
-
-		fileRead, err := os.Open(u.Img)
-		u.Img = ""
-		fileScanner := bufio.NewScanner(fileRead)
-		for fileScanner.Scan() {
-			u.Img += fileScanner.Text()
-		}
-
-		defer fileRead.Close()
-		s.respond(w, http.StatusOK, u)
-		defer r.Body.Close()
+	u, err = s.useCase.Media().SetImage(u, []byte(u.Img))
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad body"))
+		return
 	}
+	s.respond(w, http.StatusOK, u)
+
 }
 
 func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
@@ -351,18 +261,13 @@ func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
 		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
 		return
 	}
-	if err := o.Validate(); err != nil {
-		s.error(w, http.StatusBadRequest, errors.New("Invalid data")) //Invalid data
-		return
-	}
 	o.CustomerID = id
 	var err error
-	o.ID, err = s.store.Order().Create(*o)
+	o.ID, err = s.useCase.Order().Create(*o)
 	if err != nil {
 		s.error(w, http.StatusInternalServerError, errors.New("Internal server error")) //500
 		return
 	}
-
 	s.respond(w, http.StatusCreated, o)
 }
 
@@ -377,10 +282,7 @@ func (s *server) handleGetOrder(w http.ResponseWriter, r *http.Request) {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id"))
 		return
 	}
-	o := &model.Order{
-		ID: id,
-	}
-	o, err = s.store.Order().FindByID(o.ID)
+	o, err := s.useCase.Order().FindByID(id)
 	if err != nil {
 		s.error(w, http.StatusNotFound, errors.New("Order not found"))
 		return
@@ -389,7 +291,7 @@ func (s *server) handleGetOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleGetActualOrder(w http.ResponseWriter, r *http.Request) {
-	o, err := s.store.Order().GetActualOrders()
+	o, err := s.useCase.Order().GetActualOrders()
 	if err != nil {
 		s.error(w, http.StatusNotFound, errors.New("Orders not found"))
 		return
@@ -404,7 +306,7 @@ func (s *server)handleCreateVacancy(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	var err error
-	if v.Id, err = s.store.Vacancy().Create(*v); err != nil{
+	if v, err = s.useCase.Vacancy().Create(*v); err != nil{
 		s.error(w, http.StatusInternalServerError, errors.New("ops"))
 	}
 	s.respond(w, http.StatusCreated, v)
@@ -417,10 +319,7 @@ func (s *server)handleGetVacancy(w http.ResponseWriter, r *http.Request){
 		s.error(w, http.StatusBadRequest, errors.New("Bad id"))
 		return
 	}
-	v := &model.Vacancy{
-		Id: id,
-	}
-	v, err = s.store.Vacancy().FindByID(v.Id)
+	v, err := s.useCase.Vacancy().FindByID(id)
 	if err != nil {
 		s.error(w, http.StatusNotFound, errors.New("Vacancy not found"))
 		return
@@ -449,11 +348,8 @@ func (s *server) delCookies(cookies []*http.Cookie) {
 
 func (s *server) createCookies(u *model.User) ([]http.Cookie, error) {
 
-	session := &model.Session{}
-	session.UserId = u.ID
-	session.SessionId = u.Email + time.Now().String()
-	session.BeforeChange()
-	if err := s.cache.Session().Create(session); err != nil {
+	session, err := s.useCase.Session().Create(u)
+	if  err != nil {
 		return nil, err
 	}
 
@@ -468,5 +364,7 @@ func (s *server) createCookies(u *model.User) ([]http.Cookie, error) {
 
 	return cookies, nil
 }
+
+
 
 

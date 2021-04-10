@@ -1,4 +1,4 @@
-require'strict'.on()
+    require'strict'.on()
 
 box.cfg{
     listen = 3000

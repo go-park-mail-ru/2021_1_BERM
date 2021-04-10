@@ -1,7 +1,7 @@
 package tarantoolcache
 
 import (
-	"FL_2/cache"
+	"FL_2/store"
 	"github.com/tarantool/go-tarantool"
 )
 
@@ -21,7 +21,7 @@ func New(dbUrl string) (*Cache, error) {
 }
 
 
-func (s *Cache) Session() cache.SessionRepository {
+func (s *Cache) Session() store.SessionRepository {
 	if s.SessionRepository != nil {
 		return s.SessionRepository
 	}
