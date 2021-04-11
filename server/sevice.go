@@ -114,12 +114,8 @@ func (s *server) handleGetAllResponses(w http.ResponseWriter, r *http.Request) {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
 		return
 	}
-	if responses == nil {
-		var emptyInterface model.Response
-		s.respond(w, http.StatusOK, emptyInterface)
-	} else {
-		s.respond(w, http.StatusOK, responses)
-	}
+
+	s.respond(w, http.StatusOK, responses)
 }
 
 func (s *server) handleProfile(w http.ResponseWriter, r *http.Request) {

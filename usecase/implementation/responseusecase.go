@@ -42,5 +42,8 @@ func (r *ResponseUseCase) FindByID(id uint64) ([]model.Response, error) {
 		}
 		response.UserImg = string(img)
 	}
+	if responses == nil {
+		return []model.Response{}, nil
+	}
 	return responses, nil
 }
