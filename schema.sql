@@ -77,21 +77,22 @@ CREATE TABLE user_reviews
 
 CREATE TABLE responses
 (
-    id            SERIAL PRIMARY KEY NOT NULL,
-    order_id      INTEGER            NOT NULL,
-    user_id       INTEGER            NOT NULL,
-    rate          INTEGER            NOT NULL,
+    id         SERIAL PRIMARY KEY NOT NULL,
+    order_id   INTEGER            NOT NULL,
+    user_id    INTEGER            NOT NULL,
+    rate       INTEGER            NOT NULL,
     user_login VARCHAR            NOT NULL,
-    user_img      VARCHAR DEFAULT '',
+    user_img   VARCHAR DEFAULT '',
+    time       INTEGER            NOT NULL,
     FOREIGN KEY (user_id)
         REFERENCES users (id),
     FOREIGN KEY (order_id)
         REFERENCES orders (id)
 );
 
-SELECT array_agg(specialize_name) AS specializes FROM specializes
-INNER JOIN user_specializes us on specializes.id = us.specialize_id
-WHERE user_id = 1
+-- SELECT array_agg(specialize_name) AS specializes FROM specializes
+-- INNER JOIN user_specializes us on specializes.id = us.specialize_id
+-- WHERE user_id = 1
 
 -- SELECT users.*, array_agg(specialize_name) AS specializes from users
 -- INNER JOIN user_specializes ON users.id = user_specializes.user_id

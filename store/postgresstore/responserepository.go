@@ -17,12 +17,13 @@ type ResponseRepository struct {
 func (r *ResponseRepository) Create(response model.Response) (uint64, error) {
 	var responseID uint64
 	err := r.store.db.QueryRow(
-		`INSERT INTO response (
+		`INSERT INTO responses (
                    order_id, 
-                   user_id_id, 
-                   rare, 
+                   user_id, 
+                   rate, 
                    user_login, 
                    user_img, 
+                   time
 		)
         VALUES (
                 $1, 
@@ -30,12 +31,14 @@ func (r *ResponseRepository) Create(response model.Response) (uint64, error) {
                 $3,
 				$4,
 				$5,
+                $6
                 ) RETURNING id`,
 		response.OrderID,
 		response.UserID,
 		response.Rate,
 		response.UserLogin,
-		response.UserImg).Scan(&responseID)
+		response.UserImg,
+		response.Time).Scan(&responseID)
 	if err != nil {
 		return 0, err
 	}
@@ -44,7 +47,7 @@ func (r *ResponseRepository) Create(response model.Response) (uint64, error) {
 }
 func (r *ResponseRepository) FindById(id uint64) ([]model.Response, error) {
 	var responses []model.Response
-	if err := r.store.db.Select(&responses, "SELECT * FROM response WHERE order_id = $1", id); err != nil {
+	if err := r.store.db.Select(&responses, "SELECT * FROM responses WHERE order_id = $1", id); err != nil {
 		return nil, err
 	}
 	return responses, nil

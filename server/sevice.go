@@ -87,7 +87,14 @@ func (s *server) handleCreateResponse(w http.ResponseWriter, r *http.Request) {
 		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
 		return
 	}
-	response, err := s.useCase.Response().Create(*response)
+	params := mux.Vars(r)
+	id, err := strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Order not found")) //Bad json
+		return
+	}
+	response.OrderID = id
+	response, err = s.useCase.Response().Create(*response)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad body"))
 		return
@@ -107,7 +114,12 @@ func (s *server) handleGetAllResponses(w http.ResponseWriter, r *http.Request) {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
 		return
 	}
-	s.respond(w, http.StatusCreated, responses)
+	if responses == nil {
+		var emptyInterface model.Response
+		s.respond(w, http.StatusOK, emptyInterface)
+	} else {
+		s.respond(w, http.StatusOK, responses)
+	}
 }
 
 func (s *server) handleProfile(w http.ResponseWriter, r *http.Request) {
@@ -171,13 +183,23 @@ func (s *server) authenticateUser(next http.Handler) http.Handler {
 			s.error(w, http.StatusUnauthorized, errors.New("Unauthorized")) //Unauthorized
 			return
 		}
-
+		executor, err := r.Cookie("executor")
+		if err != nil {
+			s.error(w, http.StatusInternalServerError, errors.New("Not executor")) //Unauthorized
+			return
+		}
 		session, err := s.useCase.Session().FindBySessionID(sessionID.Value)
 		if err != nil {
 			s.error(w, http.StatusUnauthorized, errors.New("Unauthorized")) //Unauthorized
 			return
 		}
-
+		session.Executor, err = strconv.ParseBool(executor.Value)
+		if err != nil {
+			s.error(w, http.StatusInternalServerError, errors.New("Internal server error")) //Unauthorized
+			return
+		}
+		//TODO: перенести в usecase
+		session.SessionId = ""
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeySession, session)))
 	})
 }
@@ -228,11 +250,9 @@ func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleCheckAuthorized(w http.ResponseWriter, r *http.Request) {
-	u := &model.User{
-		ID: r.Context().Value(ctxKeySession).(*model.Session).UserId,
-	}
 
-	s.respond(w, http.StatusOK, u)
+	session := r.Context().Value(ctxKeySession).(*model.Session)
+	s.respond(w, http.StatusOK, session)
 }
 
 func (s *server) handleAddSpecialize(w http.ResponseWriter, r *http.Request) {
@@ -391,6 +411,12 @@ func (s *server) createCookies(u *model.User) ([]http.Cookie, error) {
 		{
 			Name:     "session",
 			Value:    session.SessionId,
+			Expires:  time.Now().AddDate(0, 1, 0),
+			HttpOnly: true,
+		},
+		{
+			Name:     "executor",
+			Value:    strconv.FormatBool(u.Executor),
 			Expires:  time.Now().AddDate(0, 1, 0),
 			HttpOnly: true,
 		},

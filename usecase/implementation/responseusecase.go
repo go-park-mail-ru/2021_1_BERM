@@ -36,7 +36,7 @@ func (r *ResponseUseCase) FindByID(id uint64) ([]model.Response, error) {
 		return nil, err
 	}
 	for _, response := range responses {
-		img, err := r.mediaStore.Image().GetImage(response)
+		img, err := r.mediaStore.Image().GetImage(response.UserImg)
 		if err != nil {
 			return nil, err
 		}
