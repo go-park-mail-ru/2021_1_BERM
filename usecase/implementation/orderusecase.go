@@ -20,6 +20,7 @@ func (o *OrderUseCase) Create(order model.Order) (*model.Order, error) {
 	if err != nil {
 		order.ID = id
 	}
+	order.ID = id
 	err = o.supplementingTheOrderModel(&order)
 	if err != nil {
 		return nil, err
