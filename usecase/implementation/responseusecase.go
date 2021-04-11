@@ -30,7 +30,7 @@ func (r *ResponseUseCase) Create(response model.Response) (*model.Response, erro
 	return &response, nil
 }
 
-func (r *ResponseUseCase) FindByID(id uint64) ([]model.Response, error) {
+func (r *ResponseUseCase) FindByOrderID(id uint64) ([]model.Response, error) {
 	responses, err := r.store.Response().FindById(id)
 	if err != nil {
 		return nil, err
@@ -46,4 +46,20 @@ func (r *ResponseUseCase) FindByID(id uint64) ([]model.Response, error) {
 		return []model.Response{}, nil
 	}
 	return responses, nil
+}
+
+func (r *ResponseUseCase) Change(response model.Response) (*model.Response, error) {
+	changedResponse, err := r.store.Response().Change(response)
+	if err != nil {
+		return nil, err
+	}
+	return changedResponse, nil
+}
+
+func (r *ResponseUseCase) Delete(response model.Response) error {
+	err := r.store.Response().Delete(response)
+	if err != nil {
+		return err
+	}
+	return nil
 }

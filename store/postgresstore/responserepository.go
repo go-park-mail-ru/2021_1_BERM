@@ -45,10 +45,39 @@ func (r *ResponseRepository) Create(response model.Response) (uint64, error) {
 
 	return responseID, nil
 }
+
 func (r *ResponseRepository) FindById(id uint64) ([]model.Response, error) {
 	var responses []model.Response
 	if err := r.store.db.Select(&responses, "SELECT * FROM responses WHERE order_id = $1", id); err != nil {
 		return nil, err
 	}
 	return responses, nil
+}
+
+func (r *ResponseRepository) Change(response model.Response) (*model.Response, error) {
+	tx := r.store.db.MustBegin()
+	_, err := tx.NamedExec(`UPDATE responses SET 
+                 rate=:rate,
+                 time=:time
+				 WHERE user_id=:user_id AND order_id=:order_id`, &response)
+	if err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+func (r *ResponseRepository) Delete(response model.Response) error {
+	tx := r.store.db.MustBegin()
+	_, err := tx.NamedExec(`DELETE FROM responses 
+				 WHERE user_id=:user_id AND order_id=:order_id`, &response)
+	if err != nil {
+		return  err
+	}
+	if err := tx.Commit(); err != nil {
+		return  err
+	}
+	return nil
 }

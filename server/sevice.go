@@ -66,6 +66,8 @@ func (s *server) configureRouter(config *Config) {
 	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodGet)
 	order.HandleFunc("/{id:[0-9]+}/response", s.handleCreateResponse).Methods(http.MethodPost)
 	order.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllResponses).Methods(http.MethodGet)
+	order.HandleFunc("/{id:[0-9]+}/response", s.handleChangeResponse).Methods(http.MethodPut)
+	order.HandleFunc("/{id:[0-9]+}/response", s.handleDeleteResponse).Methods(http.MethodDelete)
 
 	vacancy := router.PathPrefix("/vacancy").Subrouter()
 	vacancy.Use(s.authenticateUser)
@@ -109,13 +111,56 @@ func (s *server) handleGetAllResponses(w http.ResponseWriter, r *http.Request) {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
 		return
 	}
-	responses, err := s.useCase.Response().FindByID(id)
+	responses, err := s.useCase.Response().FindByOrderID(id)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
 		return
 	}
 
 	s.respond(w, http.StatusOK, responses)
+}
+
+func (s *server) handleChangeResponse(w http.ResponseWriter, r *http.Request) {
+	response := &model.Response{}
+	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
+		return
+	}
+	params := mux.Vars(r)
+	var err error
+	response.OrderID, err = strconv.ParseUint(params["id"], 10, 64)
+	response.UserID = r.Context().Value(ctxKeySession).(*model.Session).UserId
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
+		return
+	}
+	responses, err := s.useCase.Response().Change(*response)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
+		return
+	}
+
+	s.respond(w, http.StatusOK, responses)
+}
+
+func (s *server) handleDeleteResponse(w http.ResponseWriter, r *http.Request) {
+	response := &model.Response{}
+	params := mux.Vars(r)
+	var err error
+	response.OrderID, err = strconv.ParseUint(params["id"], 10, 64)
+	response.UserID = r.Context().Value(ctxKeySession).(*model.Session).UserId
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
+		return
+	}
+	err = s.useCase.Response().Delete(*response)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
+		return
+	}
+	var emptyInterface interface{}
+
+	s.respond(w, http.StatusOK, emptyInterface)
 }
 
 func (s *server) handleProfile(w http.ResponseWriter, r *http.Request) {

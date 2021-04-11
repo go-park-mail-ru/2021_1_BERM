@@ -142,11 +142,6 @@ func (u *UserRepository) FindByID(id uint64) (*model.User, error) {
 			}
 		}
 	}
-	//rows, err := u.store.db.Queryx("SELECT users.*, array_agg(specialize_name) AS specializes from users "+
-	//	"INNER JOIN user_specializes ON users.id = user_specializes.user_id "+
-	//	"INNER JOIN specializes ON user_specializes.specialize_id = specializes.id "+
-	//	"WHERE users.id = $1 "+
-	//	"GROUP BY users.id", id)
 
 	return &user, nil
 }
