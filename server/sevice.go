@@ -57,8 +57,6 @@ func (s *server) configureRouter(config *Config) {
 	profile.HandleFunc("/authorized", s.handleCheckAuthorized).Methods(http.MethodGet)
 	profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleAddSpecialize).Methods(http.MethodPost)
 	profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleDelSpecialize).Methods(http.MethodDelete)
-	profile.HandleFunc("/{id:[0-9]+}/response", s.handleCreateResponse).Methods(http.MethodPost)
-	profile.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllResponses).Methods(http.MethodGet)
 	profile.HandleFunc("/avatar", s.handlePutAvatar).Methods(http.MethodPut)
 	order := router.PathPrefix("/order").Subrouter()
 	order.Use(s.authenticateUser)
@@ -66,6 +64,9 @@ func (s *server) configureRouter(config *Config) {
 	order.HandleFunc("", s.handleGetActualOrder).Methods(http.MethodGet)
 	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodPut)
 	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodGet)
+	order.HandleFunc("/{id:[0-9]+}/response", s.handleCreateResponse).Methods(http.MethodPost)
+	order.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllResponses).Methods(http.MethodGet)
+
 	vacancy := router.PathPrefix("/vacancy").Subrouter()
 	vacancy.Use(s.authenticateUser)
 	vacancy.HandleFunc("", s.handleCreateVacancy).Methods(http.MethodPost)
@@ -294,7 +295,7 @@ func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	o.CustomerID = id
 	var err error
-	o.ID, err = s.useCase.Order().Create(*o)
+	o, err = s.useCase.Order().Create(*o)
 	if err != nil {
 		s.error(w, http.StatusInternalServerError, errors.New("Internal server error")) //500
 		return
@@ -331,7 +332,10 @@ func (s *server) handleGetActualOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server)handleCreateVacancy(w http.ResponseWriter, r *http.Request){
-	v := &model.Vacancy{}
+	id := r.Context().Value(ctxKeySession).(*model.Session).UserId
+	v := &model.Vacancy{
+		UserId: id,
+	}
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
 		return

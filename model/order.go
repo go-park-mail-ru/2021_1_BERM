@@ -9,4 +9,6 @@ type Order struct {
 	Deadline    uint64   `json:"deadline"`
 	Description string   `json:"description"`
 	Category 	string 	 `json:"category"`
+	Login       string   `json:"login,omitempty"`
+	Img         string   `json:"img,omitempty"`
 }

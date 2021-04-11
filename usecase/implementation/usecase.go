@@ -19,6 +19,7 @@ func New(store store.Store, cache store.Cash, mediaStore store.MediaStore) *UseC
 	useCase := &UseCase{
   		orderUseCase: &OrderUseCase{
   			store: store,
+  			mediaStore: mediaStore,
 		},
   		userUseCase: &UserUseCase{
   			store: store,
@@ -33,6 +34,7 @@ func New(store store.Store, cache store.Cash, mediaStore store.MediaStore) *UseC
 		},
   		vacancyUseCase: &VacancyUseCase{
   			store: store,
+  			mediaStore: mediaStore,
 		},
 		responseUseCase: &ResponseUseCase{
   			store: store,

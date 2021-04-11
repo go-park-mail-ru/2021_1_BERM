@@ -101,23 +101,27 @@ func (u *UserRepository) Create(user model.User) (uint64, error) {
 }
 
 func (u *UserRepository) FindByEmail(email string) (*model.User, error) {
-	user := &model.User{}
-	rows, err := u.store.db.Queryx("SELECT users.*, array_agg(specialize_name) AS specializes from users "+
-		"INNER JOIN user_specializes ON users.id = user_specializes.user_id "+
-		"INNER JOIN specializes ON user_specializes.specialize_id = specializes.id "+
-		"WHERE users.email = $1 "+
-		"GROUP BY users.id", email)
-
+	user := model.User{}
+	err := u.store.db.Get(&user, "SELECT * from users WHERE users.email=$1 ", email)
 	if err != nil {
 		return nil, err
 	}
-	for rows.Next() {
-		if err := rows.StructScan(&user); err != nil {
+	if user.Executor {
+		rows, err := u.store.db.Queryx("SELECT array_agg(specialize_name) AS specializes FROM specializes " +
+			"INNER JOIN user_specializes us on specializes.id = us.specialize_id " +
+			"WHERE users.email = $1", email)
+		if err != nil {
 			return nil, err
+		}
+		for rows.Next() {
+			if err := rows.StructScan(&user); err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	return user, nil
+
+	return &user, nil
 }
 
 func (u *UserRepository) FindByID(id uint64) (*model.User, error) {
