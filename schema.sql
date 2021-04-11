@@ -51,10 +51,13 @@ CREATE TABLE orders
 CREATE TABLE vacancy
 (
     id           SERIAL PRIMARY KEY NOT NULL,
+    user_id      INTEGER            NOT NULL,
     category     VARCHAR            NOT NULL,
     vacancy_name VARCHAR            NOT NULL,
     description  VARCHAR            NOT NULL,
-    salary       INTEGER            NOT NULL
+    salary       INTEGER            NOT NULL,
+    FOREIGN KEY (user_id)
+        REFERENCES users (id)
 );
 
 
