@@ -6,62 +6,62 @@ import (
 )
 
 type UseCase struct {
-	orderUseCase 	*OrderUseCase
-	userUseCase   	*UserUseCase
-	mediaUseCase  	*MediaUseCase
+	orderUseCase    *OrderUseCase
+	userUseCase     *UserUseCase
+	mediaUseCase    *MediaUseCase
 	sessionUseCase  *SessionUseCase
 	vacancyUseCase  *VacancyUseCase
 	responseUseCase *ResponseUseCase
 }
 
-func New(store store.Store, cache store.Cash, mediaStore store.MediaStore) *UseCase{
+func New(store store.Store, cache store.Cash, mediaStore store.MediaStore) *UseCase {
 
 	useCase := &UseCase{
-  		orderUseCase: &OrderUseCase{
-  			store: store,
-  			mediaStore: mediaStore,
+		orderUseCase: &OrderUseCase{
+			store:      store,
+			mediaStore: mediaStore,
 		},
-  		userUseCase: &UserUseCase{
-  			store: store,
-  			mediaStore: mediaStore,
+		userUseCase: &UserUseCase{
+			store:      store,
+			mediaStore: mediaStore,
 		},
-  		mediaUseCase: &MediaUseCase{
-  			store: store,
-  			mediaStore: mediaStore,
+		mediaUseCase: &MediaUseCase{
+			store:      store,
+			mediaStore: mediaStore,
 		},
-  		sessionUseCase:	&SessionUseCase{
-  			cache: cache,
+		sessionUseCase: &SessionUseCase{
+			cache: cache,
 		},
-  		vacancyUseCase: &VacancyUseCase{
-  			store: store,
-  			mediaStore: mediaStore,
+		vacancyUseCase: &VacancyUseCase{
+			store:      store,
+			mediaStore: mediaStore,
 		},
 		responseUseCase: &ResponseUseCase{
-  			store: store,
-  			mediaStore: mediaStore,
+			store:      store,
+			mediaStore: mediaStore,
 		},
-  	}
+	}
 
-  return useCase
+	return useCase
 }
 
-func (c *UseCase )Order() usecase.OrderUseCase{
+func (c *UseCase) Order() usecase.OrderUseCase {
 	return c.orderUseCase
 }
 
-func (c *UseCase ) User()  usecase.UserUseCase{
+func (c *UseCase) User() usecase.UserUseCase {
 	return c.userUseCase
 }
 
-func (c *UseCase ) Media() usecase.MediaUseCase{
+func (c *UseCase) Media() usecase.MediaUseCase {
 	return c.mediaUseCase
 }
 
-func (c *UseCase )Session() usecase.SessionUseCase{
+func (c *UseCase) Session() usecase.SessionUseCase {
 	return c.sessionUseCase
 }
 
-func (c *UseCase )Vacancy() usecase.VacancyUseCase{
+func (c *UseCase) Vacancy() usecase.VacancyUseCase {
 	return c.vacancyUseCase
 }
 

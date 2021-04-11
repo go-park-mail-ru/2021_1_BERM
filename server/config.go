@@ -16,4 +16,3 @@ func NewConfig() *Config {
 		LogLevel: "debug",
 	}
 }
-

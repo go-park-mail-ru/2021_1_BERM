@@ -10,11 +10,11 @@ import (
 )
 
 func Start(config *Config, https bool) error {
-	store  := postgresstore.New(config.DSN)
+	store := postgresstore.New(config.DSN)
 	cache, err := tarantoolcache.New(config.DatabaseURL)
 	mediaStore := diskmediastore.New(config.ContentDir)
 	useCase := implementation.New(store, cache, mediaStore)
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 	if err = store.Open(); err != nil {
@@ -31,4 +31,3 @@ func Start(config *Config, https bool) error {
 
 	return http.ListenAndServe(config.BindAddr, s)
 }
-

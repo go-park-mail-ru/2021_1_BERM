@@ -10,4 +10,3 @@ type UserUseCase interface {
 	AddSpecialize(specName string, userID uint64) error
 	DelSpecialize(specName string, userID uint64) error
 }
-

@@ -1,5 +1,5 @@
 package store
 
-type Cash interface{
+type Cash interface {
 	Session() SessionRepository
 }

@@ -6,4 +6,3 @@ type Store interface {
 	Vacancy() VacancyRepository
 	Response() ResponseRepository
 }
-

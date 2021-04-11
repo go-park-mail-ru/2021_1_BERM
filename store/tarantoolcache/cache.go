@@ -6,7 +6,7 @@ import (
 )
 
 type Cache struct {
-	conn *tarantool.Connection
+	conn              *tarantool.Connection
 	SessionRepository *SessionRepository
 }
 
@@ -19,7 +19,6 @@ func New(dbUrl string) (*Cache, error) {
 		conn: conn,
 	}, nil
 }
-
 
 func (s *Cache) Session() store.SessionRepository {
 	if s.SessionRepository != nil {

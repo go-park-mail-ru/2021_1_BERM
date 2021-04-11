@@ -4,7 +4,7 @@ import "FL_2/store"
 
 type MediaStore struct {
 	imageRepository *ImageRepository
-	workDir string
+	workDir         string
 }
 
 func New(workDir string) *MediaStore {
@@ -14,8 +14,8 @@ func New(workDir string) *MediaStore {
 	return s
 }
 
-func (s *MediaStore)Image() store.ImageRepository{
-	if s.imageRepository == nil{
+func (s *MediaStore) Image() store.ImageRepository {
+	if s.imageRepository == nil {
 		s.imageRepository = &ImageRepository{
 			workDir: s.workDir,
 		}

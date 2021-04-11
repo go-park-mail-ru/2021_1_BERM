@@ -6,11 +6,11 @@ import (
 )
 
 type Store struct {
-	db                *sqlx.DB
-	dsn               string
-	userRepository    *UserRepository
-	orderRepository   *OrderRepository
-	vacancyRepository *VacancyRepository
+	db                 *sqlx.DB
+	dsn                string
+	userRepository     *UserRepository
+	orderRepository    *OrderRepository
+	vacancyRepository  *VacancyRepository
 	responseRepository *ResponseRepository
 }
 
@@ -74,5 +74,3 @@ func (s *Store) Response() store.ResponseRepository {
 
 	return s.responseRepository
 }
-
-

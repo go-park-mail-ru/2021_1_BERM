@@ -21,15 +21,15 @@ const (
 )
 
 type server struct {
-	router 	http.Handler
-	logger 	*logrus.Logger
+	router  http.Handler
+	logger  *logrus.Logger
 	useCase usecase.UseCase
 }
 
 func newServer(useCase usecase.UseCase, config *Config) *server {
 	s := &server{
-		router: mux.NewRouter(),
-		logger: logrus.New(),
+		router:  mux.NewRouter(),
+		logger:  logrus.New(),
 		useCase: useCase,
 	}
 	s.configureRouter(config)
@@ -81,23 +81,23 @@ func (s *server) configureRouter(config *Config) {
 	s.router = c.Handler(router)
 }
 
-func (s *server) handleCreateResponse(w http.ResponseWriter, r *http.Request){
+func (s *server) handleCreateResponse(w http.ResponseWriter, r *http.Request) {
 	response := &model.Response{}
 	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
 		return
 	}
 	response, err := s.useCase.Response().Create(*response)
-	if err != nil{
+	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad body"))
 		return
 	}
 	s.respond(w, http.StatusCreated, response)
 }
 
-func (s *server) handleGetAllResponses(w http.ResponseWriter, r *http.Request){
+func (s *server) handleGetAllResponses(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	id, err:= strconv.ParseUint(params["id"], 10, 64)
+	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
 		return
@@ -173,11 +173,10 @@ func (s *server) authenticateUser(next http.Handler) http.Handler {
 		}
 
 		session, err := s.useCase.Session().FindBySessionID(sessionID.Value)
-		if  err != nil {
+		if err != nil {
 			s.error(w, http.StatusUnauthorized, errors.New("Unauthorized")) //Unauthorized
 			return
 		}
-
 
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeySession, session)))
 	})
@@ -185,7 +184,7 @@ func (s *server) authenticateUser(next http.Handler) http.Handler {
 
 func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	id, err:= strconv.ParseUint(params["id"], 10, 64)
+	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
 		return
@@ -211,7 +210,7 @@ func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	id, err:= strconv.ParseUint(params["id"], 10, 64)
+	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id"))
 		return
@@ -220,7 +219,7 @@ func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if u == nil {
 			s.error(w, http.StatusNotFound, errors.New("user not found"))
-		} else{
+		} else {
 			s.error(w, http.StatusInternalServerError, errors.New("InternalServerError"))
 		}
 		return
@@ -267,7 +266,7 @@ func (s *server) handleDelSpecialize(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, http.StatusCreated, emptyInterface)
 }
 
-func (s *server) handlePutAvatar(w http.ResponseWriter, r *http.Request){
+func (s *server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	u := &model.User{}
 	err := json.NewDecoder(r.Body).Decode(u)
@@ -309,7 +308,7 @@ func (s *server) handleChangeOrder(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) handleGetOrder(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	id, err:= strconv.ParseUint(params["id"], 10, 64)
+	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id"))
 		return
@@ -331,7 +330,7 @@ func (s *server) handleGetActualOrder(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, http.StatusOK, o)
 }
 
-func (s *server)handleCreateVacancy(w http.ResponseWriter, r *http.Request){
+func (s *server) handleCreateVacancy(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value(ctxKeySession).(*model.Session).UserId
 	v := &model.Vacancy{
 		UserId: id,
@@ -341,15 +340,15 @@ func (s *server)handleCreateVacancy(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	var err error
-	if v, err = s.useCase.Vacancy().Create(*v); err != nil{
+	if v, err = s.useCase.Vacancy().Create(*v); err != nil {
 		s.error(w, http.StatusInternalServerError, errors.New("ops"))
 	}
 	s.respond(w, http.StatusCreated, v)
 }
 
-func (s *server)handleGetVacancy(w http.ResponseWriter, r *http.Request){
+func (s *server) handleGetVacancy(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	id, err:= strconv.ParseUint(params["id"], 10, 64)
+	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id"))
 		return
@@ -384,7 +383,7 @@ func (s *server) delCookies(cookies []*http.Cookie) {
 func (s *server) createCookies(u *model.User) ([]http.Cookie, error) {
 
 	session, err := s.useCase.Session().Create(u)
-	if  err != nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -399,7 +398,3 @@ func (s *server) createCookies(u *model.User) ([]http.Cookie, error) {
 
 	return cookies, nil
 }
-
-
-
-

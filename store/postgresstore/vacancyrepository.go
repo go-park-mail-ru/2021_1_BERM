@@ -26,7 +26,7 @@ func (v *VacancyRepository) Create(vacancy model.Vacancy) (uint64, error) {
 }
 
 func (v *VacancyRepository) FindByID(id uint64) (*model.Vacancy, error) {
-	vacancy := &model.Vacancy{}
+	vacancy := model.Vacancy{}
 	err := v.store.db.Get(&vacancy, "SELECT * FROM vacancy WHERE id=$1", id)
-	return vacancy, err
+	return &vacancy, err
 }

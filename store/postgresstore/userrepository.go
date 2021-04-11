@@ -107,8 +107,8 @@ func (u *UserRepository) FindByEmail(email string) (*model.User, error) {
 		return nil, err
 	}
 	if user.Executor {
-		rows, err := u.store.db.Queryx("SELECT array_agg(specialize_name) AS specializes FROM specializes " +
-			"INNER JOIN user_specializes us on specializes.id = us.specialize_id " +
+		rows, err := u.store.db.Queryx("SELECT array_agg(specialize_name) AS specializes FROM specializes "+
+			"INNER JOIN user_specializes us on specializes.id = us.specialize_id "+
 			"WHERE users.email = $1", email)
 		if err != nil {
 			return nil, err
@@ -120,7 +120,6 @@ func (u *UserRepository) FindByEmail(email string) (*model.User, error) {
 		}
 	}
 
-
 	return &user, nil
 }
 
@@ -131,9 +130,9 @@ func (u *UserRepository) FindByID(id uint64) (*model.User, error) {
 		return nil, err
 	}
 	if user.Executor {
-		rows, err := u.store.db.Queryx("SELECT array_agg(specialize_name) AS specializes FROM specializes " +
-										"INNER JOIN user_specializes us on specializes.id = us.specialize_id " +
-										"WHERE user_id = $1", id)
+		rows, err := u.store.db.Queryx("SELECT array_agg(specialize_name) AS specializes FROM specializes "+
+			"INNER JOIN user_specializes us on specializes.id = us.specialize_id "+
+			"WHERE user_id = $1", id)
 		if err != nil {
 			return nil, err
 		}
@@ -188,7 +187,7 @@ func (u *UserRepository) ChangeUser(user model.User) (*model.User, error) {
 	}
 
 	user.Executor = oldUser.Executor
-	for _, spec := range(oldUser.Specializes) {
+	for _, spec := range oldUser.Specializes {
 		user.Specializes = append(user.Specializes, spec)
 	}
 

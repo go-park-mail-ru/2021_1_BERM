@@ -41,11 +41,11 @@ func (o *OrderRepository) Create(order model.Order) (uint64, error) {
 }
 
 func (o *OrderRepository) FindByID(id uint64) (*model.Order, error) {
-	order := &model.Order{}
+	order := model.Order{}
 	if err := o.store.db.Get(&order, "SELECT * FROM orders WHERE id=$1", id); err != nil {
 		return nil, err
 	}
-	return order, nil
+	return &order, nil
 }
 
 func (o *OrderRepository) FindByExecutorID(executorID uint64) ([]model.Order, error) {
@@ -64,7 +64,7 @@ func (o *OrderRepository) FindByCustomerID(customerID uint64) ([]model.Order, er
 	return orders, nil
 }
 
-func (o *OrderRepository)GetActualOrders()([]model.Order, error){
+func (o *OrderRepository) GetActualOrders() ([]model.Order, error) {
 	var orders []model.Order
 	if err := o.store.db.Select(&orders, "SELECT * FROM orders"); err != nil {
 		return nil, err
