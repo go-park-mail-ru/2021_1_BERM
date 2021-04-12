@@ -233,8 +233,6 @@ func (s *server) handleLogout(w http.ResponseWriter, r *http.Request) {
 func (s *server) authenticateUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		w.Header().Set("X-CSRF-Token", csrf.Token(r))
-
 		sessionID, err := r.Cookie("session")
 		if err != nil {
 			s.error(w, http.StatusUnauthorized, errors.New("Unauthorized")) //Unauthorized
@@ -307,6 +305,7 @@ func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleCheckAuthorized(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 
 	session := r.Context().Value(ctxKeySession).(*model.Session)
 	s.respond(w, http.StatusOK, session)
