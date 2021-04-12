@@ -182,7 +182,7 @@ func (s *server) handleDeleteResponse(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) handleGetAllUserOrders(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	userID, err := strconv.ParseUint(params["uid"], 10, 64)
+	userID, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
 		return
