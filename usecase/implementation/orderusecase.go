@@ -79,6 +79,9 @@ func (o *OrderUseCase) GetActualOrders() ([]model.Order, error) {
 			return nil, err
 		}
 	}
+	if orders == nil {
+		return []model.Order{}, nil
+	}
 	return orders, err
 }
 
