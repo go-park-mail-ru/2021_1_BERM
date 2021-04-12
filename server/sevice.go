@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"github.com/gorilla/csrf"
 )
 
 type ctxKey uint8
@@ -43,15 +44,25 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) configureRouter(config *Config) {
 	router := mux.NewRouter()
+
+	//TODO: в проде убрать secure false
+	csrfMiddleware := csrf.Protect(
+		[]byte("very-secret-string"),
+		csrf.SameSite(csrf.SameSiteLaxMode),
+		csrf.Secure(false),
+		csrf.MaxAge(900))
+
 	router.HandleFunc("/profile", s.handleProfile).Methods(http.MethodPost)
 	router.HandleFunc("/login", s.handleLogin).Methods(http.MethodPost)
 
 	logout := router.PathPrefix("/logout").Subrouter()
 	logout.Use(s.authenticateUser)
+	logout.Use(csrfMiddleware)
 	logout.HandleFunc("", s.handleLogout).Methods(http.MethodDelete)
 
 	profile := router.PathPrefix("/profile").Subrouter()
 	profile.Use(s.authenticateUser)
+	profile.Use(csrfMiddleware)
 	profile.HandleFunc("/{id:[0-9]+}", s.handleChangeProfile).Methods(http.MethodPut)
 	profile.HandleFunc("/{id:[0-9]+}", s.handleGetProfile).Methods(http.MethodGet)
 	profile.HandleFunc("/authorized", s.handleCheckAuthorized).Methods(http.MethodGet)
@@ -60,6 +71,7 @@ func (s *server) configureRouter(config *Config) {
 	profile.HandleFunc("/avatar", s.handlePutAvatar).Methods(http.MethodPut)
 	order := router.PathPrefix("/order").Subrouter()
 	order.Use(s.authenticateUser)
+	order.Use(csrfMiddleware)
 	order.HandleFunc("", s.handleCreateOrder).Methods(http.MethodPost)
 	order.HandleFunc("", s.handleGetActualOrder).Methods(http.MethodGet)
 	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodPut)
@@ -71,6 +83,7 @@ func (s *server) configureRouter(config *Config) {
 
 	vacancy := router.PathPrefix("/vacancy").Subrouter()
 	vacancy.Use(s.authenticateUser)
+	vacancy.Use(csrfMiddleware)
 	vacancy.HandleFunc("", s.handleCreateVacancy).Methods(http.MethodPost)
 	vacancy.HandleFunc("/{id:[0-9]+}", s.handleGetVacancy).Methods(http.MethodGet)
 
@@ -79,6 +92,7 @@ func (s *server) configureRouter(config *Config) {
 		AllowedMethods:   []string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "PATCH"},
 		AllowedHeaders:   []string{"Content-Type", "X-Requested-With", "Accept"},
 		AllowCredentials: true,
+		MaxAge: 86400,
 	})
 	s.router = c.Handler(router)
 }
@@ -218,6 +232,8 @@ func (s *server) handleLogout(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) authenticateUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("X-CSRF-Token", csrf.Token(r))
 
 		sessionID, err := r.Cookie("session")
 		if err != nil {
