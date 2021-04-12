@@ -90,7 +90,8 @@ func (s *server) configureRouter(config *Config) {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   config.Origin,
 		AllowedMethods:   []string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "PATCH"},
-		AllowedHeaders:   []string{"Content-Type", "X-Requested-With", "Accept"},
+		AllowedHeaders:   []string{"Content-Type", "X-Requested-With", "Accept", "X-Csrf-Token"},
+		ExposedHeaders:   []string{"X-Csrf-Token"},
 		AllowCredentials: true,
 		MaxAge: 86400,
 	})
