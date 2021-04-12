@@ -50,7 +50,8 @@ func (s *server) configureRouter(config *Config) {
 		[]byte("very-secret-string"),
 		csrf.SameSite(csrf.SameSiteLaxMode),
 		csrf.Secure(false),
-		csrf.MaxAge(900))
+		csrf.MaxAge(900),
+		csrf.Path("/"))
 
 	router.HandleFunc("/profile", s.handleProfile).Methods(http.MethodPost)
 	router.HandleFunc("/login", s.handleLogin).Methods(http.MethodPost)
