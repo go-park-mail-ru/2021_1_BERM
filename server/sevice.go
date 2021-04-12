@@ -50,20 +50,19 @@ func (s *server) configureRouter(config *Config) {
 		[]byte("very-secret-string"),
 		csrf.SameSite(csrf.SameSiteLaxMode),
 		csrf.Secure(false),
-		csrf.MaxAge(900))
+		csrf.MaxAge(900),
+		csrf.Path("/"))
 
 	router.HandleFunc("/profile", s.handleProfile).Methods(http.MethodPost)
 	router.HandleFunc("/login", s.handleLogin).Methods(http.MethodPost)
 
 	logout := router.PathPrefix("/logout").Subrouter()
 	logout.Use(s.authenticateUser)
-	logout.Use(s.setCSRFHeader)
 	logout.Use(csrfMiddleware)
 	logout.HandleFunc("", s.handleLogout).Methods(http.MethodDelete)
 
 	profile := router.PathPrefix("/profile").Subrouter()
 	profile.Use(s.authenticateUser)
-	profile.Use(s.setCSRFHeader)
 	profile.Use(csrfMiddleware)
 	profile.HandleFunc("/{id:[0-9]+}", s.handleChangeProfile).Methods(http.MethodPut)
 	profile.HandleFunc("/{id:[0-9]+}", s.handleGetProfile).Methods(http.MethodGet)
@@ -73,7 +72,6 @@ func (s *server) configureRouter(config *Config) {
 	profile.HandleFunc("/avatar", s.handlePutAvatar).Methods(http.MethodPut)
 	order := router.PathPrefix("/order").Subrouter()
 	order.Use(s.authenticateUser)
-	order.Use(s.setCSRFHeader)
 	order.Use(csrfMiddleware)
 	order.HandleFunc("", s.handleCreateOrder).Methods(http.MethodPost)
 	order.HandleFunc("", s.handleGetActualOrder).Methods(http.MethodGet)
@@ -263,13 +261,6 @@ func (s *server) authenticateUser(next http.Handler) http.Handler {
 	})
 }
 
-func (s *server) setCSRFHeader(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("X-CSRF-Token", csrf.Token(r))
-		next.ServeHTTP(w, r)
-	})
-}
-
 
 func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -317,6 +308,7 @@ func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleCheckAuthorized(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 	session := r.Context().Value(ctxKeySession).(*model.Session)
 	s.respond(w, http.StatusOK, session)
 }
