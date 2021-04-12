@@ -83,7 +83,7 @@ CREATE TABLE responses
     rate       INTEGER            NOT NULL,
     user_login VARCHAR            NOT NULL,
     user_img   VARCHAR DEFAULT '',
-    time       INTEGER            NOT NULL,
+    time       BIGINT             NOT NULL,
     FOREIGN KEY (user_id)
         REFERENCES users (id),
     FOREIGN KEY (order_id)
