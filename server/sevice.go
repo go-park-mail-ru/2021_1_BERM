@@ -6,13 +6,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 	"time"
-	"github.com/gorilla/csrf"
 )
 
 type ctxKey uint8
@@ -81,6 +81,7 @@ func (s *server) configureRouter(config *Config) {
 	order.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllResponses).Methods(http.MethodGet)
 	order.HandleFunc("/{id:[0-9]+}/response", s.handleChangeResponse).Methods(http.MethodPut)
 	order.HandleFunc("/{id:[0-9]+}/response", s.handleDeleteResponse).Methods(http.MethodDelete)
+	order.HandleFunc("/profile/{id:[0-9]+}", s.handleGetAllUserOrders).Methods(http.MethodDelete)
 
 	vacancy := router.PathPrefix("/vacancy").Subrouter()
 	vacancy.Use(s.authenticateUser)
@@ -94,7 +95,7 @@ func (s *server) configureRouter(config *Config) {
 		AllowedHeaders:   []string{"Content-Type", "X-Requested-With", "Accept", "X-Csrf-Token"},
 		ExposedHeaders:   []string{"X-Csrf-Token"},
 		AllowCredentials: true,
-		MaxAge: 86400,
+		MaxAge:           86400,
 	})
 	s.router = c.Handler(router)
 }
@@ -179,6 +180,36 @@ func (s *server) handleDeleteResponse(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, http.StatusOK, emptyInterface)
 }
 
+func (s *server) handleGetAllUserOrders(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userID, err := strconv.ParseUint(params["uid"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
+		return
+	}
+	executor, err := r.Cookie("executor")
+	if err != nil {
+		s.error(w, http.StatusInternalServerError, errors.New("Internal Server Error"))
+		return
+	}
+	var o []model.Order
+	isExecutor, err := strconv.ParseBool(executor.Value)
+	if err != nil {
+		s.error(w, http.StatusInternalServerError, errors.New("Internal Server Error"))
+		return
+	}
+	if isExecutor {
+		o, err = s.useCase.Order().FindByExecutorID(userID)
+	} else {
+		o, err = s.useCase.Order().FindByCustomerID(userID)
+	}
+	if err != nil {
+		s.error(w, http.StatusNotFound, errors.New("Order not found"))
+		return
+	}
+	s.respond(w, http.StatusOK, o)
+}
+
 func (s *server) handleProfile(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	u := &model.User{}
@@ -260,7 +291,6 @@ func (s *server) authenticateUser(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeySession, session)))
 	})
 }
-
 
 func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
