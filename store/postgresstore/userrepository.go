@@ -248,7 +248,7 @@ func (u *UserRepository) DelSpecialize(specName string, userID uint64) error {
 		return errors.Wrap(err, sqlDbSourceError)
 	}
 
-	_, err = u.store.db.Queryx("DELETE FROM user_specializes WHERE specialize_id=$1 AND user_id =$2", specialize.Name, userID)
+	_, err = u.store.db.Queryx("DELETE FROM user_specializes WHERE specialize_id=$1 AND user_id =$2", specialize.ID, userID)
 
 	if err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
