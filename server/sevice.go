@@ -477,14 +477,14 @@ func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value(ctxKeySession).(*model.Session).UserID
 	o := &model.Order{}
 	if err := json.NewDecoder(r.Body).Decode(o); err != nil {
-		s.error(w, reqId, InvalidJSON) //Bad json
+		s.error(w, reqId, InvalidJSON)
 		return
 	}
 	o.CustomerID = id
 	var err error
 	o, err = s.useCase.Order().Create(*o)
 	if err != nil {
-		s.error(w, reqId, New(err)) //500
+		s.error(w, reqId, New(err))
 		return
 	}
 	s.respond(w, reqId, http.StatusCreated, o)
@@ -523,7 +523,7 @@ func (s *server) handleCreateVacancy(w http.ResponseWriter, r *http.Request) {
 		UserID: id,
 	}
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
-		s.error(w, reqId, InvalidJSON) //Bad json
+		s.error(w, reqId, InvalidJSON)
 		return
 	}
 	var err error
@@ -603,6 +603,7 @@ func (s *server) handleGetAllVacancyResponses(w http.ResponseWriter, r *http.Req
 }
 
 func (s *server) respond(w http.ResponseWriter, requestId uint64, code int, data interface{}) {
+	w.WriteHeader(code)
 	if data != nil {
 		err := json.NewEncoder(w).Encode(data)
 		if err != nil {
@@ -610,7 +611,6 @@ func (s *server) respond(w http.ResponseWriter, requestId uint64, code int, data
 			return
 		}
 	}
-	w.WriteHeader(code)
 	s.logger.WithFields(logrus.Fields{
 		"request_id": requestId,
 		"reply_code": code,
