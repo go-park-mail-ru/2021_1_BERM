@@ -19,8 +19,8 @@ type SessionUseCase struct {
 
 func (s *SessionUseCase) Create(u *model.User) (*model.Session, error) {
 	session := &model.Session{
-		SessionId: u.Email + time.Now().String(),
-		UserId:    u.ID,
+		SessionID: u.Email + time.Now().String(),
+		UserID:    u.ID,
 	}
 
 	err := s.beforeCreate(session)
@@ -35,7 +35,7 @@ func (s *SessionUseCase) Create(u *model.User) (*model.Session, error) {
 
 func (s *SessionUseCase) FindBySessionID(sessionID string) (*model.Session, error) {
 	session := &model.Session{
-		SessionId: sessionID,
+		SessionID: sessionID,
 	}
 	err := s.cache.Session().Find(session)
 	if err != nil {
@@ -54,6 +54,6 @@ func (s *SessionUseCase) encryptString(password string, salt string) (string, er
 
 func (s *SessionUseCase) beforeCreate(session *model.Session) error {
 	var err error
-	session.SessionId, err = s.encryptString(session.SessionId, cookieSalt)
+	session.SessionID, err = s.encryptString(session.SessionID, cookieSalt)
 	return err
 }

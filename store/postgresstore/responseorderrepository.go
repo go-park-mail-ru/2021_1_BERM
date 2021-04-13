@@ -50,7 +50,7 @@ func (r *ResponseOrderRepository) Create(response model.ResponseOrder) (uint64, 
 	return responseID, nil
 }
 
-func (r *ResponseOrderRepository) FindByOrderId(id uint64) ([]model.ResponseOrder, error) {
+func (r *ResponseOrderRepository) FindByOrderID(id uint64) ([]model.ResponseOrder, error) {
 	var responses []model.ResponseOrder
 	if err := r.store.db.Select(&responses, "SELECT * FROM order_responses WHERE order_id = $1", id); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)

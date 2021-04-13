@@ -22,12 +22,12 @@ type ctxKey uint8
 
 const (
 	ctxKeySession ctxKey = iota
-	ctxKeyReqId   ctxKey = 1
+	ctxKeyReqID   ctxKey = 1
 )
 
 var (
-	InvalidJson = &Error{
-		Err:  errors.New("Invalid json."),
+	InvalidJSON = &Error{
+		Err:  errors.New("Invalid json. "),
 		Code: http.StatusBadRequest,
 		Type: TypeExternal,
 		Field: map[string]interface{}{
@@ -36,7 +36,7 @@ var (
 	}
 
 	InvalidCookies = &Error{
-		Err:  errors.New("Invalid cookie."),
+		Err:  errors.New("Invalid cookie.\n"),
 		Code: http.StatusBadRequest,
 		Type: TypeExternal,
 	}
@@ -135,12 +135,12 @@ func (s *server) configureRouter(config *Config) {
 
 func (s *server) logginCSRF() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		reqId := r.Context().Value(ctxKeyReqId).(uint64)
+		reqID := r.Context().Value(ctxKeyReqID).(uint64)
 		s.logger.WithFields(logrus.Fields{
-			"request_id": reqId,
+			"request_id": reqID,
 			"error":      "Invalid CSRF token",
 		}).Error()
-		s.respond(w, reqId, http.StatusForbidden, map[string]interface{}{
+		s.respond(w, reqID, http.StatusForbidden, map[string]interface{}{
 			"error": "Invalid CSRF token",
 		})
 	})
@@ -148,28 +148,28 @@ func (s *server) logginCSRF() http.Handler {
 
 func (s *server) loggingRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		reqId := rand.Uint64()
+		reqID := rand.Uint64()
 		s.logger.WithFields(logrus.Fields{
-			"request_id": reqId,
+			"request_id": reqID,
 			"url":        r.URL,
 			"method":     r.Method,
 		}).Info()
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyReqId, reqId)))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyReqID, reqID)))
 	})
 }
 
 func (s *server) handleCreateOrderResponse(w http.ResponseWriter, r *http.Request) {
 	response := &model.ResponseOrder{}
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 
 	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
-		s.error(w, reqId, InvalidJson) //Bad json
+		s.error(w, reqId, InvalidJSON) //Bad json
 		return
 	}
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		s.error(w, reqId, InvalidJson) //Bad json
+		s.error(w, reqId, InvalidJSON) //Bad json
 		return
 	}
 	response.OrderID = id
@@ -183,7 +183,7 @@ func (s *server) handleCreateOrderResponse(w http.ResponseWriter, r *http.Reques
 
 func (s *server) handleGetAllOrderResponses(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		s.error(w, reqId, New(err)) //Bad json
@@ -200,10 +200,10 @@ func (s *server) handleGetAllOrderResponses(w http.ResponseWriter, r *http.Reque
 
 func (s *server) handleChangeOrderResponse(w http.ResponseWriter, r *http.Request) {
 	response := &model.ResponseOrder{}
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 
 	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
-		s.error(w, reqId, InvalidJson)
+		s.error(w, reqId, InvalidJSON)
 		return
 	}
 	params := mux.Vars(r)
@@ -213,7 +213,7 @@ func (s *server) handleChangeOrderResponse(w http.ResponseWriter, r *http.Reques
 		s.error(w, reqId, New(err))
 		return
 	}
-	response.UserID = r.Context().Value(ctxKeySession).(*model.Session).UserId
+	response.UserID = r.Context().Value(ctxKeySession).(*model.Session).UserID
 	responses, err := s.useCase.ResponseOrder().Change(*response)
 
 	if err != nil {
@@ -227,14 +227,14 @@ func (s *server) handleChangeOrderResponse(w http.ResponseWriter, r *http.Reques
 func (s *server) handleDeleteOrderResponse(w http.ResponseWriter, r *http.Request) {
 	response := &model.ResponseOrder{}
 	params := mux.Vars(r)
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	var err error
 	response.OrderID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		s.error(w, reqId, New(err)) //Bad json
 		return
 	}
-	response.UserID = r.Context().Value(ctxKeySession).(*model.Session).UserId
+	response.UserID = r.Context().Value(ctxKeySession).(*model.Session).UserID
 	err = s.useCase.ResponseOrder().Delete(*response)
 
 	if err != nil {
@@ -248,10 +248,10 @@ func (s *server) handleDeleteOrderResponse(w http.ResponseWriter, r *http.Reques
 
 func (s *server) handleGetAllUserOrders(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	userID, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		s.error(w, http.StatusBadRequest, InvalidJson)
+		s.error(w, http.StatusBadRequest, InvalidJSON)
 		return
 	}
 	executor, err := r.Cookie("executor")
@@ -280,9 +280,9 @@ func (s *server) handleGetAllUserOrders(w http.ResponseWriter, r *http.Request) 
 func (s *server) handleProfile(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	u := &model.User{}
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
-		s.error(w, reqId, InvalidJson) //Bad json
+		s.error(w, reqId, InvalidJSON) //Bad json
 		return
 	}
 	err := s.useCase.User().Create(u)
@@ -303,9 +303,9 @@ func (s *server) handleProfile(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	u := &model.User{}
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
-		s.error(w, reqId, InvalidJson) //Bad json
+		s.error(w, reqId, InvalidJSON) //Bad json
 		return
 	}
 	u, err := s.useCase.User().UserVerification(u.Email, u.Password)
@@ -334,7 +334,7 @@ func (s *server) handleLogout(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) authenticateUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		reqId := r.Context().Value(ctxKeyReqId).(uint64)
+		reqId := r.Context().Value(ctxKeyReqID).(uint64)
 		sessionID, err := r.Cookie("session")
 		cookieErr := *InvalidCookies
 		if err != nil {
@@ -365,13 +365,13 @@ func (s *server) authenticateUser(next http.Handler) http.Handler {
 			return
 		}
 		//TODO: перенести в usecase
-		session.SessionId = ""
+		session.SessionID = ""
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeySession, session)))
 	})
 }
 
 func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
@@ -380,10 +380,10 @@ func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	u := &model.User{}
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
-		s.error(w, reqId, InvalidJson) //Bad json
+		s.error(w, reqId, InvalidJSON) //Bad json
 		return
 	}
-	userCookieID := r.Context().Value(ctxKeySession).(*model.Session).UserId
+	userCookieID := r.Context().Value(ctxKeySession).(*model.Session).UserID
 	if userCookieID != id {
 		s.error(w, reqId, New(tarantoolcache.NotAuthorized))
 		return
@@ -398,7 +398,7 @@ func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
@@ -414,18 +414,18 @@ func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleCheckAuthorized(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 	session := r.Context().Value(ctxKeySession).(*model.Session)
 	s.respond(w, reqId, http.StatusOK, session)
 }
 
 func (s *server) handleAddSpecialize(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
-	id := r.Context().Value(ctxKeySession).(*model.Session).UserId
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
+	id := r.Context().Value(ctxKeySession).(*model.Session).UserID
 	specialize := &model.Specialize{}
 	if err := json.NewDecoder(r.Body).Decode(specialize); err != nil {
-		s.error(w, reqId, InvalidJson)
+		s.error(w, reqId, InvalidJSON)
 		return
 	}
 
@@ -438,11 +438,11 @@ func (s *server) handleAddSpecialize(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleDelSpecialize(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
-	userID := r.Context().Value(ctxKeySession).(*model.Session).UserId
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
+	userID := r.Context().Value(ctxKeySession).(*model.Session).UserID
 	specialize := &model.Specialize{}
 	if err := json.NewDecoder(r.Body).Decode(specialize); err != nil {
-		s.error(w, reqId, InvalidJson)
+		s.error(w, reqId, InvalidJSON)
 		return
 	}
 	if err := s.useCase.User().DelSpecialize(specialize.Name, userID); err != nil {
@@ -454,13 +454,13 @@ func (s *server) handleDelSpecialize(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	defer r.Body.Close()
 	u := &model.User{}
 	err := json.NewDecoder(r.Body).Decode(u)
-	u.ID = r.Context().Value(ctxKeySession).(*model.Session).UserId
+	u.ID = r.Context().Value(ctxKeySession).(*model.Session).UserID
 	if err != nil {
-		s.error(w, reqId, InvalidJson)
+		s.error(w, reqId, InvalidJSON)
 		return
 	}
 
@@ -474,11 +474,11 @@ func (s *server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
-	id := r.Context().Value(ctxKeySession).(*model.Session).UserId
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
+	id := r.Context().Value(ctxKeySession).(*model.Session).UserID
 	o := &model.Order{}
 	if err := json.NewDecoder(r.Body).Decode(o); err != nil {
-		s.error(w, reqId, InvalidJson) //Bad json
+		s.error(w, reqId, InvalidJSON) //Bad json
 		return
 	}
 	o.CustomerID = id
@@ -492,7 +492,7 @@ func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleGetOrder(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
@@ -508,7 +508,7 @@ func (s *server) handleGetOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleGetActualOrder(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	o, err := s.useCase.Order().GetActualOrders()
 	if err != nil {
 		s.error(w, reqId, New(err))
@@ -518,13 +518,13 @@ func (s *server) handleGetActualOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleCreateVacancy(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
-	id := r.Context().Value(ctxKeySession).(*model.Session).UserId
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
+	id := r.Context().Value(ctxKeySession).(*model.Session).UserID
 	v := &model.Vacancy{
 		UserId: id,
 	}
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
-		s.error(w, reqId, InvalidJson) //Bad json
+		s.error(w, reqId, InvalidJSON) //Bad json
 		return
 	}
 	var err error
@@ -535,11 +535,11 @@ func (s *server) handleCreateVacancy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleGetVacancy(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		s.error(w, reqId, InvalidJson)
+		s.error(w, reqId, InvalidJSON)
 		return
 	}
 	v, err := s.useCase.Vacancy().FindByID(id)
@@ -565,10 +565,10 @@ func (s *server) error(w http.ResponseWriter, requestId uint64, err error) {
 
 }
 func (s *server) handleCreateVacancyResponse(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	response := &model.ResponseVacancy{}
 	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
-		s.error(w, http.StatusBadRequest, InvalidJson) //Bad json
+		s.error(w, http.StatusBadRequest, InvalidJSON) //Bad json
 		return
 	}
 	params := mux.Vars(r)
@@ -588,10 +588,10 @@ func (s *server) handleCreateVacancyResponse(w http.ResponseWriter, r *http.Requ
 
 func (s *server) handleGetAllVacancyResponses(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		s.error(w, http.StatusBadRequest, InvalidJson) //Bad json
+		s.error(w, http.StatusBadRequest, InvalidJSON) //Bad json
 		return
 	}
 	responses, err := s.useCase.ResponseVacancy().FindByVacancyID(id)
@@ -635,7 +635,7 @@ func (s *server) createCookies(u *model.User) ([]http.Cookie, error) {
 	cookies := []http.Cookie{
 		{
 			Name:     "session",
-			Value:    session.SessionId,
+			Value:    session.SessionID,
 			Expires:  time.Now().AddDate(0, 1, 0),
 			HttpOnly: true,
 		},

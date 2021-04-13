@@ -20,7 +20,7 @@ func (v *VacancyUseCase) Create(vacancy model.Vacancy) (*model.Vacancy, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)
 	}
-	vacancy.Id = id
+	vacancy.ID = id
 	err = v.supplementingTheVacancyModel(&vacancy)
 	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)

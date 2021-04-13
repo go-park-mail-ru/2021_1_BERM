@@ -37,7 +37,7 @@ func (r *ResponseOrderUseCase) Create(response model.ResponseOrder) (*model.Resp
 }
 
 func (r *ResponseOrderUseCase) FindByVacancyID(id uint64) ([]model.ResponseOrder, error) {
-	responses, err := r.store.ResponseOrder().FindByOrderId(id)
+	responses, err := r.store.ResponseOrder().FindByOrderID(id)
 	if err != nil {
 		return nil, errors.Wrap(err, responceUseCaseError)
 	}
