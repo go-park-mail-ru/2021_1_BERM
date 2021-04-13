@@ -41,7 +41,7 @@ func (v *VacancyUseCase) FindByID(id uint64) (*model.Vacancy, error) {
 }
 
 func (v *VacancyUseCase) supplementingTheVacancyModel(vacancy *model.Vacancy) error {
-	u, err := v.store.User().FindByID(vacancy.UserId)
+	u, err := v.store.User().FindByID(vacancy.UserID)
 	if err != nil {
 		return errors.Wrap(err, vacancyUseCaseError)
 	}

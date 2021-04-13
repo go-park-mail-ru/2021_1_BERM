@@ -25,7 +25,7 @@ func (v *VacancyRepository) Create(vacancy model.Vacancy) (uint64, error) {
 		vacancy.VacancyName,
 		vacancy.Description,
 		vacancy.Salary,
-		vacancy.UserId).Scan(&vacancyID)
+		vacancy.UserID).Scan(&vacancyID)
 	if err != nil {
 		pqErr := &pq.Error{}
 		if errors.As(err, &pqErr) {

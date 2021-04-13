@@ -521,7 +521,7 @@ func (s *server) handleCreateVacancy(w http.ResponseWriter, r *http.Request) {
 	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	id := r.Context().Value(ctxKeySession).(*model.Session).UserID
 	v := &model.Vacancy{
-		UserId: id,
+		UserID: id,
 	}
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
 		s.error(w, reqId, InvalidJSON) //Bad json
