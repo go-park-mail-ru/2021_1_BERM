@@ -56,6 +56,9 @@ func (o *OrderUseCase) FindByExecutorID(executorID uint64) ([]model.Order, error
 			return nil, errors.Wrap(err, orderUseCaseError)
 		}
 	}
+	if orders == nil {
+		return []model.Order{}, nil
+	}
 	return orders, nil
 }
 
@@ -64,11 +67,15 @@ func (o *OrderUseCase) FindByCustomerID(customerID uint64) ([]model.Order, error
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
-	for _, order := range orders {
+	for i, order := range orders {
 		err = o.supplementingTheOrderModel(&order)
 		if err != nil {
 			return nil, errors.Wrap(err, orderUseCaseError)
 		}
+		orders[i] = order
+	}
+	if orders == nil {
+		return []model.Order{}, nil
 	}
 	return orders, nil
 }
@@ -78,11 +85,12 @@ func (o *OrderUseCase) GetActualOrders() ([]model.Order, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
-	for _, order := range orders {
+	for i, order := range orders {
 		err = o.supplementingTheOrderModel(&order)
 		if err != nil {
 			return nil, errors.Wrap(err, orderUseCaseError)
 		}
+		orders[i] = order
 	}
 	if orders == nil {
 		return []model.Order{}, nil

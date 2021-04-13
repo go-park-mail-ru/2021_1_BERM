@@ -224,17 +224,25 @@ func (u *UserRepository) AddSpecialize(specName string, userID uint64) error {
 	specialize := model.Specialize{}
 	err := u.store.db.Get(&specialize, "SELECT * FROM specializes WHERE specialize_name=$1", specName)
 
-	if !errors.Is(err,sql.ErrNoRows) || err != nil {
+	// ошибка не проходит совпадение на no rows, я хз как ее сравнить с этим сраным ерор стринг
+	if !errors.Is(err,sql.ErrNoRows) && err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
 	}
-	var specID uint64
 	if errors.Is(err,sql.ErrNoRows) {
-		specID, err = u.insertToSpecTable(specName)
+		specialize.ID, err = u.insertToSpecTable(specName)
 		if err != nil {
 			return errors.Wrap(err, sqlDbSourceError)
 		}
 	}
-	if err = u.insertToUserSpecTable(userID, specID); err != nil {
+	rows, err := u.store.db.Queryx("SELECT * FROM user_specializes WHERE specialize_id=$1 AND user_id=$2", specialize.ID, userID)
+	if err != nil {
+		return errors.Wrap(err, sqlDbSourceError)
+	}
+	if rows.Next() != false  {
+		//TODO: Вернуть не 500!!!
+		return errors.New("Spec duplicate")
+	}
+	if err = u.insertToUserSpecTable(userID, specialize.ID); err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
 	}
 

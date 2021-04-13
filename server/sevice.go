@@ -112,7 +112,7 @@ func (s *server) configureRouter(config *Config) {
 	order.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllOrderResponses).Methods(http.MethodGet)
 	order.HandleFunc("/{id:[0-9]+}/response", s.handleChangeOrderResponse).Methods(http.MethodPut)
 	order.HandleFunc("/{id:[0-9]+}/response", s.handleDeleteOrderResponse).Methods(http.MethodDelete)
-	order.HandleFunc("/profile/{id:[0-9]+}", s.handleGetAllUserOrders).Methods(http.MethodDelete)
+	order.HandleFunc("/profile/{id:[0-9]+}", s.handleGetAllUserOrders).Methods(http.MethodGet)
 
 	vacancy := router.PathPrefix("/vacancy").Subrouter()
 	vacancy.Use(s.authenticateUser)

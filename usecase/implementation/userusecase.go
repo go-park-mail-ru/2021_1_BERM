@@ -128,7 +128,8 @@ func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
 }
 
 func (u *UserUseCase) AddSpecialize(specName string, userID uint64) error {
-	if err := u.store.User().AddSpecialize(specName, userID); err != nil {
+	err := u.store.User().AddSpecialize(specName, userID);
+	if  err != nil {
 		return errors.Wrap(err, userUseCaseError)
 	}
 	return nil
