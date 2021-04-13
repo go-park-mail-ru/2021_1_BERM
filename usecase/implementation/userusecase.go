@@ -5,6 +5,7 @@ import (
 	"FL_2/store"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -15,7 +16,10 @@ const (
 const (
 	MinPswdLenght int = 5
 	MaxPswdLength int = 300
+	userUseCaseError = "User use case error"
 )
+
+
 
 type UserUseCase struct {
 	store      store.Store
@@ -25,16 +29,19 @@ type UserUseCase struct {
 func (u *UserUseCase) Create(user *model.User) error {
 
 	if err := u.validate(user); err != nil {
-		return err
+		return errors.Wrap(err, userUseCaseError)
 	}
 	if err := u.beforeCreate(user); err != nil {
-		return err
+		return errors.Wrap(err, userUseCaseError)
 	}
 
 	if user.Specializes != nil {
 		user.Executor = true
 	}
 	id, err := u.store.User().Create(*user)
+	if err != nil {
+		return errors.Wrap(err, userUseCaseError)
+	}
 	user.ID = id
 	return err
 }
@@ -52,7 +59,7 @@ func (u *UserUseCase) validate(user *model.User) error {
 func (u *UserUseCase) encryptPassword(password string, salt string) (string, error) {
 	b, err := bcrypt.GenerateFromPassword([]byte(password+salt), bcrypt.MinCost)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, userUseCaseError)
 	}
 	return string(b), nil
 }
@@ -77,15 +84,15 @@ func (u *UserUseCase) sanitize(user *model.User) {
 func (u *UserUseCase) UserVerification(email string, password string) (*model.User, error) {
 	user, err := u.store.User().FindByEmail(email)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, userUseCaseError)
 	}
 	if u.comparePassword(user, password) != true {
-		return nil, err
+		return nil, errors.Wrap(err, userUseCaseError)
 	}
 	u.sanitize(user)
 	image, err := u.mediaStore.Image().GetImage(user.Img)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, userUseCaseError)
 	}
 	user.Img = string(image)
 	return user, err
@@ -94,12 +101,12 @@ func (u *UserUseCase) UserVerification(email string, password string) (*model.Us
 func (u *UserUseCase) FindByID(id uint64) (*model.User, error) {
 	user, err := u.store.User().FindByID(id)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, userUseCaseError)
 	}
 	u.sanitize(user)
 	image, err := u.mediaStore.Image().GetImage(user.Img)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, userUseCaseError)
 	}
 	user.Img = string(image)
 	return user, err
@@ -107,16 +114,16 @@ func (u *UserUseCase) FindByID(id uint64) (*model.User, error) {
 
 func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
 	if err := u.beforeCreate(&user); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, userUseCaseError)
 	}
 	newUser, err := u.store.User().ChangeUser(user)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, userUseCaseError)
 	}
 	u.sanitize(newUser)
 	image, err := u.mediaStore.Image().GetImage(newUser.Img)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, userUseCaseError)
 	}
 	newUser.Img = string(image)
 	return newUser, err
@@ -124,12 +131,15 @@ func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
 
 func (u *UserUseCase) AddSpecialize(specName string, userID uint64) error {
 	if err := u.store.User().AddSpecialize(specName, userID); err != nil {
-		return err
+		return errors.Wrap(err, userUseCaseError)
 	}
 	return nil
 }
 
 func (u *UserUseCase) DelSpecialize(specName string, userID uint64) error {
 	err := u.store.User().DelSpecialize(specName, userID)
-	return err
+	if err != nil{
+		return errors.Wrap(err, userUseCaseError)
+	}
+	return nil
 }

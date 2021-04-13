@@ -1,6 +1,7 @@
 package diskmediastore
 
 import (
+	"github.com/pkg/errors"
 	"os"
 )
 
@@ -20,11 +21,11 @@ func (i *ImageRepository) GetImage(imageInfo interface{}) ([]byte, error) {
 	file, err := os.Open(imagePath)
 	defer file.Close()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, diskDbSourceError)
 	}
 	fileStat, err := file.Stat()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, diskDbSourceError)
 	}
 	image := make([]byte, fileStat.Size())
 	_, err = file.Read(image)
@@ -36,7 +37,7 @@ func (i *ImageRepository) SetImage(imageInfo interface{}, image []byte) (string,
 	file, err := os.Create(imagePath)
 	defer file.Close()
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, diskDbSourceError)
 	}
 	_, err = file.Write(image)
 	return imageInfo.(string), err

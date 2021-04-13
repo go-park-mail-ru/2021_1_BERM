@@ -2,17 +2,21 @@ package tarantoolcache
 
 import (
 	"FL_2/model"
-	"errors"
+	"github.com/pkg/errors"
 	"github.com/tarantool/go-tarantool"
 )
+
+
 
 type SessionRepository struct {
 	cache *Cache
 }
 
 func (s *SessionRepository) Create(session *model.Session) error {
-	resp, err := s.cache.conn.Insert("session", sessionToTarantoolData(session))
-	println(resp)
+	_, err := s.cache.conn.Insert("session", sessionToTarantoolData(session))
+	if err != nil{
+		return errors.Wrap(err, sessionSourceError)
+	}
 	return err
 }
 
@@ -22,10 +26,10 @@ func (s *SessionRepository) Find(session *model.Session) error {
 			session.SessionId,
 		})
 	if err != nil {
-		return err
+		return errors.Wrap(err, sessionSourceError)
 	}
 	if len(resp.Tuples()) == 0 {
-		return errors.New("Not autorizate")
+		return errors.Wrap(NotAuthorized, sessionSourceError)
 	}
 	*session = *tarantoolDataToSession(resp.Tuples()[0])
 	return nil

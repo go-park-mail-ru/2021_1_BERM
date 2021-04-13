@@ -3,12 +3,14 @@ package implementation
 import (
 	"FL_2/model"
 	"FL_2/store"
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
 const (
 	cookieSalt = "wdsamlsdm2094dmfh"
+	sessionUseCaseError = "Session use case error"
 )
 
 type SessionUseCase struct {
@@ -23,7 +25,7 @@ func (s *SessionUseCase) Create(u *model.User) (*model.Session, error) {
 
 	err := s.beforeCreate(session)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, sessionUseCaseError)
 	}
 	if err = s.cache.Session().Create(session); err != nil {
 		return nil, err
@@ -37,7 +39,7 @@ func (s *SessionUseCase) FindBySessionID(sessionID string) (*model.Session, erro
 	}
 	err := s.cache.Session().Find(session)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, sessionUseCaseError)
 	}
 	return session, err
 }
@@ -55,8 +57,3 @@ func (s *SessionUseCase) beforeCreate(session *model.Session) error {
 	session.SessionId, err = s.encryptString(session.SessionId, cookieSalt)
 	return err
 }
-
-//
-//func (s *SessionUseCase) compareSessionId(session model.Session, sessionId string) bool {
-//	return bcrypt.CompareHashAndPassword([]byte(session.SessionId), []byte(sessionId)) == nil
-//}

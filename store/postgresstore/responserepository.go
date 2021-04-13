@@ -2,6 +2,8 @@ package postgresstore
 
 import (
 	"FL_2/model"
+	"github.com/lib/pq"
+	"github.com/pkg/errors"
 )
 
 type ResponseRepository struct {
@@ -40,7 +42,15 @@ func (r *ResponseRepository) Create(response model.Response) (uint64, error) {
 		response.UserImg,
 		response.Time).Scan(&responseID)
 	if err != nil {
-		return 0, err
+		pqErr := &pq.Error{}
+		if errors.As(err, &pqErr){
+			if pqErr.Code == duplicateErrorCode{
+				return 0, errors.Wrap(&DuplicateSourceErr{
+					Err: err,
+				}, sqlDbSourceError)
+			}
+		}
+		return 0, errors.Wrap(err, sqlDbSourceError)
 	}
 
 	return responseID, nil
@@ -49,7 +59,7 @@ func (r *ResponseRepository) Create(response model.Response) (uint64, error) {
 func (r *ResponseRepository) FindById(id uint64) ([]model.Response, error) {
 	var responses []model.Response
 	if err := r.store.db.Select(&responses, "SELECT * FROM responses WHERE order_id = $1", id); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return responses, nil
 }
@@ -64,7 +74,7 @@ func (r *ResponseRepository) Change(response model.Response) (*model.Response, e
 		return nil, err
 	}
 	if err := tx.Commit(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return &response, nil
 }
@@ -74,10 +84,10 @@ func (r *ResponseRepository) Delete(response model.Response) error {
 	_, err := tx.NamedExec(`DELETE FROM responses 
 				 WHERE user_id=:user_id AND order_id=:order_id`, &response)
 	if err != nil {
-		return  err
+		return errors.Wrap(err, sqlDbSourceError)
 	}
-	if err := tx.Commit(); err != nil {
-		return  err
+	if err = tx.Commit(); err != nil {
+		return errors.Wrap(err, sqlDbSourceError)
 	}
 	return nil
 }

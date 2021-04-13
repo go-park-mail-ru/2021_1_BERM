@@ -1,6 +1,10 @@
 package postgresstore
 
-import "FL_2/model"
+import (
+	"FL_2/model"
+	"github.com/lib/pq"
+	"github.com/pkg/errors"
+)
 
 type OrderRepository struct {
 	store *Store
@@ -35,7 +39,15 @@ func (o *OrderRepository) Create(order model.Order) (uint64, error) {
 		order.Deadline,
 		order.Description).Scan(&orderID)
 	if err != nil {
-		return 0, err
+		pqErr := &pq.Error{}
+		if errors.As(err, &pqErr){
+			if pqErr.Code == duplicateErrorCode{
+				return 0, errors.Wrap(&DuplicateSourceErr{
+					Err: err,
+				}, sqlDbSourceError)
+			}
+		}
+		return 0, errors.Wrap(err, sqlDbSourceError)
 	}
 	return orderID, nil
 }
@@ -43,7 +55,7 @@ func (o *OrderRepository) Create(order model.Order) (uint64, error) {
 func (o *OrderRepository) FindByID(id uint64) (*model.Order, error) {
 	order := model.Order{}
 	if err := o.store.db.Get(&order, "SELECT * FROM orders WHERE id=$1", id); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return &order, nil
 }
@@ -51,7 +63,7 @@ func (o *OrderRepository) FindByID(id uint64) (*model.Order, error) {
 func (o *OrderRepository) FindByExecutorID(executorID uint64) ([]model.Order, error) {
 	var orders []model.Order
 	if err := o.store.db.Select(&orders, "SELECT * FROM orders WHERE executor_id=$1", executorID); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return orders, nil
 }
@@ -59,7 +71,7 @@ func (o *OrderRepository) FindByExecutorID(executorID uint64) ([]model.Order, er
 func (o *OrderRepository) FindByCustomerID(customerID uint64) ([]model.Order, error) {
 	var orders []model.Order
 	if err := o.store.db.Select(&orders, "SELECT * FROM orders WHERE customer_id=$1", customerID); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return orders, nil
 }
@@ -67,7 +79,7 @@ func (o *OrderRepository) FindByCustomerID(customerID uint64) ([]model.Order, er
 func (o *OrderRepository) GetActualOrders() ([]model.Order, error) {
 	var orders []model.Order
 	if err := o.store.db.Select(&orders, "SELECT * FROM orders"); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return orders, nil
 }
