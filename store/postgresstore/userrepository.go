@@ -224,11 +224,11 @@ func (u *UserRepository) AddSpecialize(specName string, userID uint64) error {
 	specialize := model.Specialize{}
 	err := u.store.db.Get(&specialize, "SELECT * FROM specializes WHERE specialize_name=$1", specName)
 
-	if err != sql.ErrNoRows || err != nil {
+	if !errors.Is(err,sql.ErrNoRows) || err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
 	}
 	var specID uint64
-	if err == sql.ErrNoRows {
+	if errors.Is(err,sql.ErrNoRows) {
 		specID, err = u.insertToSpecTable(specName)
 		if err != nil {
 			return errors.Wrap(err, sqlDbSourceError)

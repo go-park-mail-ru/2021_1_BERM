@@ -50,7 +50,7 @@ func New(err error) *Error {
 		}
 	}
 	valid := &validation.Errors{}
-	if errors.As(err, &valid) {
+	if errors.As(err, valid) {
 		j, errJ := valid.MarshalJSON()
 		if errJ != nil {
 			return &Error{
