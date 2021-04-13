@@ -254,13 +254,17 @@ func (s *server) handleGetAllUserOrders(w http.ResponseWriter, r *http.Request) 
 		s.error(w, http.StatusBadRequest, InvalidJSON)
 		return
 	}
-	executor, err := r.Cookie("executor")
+	user, err := s.useCase.User().FindByID(userID)
+	if err != nil {
+		s.error(w, http.StatusInternalServerError, New(err))
+		return
+	}
+	isExecutor := user.Executor
 	if err != nil {
 		s.error(w, http.StatusInternalServerError, New(err))
 		return
 	}
 	var o []model.Order
-	isExecutor, err := strconv.ParseBool(executor.Value)
 	if err != nil {
 		s.error(w, http.StatusInternalServerError, New(err))
 		return
