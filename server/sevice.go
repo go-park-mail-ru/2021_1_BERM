@@ -22,25 +22,24 @@ type ctxKey uint8
 
 const (
 	ctxKeySession ctxKey = iota
-	ctxKeyReqId ctxKey = 1
+	ctxKeyReqId   ctxKey = 1
 )
 
-var(
+var (
 	InvalidJson = &Error{
-		Err : errors.New("Invalid json."),
+		Err:  errors.New("Invalid json."),
 		Code: http.StatusBadRequest,
 		Type: TypeExternal,
 		Field: map[string]interface{}{
-			"error" : "Invalid json",
+			"error": "Invalid json",
 		},
 	}
 
 	InvalidCookies = &Error{
-		Err : errors.New("Invalid cookie."),
+		Err:  errors.New("Invalid cookie."),
 		Code: http.StatusBadRequest,
 		Type: TypeExternal,
 	}
-
 )
 
 type server struct {
@@ -56,7 +55,15 @@ func newServer(useCase usecase.UseCase, config *Config) *server {
 		useCase: useCase,
 	}
 	s.configureRouter(config)
-	s.logger.Out = os.Stdout
+	if config.LogFile == "" {
+		s.logger.Out = os.Stdout
+	} else {
+		logFileStream, err := os.Open(config.LogFile)
+		if err != nil {
+			logrus.Fatal(err)
+		}
+		s.logger.Out = logFileStream
+	}
 	return s
 }
 
@@ -68,13 +75,13 @@ func (s *server) configureRouter(config *Config) {
 	router := mux.NewRouter()
 	router.Use(s.loggingRequest)
 
-	//TODO: в проде убрать secure false
 	csrfMiddleware := csrf.Protect(
 		[]byte("very-secret-string"),
 		csrf.SameSite(csrf.SameSiteLaxMode),
-		csrf.Secure(false),
+		csrf.Secure(config.HTTPS),
 		csrf.MaxAge(900),
-		csrf.Path("/"))
+		csrf.Path("/"),
+		csrf.ErrorHandler(s.logginCSRF()))
 
 	router.HandleFunc("/profile", s.handleProfile).Methods(http.MethodPost)
 	router.HandleFunc("/login", s.handleLogin).Methods(http.MethodPost)
@@ -126,13 +133,26 @@ func (s *server) configureRouter(config *Config) {
 	s.router = c.Handler(router)
 }
 
+func (s *server) logginCSRF() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqId := r.Context().Value(ctxKeyReqId).(uint64)
+		s.logger.WithFields(logrus.Fields{
+			"request_id": reqId,
+			"error":      "Invalid CSRF token",
+		}).Error()
+		s.respond(w, reqId, http.StatusForbidden, map[string]interface{}{
+			"error": "Invalid CSRF token",
+		})
+	})
+}
+
 func (s *server) loggingRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqId := rand.Uint64()
 		s.logger.WithFields(logrus.Fields{
-			"request_id" : reqId,
-			"url" : r.URL,
-			"method" : r.Method,
+			"request_id": reqId,
+			"url":        r.URL,
+			"method":     r.Method,
 		}).Info()
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyReqId, reqId)))
 	})
@@ -285,7 +305,7 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	u := &model.User{}
 	reqId := r.Context().Value(ctxKeyReqId).(uint64)
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
-		s.error(w, reqId,InvalidJson) //Bad json
+		s.error(w, reqId, InvalidJson) //Bad json
 		return
 	}
 	u, err := s.useCase.User().UserVerification(u.Email, u.Password)
@@ -319,8 +339,8 @@ func (s *server) authenticateUser(next http.Handler) http.Handler {
 		cookieErr := *InvalidCookies
 		if err != nil {
 			cookieErr.Field = map[string]interface{}{
-				"session_id" : "absent",
-				"status" : "Not uthorized",
+				"session_id": "absent",
+				"status":     "Not uthorized",
 			}
 			s.error(w, reqId, &cookieErr)
 			return
@@ -328,8 +348,8 @@ func (s *server) authenticateUser(next http.Handler) http.Handler {
 		executor, err := r.Cookie("executor")
 		if err != nil {
 			cookieErr.Field = map[string]interface{}{
-				"executor" : "absent",
-				"status" : "Not executor",
+				"executor": "absent",
+				"status":   "Not executor",
 			}
 			s.error(w, reqId, &cookieErr)
 			return
@@ -440,7 +460,7 @@ func (s *server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(u)
 	u.ID = r.Context().Value(ctxKeySession).(*model.Session).UserId
 	if err != nil {
-		s.error(w, reqId,InvalidJson)
+		s.error(w, reqId, InvalidJson)
 		return
 	}
 
@@ -449,10 +469,9 @@ func (s *server) handlePutAvatar(w http.ResponseWriter, r *http.Request) {
 		s.error(w, reqId, New(err))
 		return
 	}
-	s.respond(w,reqId, http.StatusOK, u)
+	s.respond(w, reqId, http.StatusOK, u)
 
 }
-
 
 func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
 	reqId := r.Context().Value(ctxKeyReqId).(uint64)
@@ -531,7 +550,7 @@ func (s *server) handleGetVacancy(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, reqId, http.StatusOK, v)
 }
 
-func (s *server) error(w http.ResponseWriter, requestId uint64,  err error) {
+func (s *server) error(w http.ResponseWriter, requestId uint64, err error) {
 	httpError := &Error{}
 	s.logger.WithFields(logrus.Fields{
 		"error":      err.Error(),
@@ -567,7 +586,7 @@ func (s *server) handleCreateVacancyResponse(w http.ResponseWriter, r *http.Requ
 	s.respond(w, reqId, http.StatusCreated, response)
 }
 
-func (s *server) handleGetAllVacancyResponses (w http.ResponseWriter, r *http.Request) {
+func (s *server) handleGetAllVacancyResponses(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqId := r.Context().Value(ctxKeyReqId).(uint64)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
@@ -581,22 +600,21 @@ func (s *server) handleGetAllVacancyResponses (w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	s.respond(w,reqId,http.StatusOK, responses)
+	s.respond(w, reqId, http.StatusOK, responses)
 }
-
 
 func (s *server) respond(w http.ResponseWriter, requestId uint64, code int, data interface{}) {
 	if data != nil {
 		err := json.NewEncoder(w).Encode(data)
-		if err != nil{
+		if err != nil {
 			s.error(w, requestId, err)
 			return
 		}
 	}
 	w.WriteHeader(code)
 	s.logger.WithFields(logrus.Fields{
-		"request_id" : requestId,
-		"reply_code" : code,
+		"request_id": requestId,
+		"reply_code": code,
 	}).Info()
 }
 
