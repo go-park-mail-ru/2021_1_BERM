@@ -129,11 +129,11 @@ func (s *server) configureRouter(config *Config) {
 func (s *server) loggingRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqId := rand.Uint64()
-		s.logger.WithField("Request", logrus.Fields{
+		s.logger.WithFields(logrus.Fields{
 			"request_id" : reqId,
 			"url" : r.URL,
 			"method" : r.Method,
-		})
+		}).Info()
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyReqId, reqId)))
 	})
 }
@@ -533,16 +533,17 @@ func (s *server) handleGetVacancy(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) error(w http.ResponseWriter, requestId uint64,  err error) {
 	httpError := &Error{}
+	s.logger.WithFields(logrus.Fields{
+		"error":      err.Error(),
+		"field":      httpError.Field,
+		"request_id": requestId,
+	}).Error()
 	if errors.As(err, &httpError) {
 		s.respond(w, requestId, httpError.Code, httpError.Field)
 		return
 	}
 	s.respond(w, requestId, http.StatusInternalServerError, map[string]string{"error": "Internal server error"})
-	s.logger.WithField(httpError.Type, map[string]interface{}{
-		"error":      err.Error(),
-		"field":      httpError.Field,
-		"request_id": requestId,
-	}).Error()
+
 }
 func (s *server) handleCreateVacancyResponse(w http.ResponseWriter, r *http.Request) {
 	reqId := r.Context().Value(ctxKeyReqId).(uint64)
@@ -593,7 +594,7 @@ func (s *server) respond(w http.ResponseWriter, requestId uint64, code int, data
 		}
 	}
 	w.WriteHeader(code)
-	s.logger.WithField("Reply to request", logrus.Fields{
+	s.logger.WithFields(logrus.Fields{
 		"request_id" : requestId,
 		"reply_code" : code,
 	}).Info()
