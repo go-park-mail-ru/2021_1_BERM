@@ -6,12 +6,12 @@ import (
 )
 
 type UseCase struct {
-	orderUseCase         *OrderUseCase
-	userUseCase          *UserUseCase
-	mediaUseCase         *MediaUseCase
-	sessionUseCase       *SessionUseCase
-	vacancyUseCase       *VacancyUseCase
-	responseOrderUseCase *ResponseOrderUseCase
+	orderUseCase           *OrderUseCase
+	userUseCase            *UserUseCase
+	mediaUseCase           *MediaUseCase
+	sessionUseCase         *SessionUseCase
+	vacancyUseCase         *VacancyUseCase
+	responseOrderUseCase   *ResponseOrderUseCase
 	responseVacancyUseCase *ResponseVacancyUseCase
 }
 

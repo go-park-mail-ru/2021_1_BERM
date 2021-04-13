@@ -2,9 +2,10 @@ package tarantoolcache
 
 import "errors"
 
-var(
+var (
 	NotAuthorized = errors.New("Not authorized.")
 )
-const(
+
+const (
 	sessionSourceError = "Session source error."
 )

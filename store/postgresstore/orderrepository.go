@@ -40,8 +40,8 @@ func (o *OrderRepository) Create(order model.Order) (uint64, error) {
 		order.Description).Scan(&orderID)
 	if err != nil {
 		pqErr := &pq.Error{}
-		if errors.As(err, &pqErr){
-			if pqErr.Code == duplicateErrorCode{
+		if errors.As(err, &pqErr) {
+			if pqErr.Code == duplicateErrorCode {
 				return 0, errors.Wrap(&DuplicateSourceErr{
 					Err: err,
 				}, sqlDbSourceError)

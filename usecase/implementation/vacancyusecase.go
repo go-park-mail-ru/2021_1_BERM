@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const(
+const (
 	vacancyUseCaseError = "Vacancy use case error"
 )
 

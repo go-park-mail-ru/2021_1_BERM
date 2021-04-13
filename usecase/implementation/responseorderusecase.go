@@ -18,7 +18,7 @@ type ResponseOrderUseCase struct {
 func (r *ResponseOrderUseCase) Create(response model.ResponseOrder) (*model.ResponseOrder, error) {
 	user, err := r.store.User().FindByID(response.UserID)
 	if err != nil {
-		return nil,errors.Wrap(err, responceUseCaseError)
+		return nil, errors.Wrap(err, responceUseCaseError)
 	}
 	response.UserLogin = user.Login
 	response.UserImg = user.Img

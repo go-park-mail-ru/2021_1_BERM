@@ -6,7 +6,7 @@ import (
 	errors "github.com/pkg/errors"
 )
 
-const(
+const (
 	ErrInResponseVacancyUseCase = "Error in response vacancy use case"
 )
 

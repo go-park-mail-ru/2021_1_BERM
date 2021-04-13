@@ -3,11 +3,11 @@ package implementation
 import (
 	"FL_2/model"
 	"FL_2/store"
-	 validation "github.com/go-ozzo/ozzo-validation"
+	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/pkg/errors"
 )
 
-const(
+const (
 	orderUseCaseError = "Order use case error"
 )
 

@@ -37,8 +37,8 @@ func (r *ResponseVacancyRepository) Create(response model.ResponseVacancy) (uint
 		response.Time).Scan(&responseID)
 	if err != nil {
 		pqErr := &pq.Error{}
-		if errors.As(err, &pqErr){
-			if pqErr.Code == duplicateErrorCode{
+		if errors.As(err, &pqErr) {
+			if pqErr.Code == duplicateErrorCode {
 				return 0, errors.Wrap(&DuplicateSourceErr{
 					Err: err,
 				}, sqlDbSourceError)
@@ -78,10 +78,10 @@ func (r *ResponseVacancyRepository) Delete(response model.ResponseVacancy) error
 	_, err := tx.NamedExec(`DELETE FROM vacancy_responses 
 				 WHERE user_id=:user_id AND vacancy_id=:order_id`, &response)
 	if err != nil {
-		return  errors.Wrap(err, sqlDbSourceError)
+		return errors.Wrap(err, sqlDbSourceError)
 	}
 	if err := tx.Commit(); err != nil {
-		return  errors.Wrap(err, sqlDbSourceError)
+		return errors.Wrap(err, sqlDbSourceError)
 	}
 	return nil
 }

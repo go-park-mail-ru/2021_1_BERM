@@ -6,9 +6,11 @@ import (
 	"github.com/pkg/errors"
 	"strconv"
 )
-const(
+
+const (
 	mediaUseCaseError = "Media use case error."
 )
+
 type MediaUseCase struct {
 	store      store.Store
 	mediaStore store.MediaStore
@@ -27,7 +29,7 @@ func (s *MediaUseCase) SetImage(imageInfo interface{}, image []byte) (*model.Use
 	u.Img = imageId
 	u, err = s.store.User().ChangeUser(*u)
 	if err != nil {
-		return nil, errors.Wrap(err,mediaUseCaseError)
+		return nil, errors.Wrap(err, mediaUseCaseError)
 	}
 	u.Img = string(image)
 	return u, nil

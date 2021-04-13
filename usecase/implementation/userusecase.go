@@ -14,12 +14,10 @@ const (
 )
 
 const (
-	MinPswdLenght int = 5
-	MaxPswdLength int = 300
-	userUseCaseError = "User use case error"
+	MinPswdLenght    int = 5
+	MaxPswdLength    int = 300
+	userUseCaseError     = "User use case error"
 )
-
-
 
 type UserUseCase struct {
 	store      store.Store
@@ -138,7 +136,7 @@ func (u *UserUseCase) AddSpecialize(specName string, userID uint64) error {
 
 func (u *UserUseCase) DelSpecialize(specName string, userID uint64) error {
 	err := u.store.User().DelSpecialize(specName, userID)
-	if err != nil{
+	if err != nil {
 		return errors.Wrap(err, userUseCaseError)
 	}
 	return nil

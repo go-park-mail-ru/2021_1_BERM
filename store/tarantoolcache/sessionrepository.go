@@ -6,15 +6,13 @@ import (
 	"github.com/tarantool/go-tarantool"
 )
 
-
-
 type SessionRepository struct {
 	cache *Cache
 }
 
 func (s *SessionRepository) Create(session *model.Session) error {
 	_, err := s.cache.conn.Insert("session", sessionToTarantoolData(session))
-	if err != nil{
+	if err != nil {
 		return errors.Wrap(err, sessionSourceError)
 	}
 	return err

@@ -24,7 +24,7 @@ func (u *UserRepository) insertToUserSpecTable(userID uint64, specID uint64) err
 			"userID": strconv.FormatUint(userID, 10),
 			"specID": strconv.FormatUint(specID, 10),
 		})
-	if err != nil{
+	if err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
 	}
 	return nil
@@ -39,7 +39,7 @@ func (u *UserRepository) insertToSpecTable(specName string) (uint64, error) {
     					VALUES (
     						$1
     					)  RETURNING id`, specName).Scan(&specID)
-	if err != nil{
+	if err != nil {
 		return 0, errors.Wrap(err, sqlDbSourceError)
 	}
 	return specID, nil
@@ -72,8 +72,8 @@ func (u *UserRepository) Create(user model.User) (uint64, error) {
 		user.Executor).Scan(&userID)
 	if err != nil {
 		pqErr := &pq.Error{}
-		if errors.As(err, &pqErr){
-			if pqErr.Code == duplicateErrorCode{
+		if errors.As(err, &pqErr) {
+			if pqErr.Code == duplicateErrorCode {
 				return 0, errors.Wrap(&DuplicateSourceErr{
 					Err: err,
 				}, sqlDbSourceError)

@@ -37,8 +37,8 @@ func (r *ResponseOrderRepository) Create(response model.ResponseOrder) (uint64, 
 		response.Time).Scan(&responseID)
 	if err != nil {
 		pqErr := &pq.Error{}
-		if errors.As(err, &pqErr){
-			if pqErr.Code == duplicateErrorCode{
+		if errors.As(err, &pqErr) {
+			if pqErr.Code == duplicateErrorCode {
 				return 0, errors.Wrap(&DuplicateSourceErr{
 					Err: err,
 				}, sqlDbSourceError)
@@ -50,11 +50,10 @@ func (r *ResponseOrderRepository) Create(response model.ResponseOrder) (uint64, 
 	return responseID, nil
 }
 
-
 func (r *ResponseOrderRepository) FindByOrderId(id uint64) ([]model.ResponseOrder, error) {
 	var responses []model.ResponseOrder
 	if err := r.store.db.Select(&responses, "SELECT * FROM order_responses WHERE order_id = $1", id); err != nil {
-		return nil,  errors.Wrap(err, sqlDbSourceError)
+		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return responses, nil
 }
