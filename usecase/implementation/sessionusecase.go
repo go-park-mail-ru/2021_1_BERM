@@ -41,6 +41,7 @@ func (s *SessionUseCase) FindBySessionID(sessionID string) (*model.Session, erro
 	if err != nil {
 		return nil, errors.Wrap(err, sessionUseCaseError)
 	}
+	session.SessionID = ""
 	return session, err
 }
 

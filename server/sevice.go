@@ -356,16 +356,15 @@ func (s *server) authenticateUser(next http.Handler) http.Handler {
 		}
 		session, err := s.useCase.Session().FindBySessionID(sessionID.Value)
 		if err != nil {
-			s.error(w, reqId, New(err)) //Unauthorized
+			s.error(w, reqId, New(err))
 			return
 		}
 		session.Executor, err = strconv.ParseBool(executor.Value)
 		if err != nil {
-			s.error(w, reqId, New(err)) //Unauthorized
+			s.error(w, reqId, New(err))
 			return
 		}
-		//TODO: перенести в usecase
-		session.SessionID = ""
+
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeySession, session)))
 	})
 }
