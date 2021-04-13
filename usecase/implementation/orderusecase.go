@@ -70,7 +70,7 @@ func (o *OrderUseCase) FindByCustomerID(customerID uint64) ([]model.Order, error
 			return nil, errors.Wrap(err, orderUseCaseError)
 		}
 	}
-	return orders, err
+	return orders, nil
 }
 
 func (o *OrderUseCase) GetActualOrders() ([]model.Order, error) {
@@ -83,6 +83,9 @@ func (o *OrderUseCase) GetActualOrders() ([]model.Order, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, orderUseCaseError)
 		}
+	}
+	if orders == nil {
+		return []model.Order{}, nil
 	}
 	return orders, err
 }

@@ -24,7 +24,10 @@ func (u *UserRepository) insertToUserSpecTable(userID uint64, specID uint64) err
 			"userID": strconv.FormatUint(userID, 10),
 			"specID": strconv.FormatUint(specID, 10),
 		})
-	return err
+	if err != nil{
+		return errors.Wrap(err, sqlDbSourceError)
+	}
+	return nil
 }
 
 func (u *UserRepository) insertToSpecTable(specName string) (uint64, error) {
@@ -36,7 +39,10 @@ func (u *UserRepository) insertToSpecTable(specName string) (uint64, error) {
     					VALUES (
     						$1
     					)  RETURNING id`, specName).Scan(&specID)
-	return specID, err
+	if err != nil{
+		return 0, errors.Wrap(err, sqlDbSourceError)
+	}
+	return specID, nil
 }
 
 func (u *UserRepository) Create(user model.User) (uint64, error) {
@@ -219,7 +225,7 @@ func (u *UserRepository) AddSpecialize(specName string, userID uint64) error {
 	err := u.store.db.Get(&specialize, "SELECT * FROM specializes WHERE specialize_name=$1", specName)
 
 	if err != sql.ErrNoRows || err != nil {
-		return err
+		return errors.Wrap(err, sqlDbSourceError)
 	}
 	var specID uint64
 	if err == sql.ErrNoRows {

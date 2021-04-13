@@ -30,5 +30,5 @@ func (s *MediaUseCase) SetImage(imageInfo interface{}, image []byte) (*model.Use
 		return nil, errors.Wrap(err,mediaUseCaseError)
 	}
 	u.Img = string(image)
-	return u, err
+	return u, nil
 }

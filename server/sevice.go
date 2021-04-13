@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
@@ -66,15 +67,26 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *server) configureRouter(config *Config) {
 	router := mux.NewRouter()
 	router.Use(s.loggingRequest)
+
+	//TODO: в проде убрать secure false
+	csrfMiddleware := csrf.Protect(
+		[]byte("very-secret-string"),
+		csrf.SameSite(csrf.SameSiteLaxMode),
+		csrf.Secure(false),
+		csrf.MaxAge(900),
+		csrf.Path("/"))
+
 	router.HandleFunc("/profile", s.handleProfile).Methods(http.MethodPost)
 	router.HandleFunc("/login", s.handleLogin).Methods(http.MethodPost)
 
 	logout := router.PathPrefix("/logout").Subrouter()
 	logout.Use(s.authenticateUser)
+	logout.Use(csrfMiddleware)
 	logout.HandleFunc("", s.handleLogout).Methods(http.MethodDelete)
 
 	profile := router.PathPrefix("/profile").Subrouter()
 	profile.Use(s.authenticateUser)
+	profile.Use(csrfMiddleware)
 	profile.HandleFunc("/{id:[0-9]+}", s.handleChangeProfile).Methods(http.MethodPut)
 	profile.HandleFunc("/{id:[0-9]+}", s.handleGetProfile).Methods(http.MethodGet)
 	profile.HandleFunc("/authorized", s.handleCheckAuthorized).Methods(http.MethodGet)
@@ -83,25 +95,33 @@ func (s *server) configureRouter(config *Config) {
 	profile.HandleFunc("/avatar", s.handlePutAvatar).Methods(http.MethodPut)
 	order := router.PathPrefix("/order").Subrouter()
 	order.Use(s.authenticateUser)
+	order.Use(csrfMiddleware)
 	order.HandleFunc("", s.handleCreateOrder).Methods(http.MethodPost)
 	order.HandleFunc("", s.handleGetActualOrder).Methods(http.MethodGet)
+
 	//order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodPut)
-	//order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodGet)
-	order.HandleFunc("/{id:[0-9]+}/response", s.handleCreateResponse).Methods(http.MethodPost)
-	order.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllResponses).Methods(http.MethodGet)
-	order.HandleFunc("/{id:[0-9]+}/response", s.handleChangeResponse).Methods(http.MethodPut)
-	order.HandleFunc("/{id:[0-9]+}/response", s.handleDeleteResponse).Methods(http.MethodDelete)
+	order.HandleFunc("/{id:[0-9]+}", s.handleGetOrder).Methods(http.MethodGet)
+	order.HandleFunc("/{id:[0-9]+}/response", s.handleCreateOrderResponse).Methods(http.MethodPost)
+	order.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllOrderResponses).Methods(http.MethodGet)
+	order.HandleFunc("/{id:[0-9]+}/response", s.handleChangeOrderResponse).Methods(http.MethodPut)
+	order.HandleFunc("/{id:[0-9]+}/response", s.handleDeleteOrderResponse).Methods(http.MethodDelete)
+	order.HandleFunc("/profile/{id:[0-9]+}", s.handleGetAllUserOrders).Methods(http.MethodDelete)
 
 	vacancy := router.PathPrefix("/vacancy").Subrouter()
 	vacancy.Use(s.authenticateUser)
+	vacancy.Use(csrfMiddleware)
 	vacancy.HandleFunc("", s.handleCreateVacancy).Methods(http.MethodPost)
 	vacancy.HandleFunc("/{id:[0-9]+}", s.handleGetVacancy).Methods(http.MethodGet)
+	vacancy.HandleFunc("/{id:[0-9]+}/response", s.handleCreateVacancyResponse).Methods(http.MethodPost)
+	vacancy.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllVacancyResponses).Methods(http.MethodGet)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   config.Origin,
 		AllowedMethods:   []string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "PATCH"},
-		AllowedHeaders:   []string{"Content-Type", "X-Requested-With", "Accept"},
+		AllowedHeaders:   []string{"Content-Type", "X-Requested-With", "Accept", "X-Csrf-Token"},
+		ExposedHeaders:   []string{"X-Csrf-Token"},
 		AllowCredentials: true,
+		MaxAge:           86400,
 	})
 	s.router = c.Handler(router)
 }
@@ -118,9 +138,10 @@ func (s *server) loggingRequest(next http.Handler) http.Handler {
 	})
 }
 
-func (s *server) handleCreateResponse(w http.ResponseWriter, r *http.Request) {
-	response := &model.Response{}
+func (s *server) handleCreateOrderResponse(w http.ResponseWriter, r *http.Request) {
+	response := &model.ResponseOrder{}
 	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+
 	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
 		s.error(w, reqId, InvalidJson) //Bad json
 		return
@@ -132,7 +153,7 @@ func (s *server) handleCreateResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.OrderID = id
-	response, err = s.useCase.Response().Create(*response)
+	response, err = s.useCase.ResponseOrder().Create(*response)
 	if err != nil {
 		s.error(w, reqId, New(err))
 		return
@@ -140,7 +161,7 @@ func (s *server) handleCreateResponse(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, reqId, http.StatusCreated, response)
 }
 
-func (s *server) handleGetAllResponses(w http.ResponseWriter, r *http.Request) {
+func (s *server) handleGetAllOrderResponses(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqId := r.Context().Value(ctxKeyReqId).(uint64)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
@@ -148,7 +169,7 @@ func (s *server) handleGetAllResponses(w http.ResponseWriter, r *http.Request) {
 		s.error(w, reqId, New(err)) //Bad json
 		return
 	}
-	responses, err := s.useCase.Response().FindByOrderID(id)
+	responses, err := s.useCase.ResponseOrder().FindByVacancyID(id)
 	if err != nil {
 		s.error(w, reqId, New(err)) //Bad json
 		return
@@ -157,9 +178,10 @@ func (s *server) handleGetAllResponses(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, reqId, http.StatusOK, responses)
 }
 
-func (s *server) handleChangeResponse(w http.ResponseWriter, r *http.Request) {
-	response := &model.Response{}
+func (s *server) handleChangeOrderResponse(w http.ResponseWriter, r *http.Request) {
+	response := &model.ResponseOrder{}
 	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+
 	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
 		s.error(w, reqId, InvalidJson)
 		return
@@ -172,7 +194,8 @@ func (s *server) handleChangeResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.UserID = r.Context().Value(ctxKeySession).(*model.Session).UserId
-	responses, err := s.useCase.Response().Change(*response)
+	responses, err := s.useCase.ResponseOrder().Change(*response)
+
 	if err != nil {
 		s.error(w, reqId, New(err))
 		return
@@ -181,8 +204,8 @@ func (s *server) handleChangeResponse(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, reqId, http.StatusOK, responses)
 }
 
-func (s *server) handleDeleteResponse(w http.ResponseWriter, r *http.Request) {
-	response := &model.Response{}
+func (s *server) handleDeleteOrderResponse(w http.ResponseWriter, r *http.Request) {
+	response := &model.ResponseOrder{}
 	params := mux.Vars(r)
 	reqId := r.Context().Value(ctxKeyReqId).(uint64)
 	var err error
@@ -192,7 +215,8 @@ func (s *server) handleDeleteResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.UserID = r.Context().Value(ctxKeySession).(*model.Session).UserId
-	err = s.useCase.Response().Delete(*response)
+	err = s.useCase.ResponseOrder().Delete(*response)
+
 	if err != nil {
 		s.error(w, reqId, New(err)) //Bad json
 		return
@@ -200,6 +224,37 @@ func (s *server) handleDeleteResponse(w http.ResponseWriter, r *http.Request) {
 	var emptyInterface interface{}
 
 	s.respond(w, reqId, http.StatusOK, emptyInterface)
+}
+
+func (s *server) handleGetAllUserOrders(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	userID, err := strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, InvalidJson)
+		return
+	}
+	executor, err := r.Cookie("executor")
+	if err != nil {
+		s.error(w, http.StatusInternalServerError, New(err))
+		return
+	}
+	var o []model.Order
+	isExecutor, err := strconv.ParseBool(executor.Value)
+	if err != nil {
+		s.error(w, http.StatusInternalServerError, New(err))
+		return
+	}
+	if isExecutor {
+		o, err = s.useCase.Order().FindByExecutorID(userID)
+	} else {
+		o, err = s.useCase.Order().FindByCustomerID(userID)
+	}
+	if err != nil {
+		s.error(w, http.StatusNotFound, New(err))
+		return
+	}
+	s.respond(w, reqId, http.StatusOK, o)
 }
 
 func (s *server) handleProfile(w http.ResponseWriter, r *http.Request) {
@@ -340,6 +395,7 @@ func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) handleCheckAuthorized(w http.ResponseWriter, r *http.Request) {
 	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 	session := r.Context().Value(ctxKeySession).(*model.Session)
 	s.respond(w, reqId, http.StatusOK, session)
 }
@@ -477,17 +533,56 @@ func (s *server) handleGetVacancy(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) error(w http.ResponseWriter, requestId uint64,  err error) {
 	httpError := &Error{}
-	if errors.As(err, &httpError){
+	if errors.As(err, &httpError) {
 		s.respond(w, requestId, httpError.Code, httpError.Field)
 		return
 	}
 	s.respond(w, requestId, http.StatusInternalServerError, map[string]string{"error": "Internal server error"})
 	s.logger.WithField(httpError.Type, map[string]interface{}{
-		"error" : err.Error(),
-		"field" : httpError.Field,
-		"request_id" : requestId,
+		"error":      err.Error(),
+		"field":      httpError.Field,
+		"request_id": requestId,
 	}).Error()
 }
+func (s *server) handleCreateVacancyResponse(w http.ResponseWriter, r *http.Request) {
+	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	response := &model.ResponseVacancy{}
+	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
+		s.error(w, http.StatusBadRequest, InvalidJson) //Bad json
+		return
+	}
+	params := mux.Vars(r)
+	id, err := strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, New(err)) //Bad json
+		return
+	}
+	response.VacancyID = id
+	response, err = s.useCase.ResponseVacancy().Create(*response)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, New(err))
+		return
+	}
+	s.respond(w, reqId, http.StatusCreated, response)
+}
+
+func (s *server) handleGetAllVacancyResponses (w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	reqId := r.Context().Value(ctxKeyReqId).(uint64)
+	id, err := strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, InvalidJson) //Bad json
+		return
+	}
+	responses, err := s.useCase.ResponseVacancy().FindByVacancyID(id)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, New(err)) //Bad json
+		return
+	}
+
+	s.respond(w,reqId,http.StatusOK, responses)
+}
+
 
 func (s *server) respond(w http.ResponseWriter, requestId uint64, code int, data interface{}) {
 	if data != nil {

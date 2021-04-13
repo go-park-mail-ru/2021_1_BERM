@@ -6,5 +6,6 @@ type UseCase interface {
 	Media() MediaUseCase
 	Session() SessionUseCase
 	Vacancy() VacancyUseCase
-	Response() ResponseUseCase
+	ResponseOrder() ResponseOrderUseCase
+	ResponseVacancy() ResponseVacancyUseCase
 }

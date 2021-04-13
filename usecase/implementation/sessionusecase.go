@@ -47,7 +47,7 @@ func (s *SessionUseCase) FindBySessionID(sessionID string) (*model.Session, erro
 func (s *SessionUseCase) encryptString(password string, salt string) (string, error) {
 	b, err := bcrypt.GenerateFromPassword([]byte(password+salt), bcrypt.MinCost)
 	if err != nil {
-		return "", err
+		return "",  errors.Wrap(err, sessionUseCaseError)
 	}
 	return string(b), nil
 }

@@ -6,12 +6,13 @@ import (
 )
 
 type UseCase struct {
-	orderUseCase    *OrderUseCase
-	userUseCase     *UserUseCase
-	mediaUseCase    *MediaUseCase
-	sessionUseCase  *SessionUseCase
-	vacancyUseCase  *VacancyUseCase
-	responseUseCase *ResponseUseCase
+	orderUseCase         *OrderUseCase
+	userUseCase          *UserUseCase
+	mediaUseCase         *MediaUseCase
+	sessionUseCase       *SessionUseCase
+	vacancyUseCase       *VacancyUseCase
+	responseOrderUseCase *ResponseOrderUseCase
+	responseVacancyUseCase *ResponseVacancyUseCase
 }
 
 func New(store store.Store, cache store.Cash, mediaStore store.MediaStore) *UseCase {
@@ -36,7 +37,11 @@ func New(store store.Store, cache store.Cash, mediaStore store.MediaStore) *UseC
 			store:      store,
 			mediaStore: mediaStore,
 		},
-		responseUseCase: &ResponseUseCase{
+		responseOrderUseCase: &ResponseOrderUseCase{
+			store:      store,
+			mediaStore: mediaStore,
+		},
+		responseVacancyUseCase: &ResponseVacancyUseCase{
 			store:      store,
 			mediaStore: mediaStore,
 		},
@@ -65,6 +70,10 @@ func (c *UseCase) Vacancy() usecase.VacancyUseCase {
 	return c.vacancyUseCase
 }
 
-func (c *UseCase) Response() usecase.ResponseUseCase {
-	return c.responseUseCase
+func (c *UseCase) ResponseOrder() usecase.ResponseOrderUseCase {
+	return c.responseOrderUseCase
+}
+
+func (c *UseCase) ResponseVacancy() usecase.ResponseVacancyUseCase {
+	return c.responseVacancyUseCase
 }

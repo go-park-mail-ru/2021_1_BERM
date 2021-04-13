@@ -46,5 +46,5 @@ func (v *VacancyRepository) FindByID(id uint64) (*model.Vacancy, error) {
 	if err != nil{
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
-	return &vacancy, err
+	return &vacancy, nil
 }

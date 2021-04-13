@@ -1,6 +1,6 @@
 package model
 
-type Response struct {
+type ResponseOrder struct {
 	ID        uint64 `json:"id,omitempty" db:"id"`
 	Time      uint64  `json:"time,omitempty" db:"time"`
 	OrderID   uint64 `json:"order_id,omitempty" db:"order_id"`
