@@ -124,7 +124,8 @@ func (u *UserRepository) FindByEmail(email string) (*model.User, error) {
 	if user.Executor {
 		rows, err := u.store.db.Queryx("SELECT array_agg(specialize_name) AS specializes FROM specializes "+
 			"INNER JOIN user_specializes us on specializes.id = us.specialize_id "+
-			"WHERE users.email = $1", email)
+			"INNER JOIN users u on us.user_id = u.id "+
+			"WHERE u.email = $1", email)
 		if err != nil {
 			return nil, errors.Wrap(err, sqlDbSourceError)
 		}
