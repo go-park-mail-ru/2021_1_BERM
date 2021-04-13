@@ -5,7 +5,8 @@ drop table if exists orders cascade;
 drop table if exists order_specializes cascade;
 drop table if exists user_reviews cascade;
 drop table if exists vacancy cascade;
-drop table if exists responses cascade;
+drop table if exists order_responses cascade;
+drop table if exists vacancy_responses cascade;
 
 CREATE TABLE users
 (
@@ -75,7 +76,7 @@ CREATE TABLE user_reviews
         REFERENCES orders (id)
 );
 
-CREATE TABLE responses
+CREATE TABLE order_responses
 (
     id         SERIAL PRIMARY KEY NOT NULL,
     order_id   INTEGER            NOT NULL,
@@ -90,6 +91,20 @@ CREATE TABLE responses
         REFERENCES orders (id)
 );
 
+CREATE TABLE vacancy_responses
+(
+    id         SERIAL PRIMARY KEY NOT NULL,
+    vacancy_id   INTEGER            NOT NULL,
+    user_id    INTEGER            NOT NULL,
+    rate       INTEGER            NOT NULL,
+    user_login VARCHAR            NOT NULL,
+    user_img   VARCHAR DEFAULT '',
+    time       BIGINT             NOT NULL,
+    FOREIGN KEY (user_id)
+        REFERENCES users (id),
+    FOREIGN KEY (vacancy_id)
+        REFERENCES vacancy (id)
+);
 -- SELECT array_agg(specialize_name) AS specializes FROM specializes
 -- INNER JOIN user_specializes us on specializes.id = us.specialize_id
 -- WHERE user_id = 1

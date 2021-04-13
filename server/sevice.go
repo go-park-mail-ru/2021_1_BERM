@@ -77,10 +77,10 @@ func (s *server) configureRouter(config *Config) {
 	order.HandleFunc("", s.handleGetActualOrder).Methods(http.MethodGet)
 	order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodPut)
 	order.HandleFunc("/{id:[0-9]+}", s.handleGetOrder).Methods(http.MethodGet)
-	order.HandleFunc("/{id:[0-9]+}/response", s.handleCreateResponse).Methods(http.MethodPost)
-	order.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllResponses).Methods(http.MethodGet)
-	order.HandleFunc("/{id:[0-9]+}/response", s.handleChangeResponse).Methods(http.MethodPut)
-	order.HandleFunc("/{id:[0-9]+}/response", s.handleDeleteResponse).Methods(http.MethodDelete)
+	order.HandleFunc("/{id:[0-9]+}/response", s.handleCreateOrderResponse).Methods(http.MethodPost)
+	order.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllOrderResponses).Methods(http.MethodGet)
+	order.HandleFunc("/{id:[0-9]+}/response", s.handleChangeOrderResponse).Methods(http.MethodPut)
+	order.HandleFunc("/{id:[0-9]+}/response", s.handleDeleteOrderResponse).Methods(http.MethodDelete)
 	order.HandleFunc("/profile/{id:[0-9]+}", s.handleGetAllUserOrders).Methods(http.MethodDelete)
 
 	vacancy := router.PathPrefix("/vacancy").Subrouter()
@@ -88,6 +88,8 @@ func (s *server) configureRouter(config *Config) {
 	vacancy.Use(csrfMiddleware)
 	vacancy.HandleFunc("", s.handleCreateVacancy).Methods(http.MethodPost)
 	vacancy.HandleFunc("/{id:[0-9]+}", s.handleGetVacancy).Methods(http.MethodGet)
+	vacancy.HandleFunc("/{id:[0-9]+}/response", s.handleCreateVacancyResponse).Methods(http.MethodPost)
+	vacancy.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllVacancyResponses).Methods(http.MethodGet)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   config.Origin,
@@ -100,8 +102,8 @@ func (s *server) configureRouter(config *Config) {
 	s.router = c.Handler(router)
 }
 
-func (s *server) handleCreateResponse(w http.ResponseWriter, r *http.Request) {
-	response := &model.Response{}
+func (s *server) handleCreateOrderResponse(w http.ResponseWriter, r *http.Request) {
+	response := &model.ResponseOrder{}
 	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
 		return
@@ -113,7 +115,7 @@ func (s *server) handleCreateResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.OrderID = id
-	response, err = s.useCase.Response().Create(*response)
+	response, err = s.useCase.ResponseOrder().Create(*response)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad body"))
 		return
@@ -121,14 +123,14 @@ func (s *server) handleCreateResponse(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, http.StatusCreated, response)
 }
 
-func (s *server) handleGetAllResponses(w http.ResponseWriter, r *http.Request) {
+func (s *server) handleGetAllOrderResponses(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
 		return
 	}
-	responses, err := s.useCase.Response().FindByOrderID(id)
+	responses, err := s.useCase.ResponseOrder().FindByVacancyID(id)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
 		return
@@ -137,8 +139,8 @@ func (s *server) handleGetAllResponses(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, http.StatusOK, responses)
 }
 
-func (s *server) handleChangeResponse(w http.ResponseWriter, r *http.Request) {
-	response := &model.Response{}
+func (s *server) handleChangeOrderResponse(w http.ResponseWriter, r *http.Request) {
+	response := &model.ResponseOrder{}
 	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
 		return
@@ -151,7 +153,7 @@ func (s *server) handleChangeResponse(w http.ResponseWriter, r *http.Request) {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
 		return
 	}
-	responses, err := s.useCase.Response().Change(*response)
+	responses, err := s.useCase.ResponseOrder().Change(*response)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
 		return
@@ -160,8 +162,8 @@ func (s *server) handleChangeResponse(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, http.StatusOK, responses)
 }
 
-func (s *server) handleDeleteResponse(w http.ResponseWriter, r *http.Request) {
-	response := &model.Response{}
+func (s *server) handleDeleteOrderResponse(w http.ResponseWriter, r *http.Request) {
+	response := &model.ResponseOrder{}
 	params := mux.Vars(r)
 	var err error
 	response.OrderID, err = strconv.ParseUint(params["id"], 10, 64)
@@ -170,7 +172,7 @@ func (s *server) handleDeleteResponse(w http.ResponseWriter, r *http.Request) {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
 		return
 	}
-	err = s.useCase.Response().Delete(*response)
+	err = s.useCase.ResponseOrder().Delete(*response)
 	if err != nil {
 		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
 		return
@@ -467,6 +469,43 @@ func (s *server) handleGetVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.respond(w, http.StatusOK, v)
+}
+
+func (s *server) handleCreateVacancyResponse(w http.ResponseWriter, r *http.Request) {
+	response := &model.ResponseVacancy{}
+	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad json")) //Bad json
+		return
+	}
+	params := mux.Vars(r)
+	id, err := strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Vacancy not found")) //Bad json
+		return
+	}
+	response.VacancyID = id
+	response, err = s.useCase.ResponseVacancy().Create(*response)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad body"))
+		return
+	}
+	s.respond(w, http.StatusCreated, response)
+}
+
+func (s *server) handleGetAllVacancyResponses (w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
+		return
+	}
+	responses, err := s.useCase.ResponseVacancy().FindByVacancyID(id)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, errors.New("Bad id")) //Bad json
+		return
+	}
+
+	s.respond(w, http.StatusOK, responses)
 }
 
 func (s *server) error(w http.ResponseWriter, code int, err error) {

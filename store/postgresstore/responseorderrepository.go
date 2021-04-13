@@ -4,20 +4,14 @@ import (
 	"FL_2/model"
 )
 
-type ResponseRepository struct {
+type ResponseOrderRepository struct {
 	store *Store
 }
 
-//id            SERIAL PRIMARY KEY NOT NULL,
-//order_id      INTEGER            NOT NULL,
-//user_id       INTEGER            NOT NULL,
-//rate          INTEGER            NOT NULL,
-//user_login VARCHAR            NOT NULL,
-//user_img      VARCHAR DEFAULT '',
-func (r *ResponseRepository) Create(response model.Response) (uint64, error) {
+func (r *ResponseOrderRepository) Create(response model.ResponseOrder) (uint64, error) {
 	var responseID uint64
 	err := r.store.db.QueryRow(
-		`INSERT INTO responses (
+		`INSERT INTO order_responses (
                    order_id, 
                    user_id, 
                    rate, 
@@ -46,17 +40,17 @@ func (r *ResponseRepository) Create(response model.Response) (uint64, error) {
 	return responseID, nil
 }
 
-func (r *ResponseRepository) FindById(id uint64) ([]model.Response, error) {
-	var responses []model.Response
-	if err := r.store.db.Select(&responses, "SELECT * FROM responses WHERE order_id = $1", id); err != nil {
+func (r *ResponseOrderRepository) FindByOrderId(id uint64) ([]model.ResponseOrder, error) {
+	var responses []model.ResponseOrder
+	if err := r.store.db.Select(&responses, "SELECT * FROM order_responses WHERE order_id = $1", id); err != nil {
 		return nil, err
 	}
 	return responses, nil
 }
 
-func (r *ResponseRepository) Change(response model.Response) (*model.Response, error) {
+func (r *ResponseOrderRepository) Change(response model.ResponseOrder) (*model.ResponseOrder, error) {
 	tx := r.store.db.MustBegin()
-	_, err := tx.NamedExec(`UPDATE responses SET 
+	_, err := tx.NamedExec(`UPDATE order_responses SET 
                  rate=:rate,
                  time=:time
 				 WHERE user_id=:user_id AND order_id=:order_id`, &response)
@@ -69,9 +63,9 @@ func (r *ResponseRepository) Change(response model.Response) (*model.Response, e
 	return &response, nil
 }
 
-func (r *ResponseRepository) Delete(response model.Response) error {
+func (r *ResponseOrderRepository) Delete(response model.ResponseOrder) error {
 	tx := r.store.db.MustBegin()
-	_, err := tx.NamedExec(`DELETE FROM responses 
+	_, err := tx.NamedExec(`DELETE FROM order_responses 
 				 WHERE user_id=:user_id AND order_id=:order_id`, &response)
 	if err != nil {
 		return  err

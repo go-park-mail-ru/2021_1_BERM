@@ -5,19 +5,19 @@ import (
 	"FL_2/store"
 )
 
-type ResponseUseCase struct {
+type ResponseOrderUseCase struct {
 	store      store.Store
 	mediaStore store.MediaStore
 }
 
-func (r *ResponseUseCase) Create(response model.Response) (*model.Response, error) {
+func (r *ResponseOrderUseCase) Create(response model.ResponseOrder) (*model.ResponseOrder, error) {
 	user, err := r.store.User().FindByID(response.UserID)
 	if err != nil {
 		return nil, err
 	}
 	response.UserLogin = user.Login
 	response.UserImg = user.Img
-	id, err := r.store.Response().Create(response)
+	id, err := r.store.ResponseOrder().Create(response)
 	response.ID = id
 	if err != nil {
 		return nil, err
@@ -30,8 +30,8 @@ func (r *ResponseUseCase) Create(response model.Response) (*model.Response, erro
 	return &response, nil
 }
 
-func (r *ResponseUseCase) FindByOrderID(id uint64) ([]model.Response, error) {
-	responses, err := r.store.Response().FindById(id)
+func (r *ResponseOrderUseCase) FindByVacancyID(id uint64) ([]model.ResponseOrder, error) {
+	responses, err := r.store.ResponseOrder().FindByOrderId(id)
 	if err != nil {
 		return nil, err
 	}
@@ -43,21 +43,21 @@ func (r *ResponseUseCase) FindByOrderID(id uint64) ([]model.Response, error) {
 		response.UserImg = string(img)
 	}
 	if responses == nil {
-		return []model.Response{}, nil
+		return []model.ResponseOrder{}, nil
 	}
 	return responses, nil
 }
 
-func (r *ResponseUseCase) Change(response model.Response) (*model.Response, error) {
-	changedResponse, err := r.store.Response().Change(response)
+func (r *ResponseOrderUseCase) Change(response model.ResponseOrder) (*model.ResponseOrder, error) {
+	changedResponse, err := r.store.ResponseOrder().Change(response)
 	if err != nil {
 		return nil, err
 	}
 	return changedResponse, nil
 }
 
-func (r *ResponseUseCase) Delete(response model.Response) error {
-	err := r.store.Response().Delete(response)
+func (r *ResponseOrderUseCase) Delete(response model.ResponseOrder) error {
+	err := r.store.ResponseOrder().Delete(response)
 	if err != nil {
 		return err
 	}
