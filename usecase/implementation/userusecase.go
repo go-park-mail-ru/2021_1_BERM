@@ -19,7 +19,9 @@ const (
 	userUseCaseError = "User use case error"
 )
 
-
+var(
+	ErrBadPassword = errors.New("Bad password")
+)
 
 type UserUseCase struct {
 	store      store.Store
@@ -70,6 +72,11 @@ func (u *UserUseCase) beforeCreate(user *model.User) error {
 		user.Password = encryptPassword
 		return err
 	}
+	if user.OldPassword != ""{
+		encryptPassword, err := u.encryptPassword(user.OldPassword, passwordSalt)
+		user.OldPassword = encryptPassword
+		return err
+	}
 	return nil
 }
 
@@ -116,6 +123,12 @@ func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
 	if err := u.beforeCreate(&user); err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
 	}
+	if user.OldPassword != ""{
+		err := u.checkPassword(user.OldPassword, user.ID)
+		if  err != nil{
+			return nil, errors.Wrap(err, userUseCaseError);
+		}
+	}
 	newUser, err := u.store.User().ChangeUser(user)
 	if err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
@@ -127,6 +140,17 @@ func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
 	}
 	newUser.Img = string(image)
 	return newUser, err
+}
+
+func(u *UserUseCase) checkPassword(password string, userId uint64)  error{
+	user, err := u.store.User().FindByID(userId)
+	if err != nil{
+		return err
+	}
+	if password != user.Password{
+		return ErrBadPassword
+	}
+	return nil
 }
 
 func (u *UserUseCase) AddSpecialize(specName string, userID uint64) error {
