@@ -3,6 +3,7 @@ package implementation
 import (
 	"FL_2/model"
 	"FL_2/store"
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
 )
 
@@ -16,6 +17,7 @@ type VacancyUseCase struct {
 }
 
 func (v *VacancyUseCase) Create(vacancy model.Vacancy) (*model.Vacancy, error) {
+	v.sanitizeVacancy(&vacancy)
 	id, err := v.store.Vacancy().Create(vacancy)
 	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)
@@ -52,4 +54,11 @@ func (v *VacancyUseCase) supplementingTheVacancyModel(vacancy *model.Vacancy) er
 	}
 	vacancy.Img = string(image)
 	return nil
+}
+
+func (v *VacancyUseCase) sanitizeVacancy(vacancy *model.Vacancy) {
+	sanitizer := bluemonday.UGCPolicy()
+	vacancy.VacancyName = sanitizer.Sanitize(vacancy.VacancyName)
+	vacancy.Description = sanitizer.Sanitize(vacancy.Description)
+	vacancy.Category = sanitizer.Sanitize(vacancy.Category)
 }

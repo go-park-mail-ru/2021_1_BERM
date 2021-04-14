@@ -112,7 +112,8 @@ func (s *server) configureRouter(config *Config) {
 	order.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllOrderResponses).Methods(http.MethodGet)
 	order.HandleFunc("/{id:[0-9]+}/response", s.handleChangeOrderResponse).Methods(http.MethodPut)
 	order.HandleFunc("/{id:[0-9]+}/response", s.handleDeleteOrderResponse).Methods(http.MethodDelete)
-	order.HandleFunc("/profile/{id:[0-9]+}", s.handleGetAllUserOrders).Methods(http.MethodDelete)
+	order.HandleFunc("/{id:[0-9]+}/select", s.handleSelectExecutor).Methods(http.MethodPut)
+	order.HandleFunc("/profile/{id:[0-9]+}", s.handleGetAllUserOrders).Methods(http.MethodGet)
 
 	vacancy := router.PathPrefix("/vacancy").Subrouter()
 	vacancy.Use(s.authenticateUser)
@@ -246,6 +247,29 @@ func (s *server) handleDeleteOrderResponse(w http.ResponseWriter, r *http.Reques
 	s.respond(w, reqId, http.StatusOK, emptyInterface)
 }
 
+func (s *server) handleSelectExecutor(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	reqId := r.Context().Value(ctxKeyReqID).(uint64)
+
+	order := model.Order{}
+	if err := json.NewDecoder(r.Body).Decode(&order); err != nil {
+		s.error(w, reqId, InvalidJSON)
+		return
+	}
+	var err error
+	order.ID, err = strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		s.error(w, http.StatusBadRequest, InvalidJSON)
+		return
+	}
+	err = s.useCase.Order().SelectExecutor(order)
+	if err != nil {
+		s.error(w, http.StatusInternalServerError, New(err))
+		return
+	}
+	s.respond(w, reqId, http.StatusOK, order)
+}
+
 func (s *server) handleGetAllUserOrders(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqId := r.Context().Value(ctxKeyReqID).(uint64)
@@ -254,17 +278,13 @@ func (s *server) handleGetAllUserOrders(w http.ResponseWriter, r *http.Request) 
 		s.error(w, http.StatusBadRequest, InvalidJSON)
 		return
 	}
-	executor, err := r.Cookie("executor")
+	user, err := s.useCase.User().FindByID(userID)
 	if err != nil {
 		s.error(w, http.StatusInternalServerError, New(err))
 		return
 	}
+	isExecutor := user.Executor
 	var o []model.Order
-	isExecutor, err := strconv.ParseBool(executor.Value)
-	if err != nil {
-		s.error(w, http.StatusInternalServerError, New(err))
-		return
-	}
 	if isExecutor {
 		o, err = s.useCase.Order().FindByExecutorID(userID)
 	} else {

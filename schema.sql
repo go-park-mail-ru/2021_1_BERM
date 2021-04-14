@@ -44,7 +44,7 @@ CREATE TABLE orders
     executor_id INTEGER,
     order_name  VARCHAR            NOT NULL,
     category    VARCHAR            NOT NULL,
-    budget      INTEGER            NOT NULL,
+    budget      BIGINT             NOT NULL,
     deadline    BIGINT             NOT NULL,
     description VARCHAR            NOT NULL
 );
@@ -56,7 +56,7 @@ CREATE TABLE vacancy
     category     VARCHAR            NOT NULL,
     vacancy_name VARCHAR            NOT NULL,
     description  VARCHAR            NOT NULL,
-    salary       INTEGER            NOT NULL,
+    salary       BIGINT             NOT NULL,
     FOREIGN KEY (user_id)
         REFERENCES users (id)
 );
@@ -94,7 +94,7 @@ CREATE TABLE order_responses
 CREATE TABLE vacancy_responses
 (
     id         SERIAL PRIMARY KEY NOT NULL,
-    vacancy_id   INTEGER            NOT NULL,
+    vacancy_id INTEGER            NOT NULL,
     user_id    INTEGER            NOT NULL,
     rate       INTEGER            NOT NULL,
     user_login VARCHAR            NOT NULL,

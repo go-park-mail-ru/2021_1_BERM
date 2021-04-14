@@ -5,6 +5,7 @@ import (
 	"FL_2/store"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -32,6 +33,8 @@ func (u *UserUseCase) Create(user *model.User) error {
 	if err := u.beforeCreate(user); err != nil {
 		return errors.Wrap(err, userUseCaseError)
 	}
+
+	u.sanitizeUser(user)
 
 	if user.Specializes != nil {
 		user.Executor = true
@@ -114,6 +117,7 @@ func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
 	if err := u.beforeCreate(&user); err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
 	}
+	u.sanitizeUser(&user)
 	newUser, err := u.store.User().ChangeUser(user)
 	if err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
@@ -128,7 +132,8 @@ func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
 }
 
 func (u *UserUseCase) AddSpecialize(specName string, userID uint64) error {
-	if err := u.store.User().AddSpecialize(specName, userID); err != nil {
+	err := u.store.User().AddSpecialize(specName, userID);
+	if  err != nil {
 		return errors.Wrap(err, userUseCaseError)
 	}
 	return nil
@@ -140,4 +145,13 @@ func (u *UserUseCase) DelSpecialize(specName string, userID uint64) error {
 		return errors.Wrap(err, userUseCaseError)
 	}
 	return nil
+}
+
+func (u *UserUseCase) sanitizeUser(user *model.User) {
+	sanitizer := bluemonday.UGCPolicy()
+	user.Img = sanitizer.Sanitize(user.Img)
+	user.Email = sanitizer.Sanitize(user.Email)
+	user.Login = sanitizer.Sanitize(user.Login)
+	user.NameSurname = sanitizer.Sanitize(user.NameSurname)
+	user.About = sanitizer.Sanitize(user.About)
 }

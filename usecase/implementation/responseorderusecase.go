@@ -41,12 +41,13 @@ func (r *ResponseOrderUseCase) FindByVacancyID(id uint64) ([]model.ResponseOrder
 	if err != nil {
 		return nil, errors.Wrap(err, responceUseCaseError)
 	}
-	for _, response := range responses {
-		img, err := r.mediaStore.Image().GetImage(response.UserImg)
+	for i, response := range responses {
+		err := r.supplementingTheResponseModel(&response)
 		if err != nil {
 			return nil, errors.Wrap(err, responceUseCaseError)
 		}
-		response.UserImg = string(img)
+		responses[i].UserImg = response.UserImg
+		responses[i].UserLogin = response.UserLogin
 	}
 	if responses == nil {
 		return []model.ResponseOrder{}, nil
@@ -59,6 +60,10 @@ func (r *ResponseOrderUseCase) Change(response model.ResponseOrder) (*model.Resp
 	if err != nil {
 		return nil, errors.Wrap(err, responceUseCaseError)
 	}
+	err = r.supplementingTheResponseModel(changedResponse)
+	if err != nil {
+		return nil, errors.Wrap(err, responceUseCaseError)
+	}
 	return changedResponse, nil
 }
 
@@ -67,5 +72,19 @@ func (r *ResponseOrderUseCase) Delete(response model.ResponseOrder) error {
 	if err != nil {
 		return errors.Wrap(err, responceUseCaseError)
 	}
+	return nil
+}
+
+func (o *ResponseOrderUseCase) supplementingTheResponseModel(response *model.ResponseOrder) error {
+	u, err := o.store.User().FindByID(response.UserID)
+	if err != nil {
+		return errors.Wrap(err, orderUseCaseError)
+	}
+	response.UserLogin = u.Login
+	image, err := o.mediaStore.Image().GetImage(u.Img)
+	if err != nil {
+		return errors.Wrap(err, orderUseCaseError)
+	}
+	response.UserImg = string(image)
 	return nil
 }

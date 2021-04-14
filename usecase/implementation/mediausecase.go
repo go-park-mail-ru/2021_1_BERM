@@ -3,6 +3,7 @@ package implementation
 import (
 	"FL_2/model"
 	"FL_2/store"
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
 	"strconv"
 )
@@ -22,6 +23,8 @@ func (s *MediaUseCase) GetImage(imageInfo interface{}) (*model.User, error) {
 
 func (s *MediaUseCase) SetImage(imageInfo interface{}, image []byte) (*model.User, error) {
 	u := imageInfo.(*model.User)
+	sanitizer := bluemonday.UGCPolicy()
+	image = sanitizer.SanitizeBytes(image)
 	imageID, err := s.mediaStore.Image().SetImage(strconv.FormatUint(u.ID, 10), image)
 	if err != nil {
 		return nil, errors.Wrap(err, mediaUseCaseError)
