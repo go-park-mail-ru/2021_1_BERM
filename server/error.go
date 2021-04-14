@@ -3,6 +3,7 @@ package server
 import (
 	"FL_2/store/postgresstore"
 	"FL_2/store/tarantoolcache"
+	"FL_2/usecase/implementation"
 	"database/sql"
 	"encoding/json"
 	validation "github.com/go-ozzo/ozzo-validation"
@@ -88,6 +89,16 @@ func New(err error) *Error {
 			Code: http.StatusUnauthorized,
 			Field: map[string]interface{}{
 				"Error": "Not authorized",
+			},
+		}
+	}
+	if errors.Is(err, implementation.ErrBadPassword){
+		return &Error{
+			Err: err,
+			Type: TypeExternal,
+			Code: http.StatusBadRequest,
+			Field: map[string]interface{}{
+				"Error" : implementation.ErrBadPassword.Error(),
 			},
 		}
 	}

@@ -8,6 +8,7 @@ type User struct {
 	ID          uint64         `json:"id,omitempty" db:"id"`
 	Email       string         `json:"email,omitempty" db:"email"`
 	Password    string         `json:"password,omitempty" db:"password"`
+	OldPassword string         `json:"old_password,omitempty"`
 	Login       string         `json:"login,omitempty" db:"login"`
 	NameSurname string         `json:"name_surname,omitempty" db:"name_surname"`
 	Executor    bool           `json:"executor,omitempty" db:"executor"`

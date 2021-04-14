@@ -7,17 +7,22 @@ import (
 	"github.com/go-ozzo/ozzo-validation/is"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
-	"golang.org/x/crypto/bcrypt"
+	"math/rand"
 )
 
 const (
 	passwordSalt = "asdknj279312kasl0sshALkMnHG"
+	saltLength = 8;
 )
 
 const (
 	MinPswdLenght    int = 5
 	MaxPswdLength    int = 300
 	userUseCaseError     = "User use case error"
+)
+
+var(
+	ErrBadPassword = errors.New("Bad password")
 )
 
 type UserUseCase struct {
@@ -57,26 +62,27 @@ func (u *UserUseCase) validate(user *model.User) error {
 	)
 }
 
-func (u *UserUseCase) encryptPassword(password string, salt string) (string, error) {
-	b, err := bcrypt.GenerateFromPassword([]byte(password+salt), bcrypt.MinCost)
-	if err != nil {
-		return "", errors.Wrap(err, userUseCaseError)
-	}
-	return string(b), nil
-}
+//func (u *UserUseCase) encryptPassword(password string, salt string) (string, error) {
+//	b, err := bcrypt.GenerateFromPassword([]byte(salt + password), bcrypt.MinCost)
+//	if err != nil {
+//		return "", errors.Wrap(err, userUseCaseError)
+//	}
+//	return salt + string(b), nil
+//}
 
 func (u *UserUseCase) beforeCreate(user *model.User) error {
-	if len(user.Password) > 0 {
-		encryptPassword, err := u.encryptPassword(user.Password, passwordSalt)
-		user.Password = encryptPassword
+	salt := make([]byte, saltLength)
+	_, err := rand.Read(salt)
+	if err != nil{
 		return err
 	}
+	hashPass(salt, user.Password)
 	return nil
 }
 
-func (u *UserUseCase) comparePassword(user *model.User, password string) bool {
-	return bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password+passwordSalt)) == nil
-}
+//func (u *UserUseCase) comparePassword(user *model.User, password string) bool {
+//	return bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password+passwordSalt)) == nil
+//}
 
 func (u *UserUseCase) sanitize(user *model.User) {
 	user.Password = ""
@@ -87,7 +93,7 @@ func (u *UserUseCase) UserVerification(email string, password string) (*model.Us
 	if err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
 	}
-	if u.comparePassword(user, password) != true {
+	if !compPass([]byte(user.Password), password) {
 		return nil, errors.Wrap(err, userUseCaseError)
 	}
 	u.sanitize(user)
@@ -117,7 +123,21 @@ func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
 	if err := u.beforeCreate(&user); err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
 	}
-	u.sanitizeUser(&user)
+  u.sanitizeUser(&user)
+	if user.OldPassword != ""{
+		storingUser, err := u.FindByID(user.ID)
+		if  err != nil{
+			return nil, errors.Wrap(err, userUseCaseError)
+		}
+		if !compPass([]byte(storingUser.Password), user.OldPassword){
+			return nil, ErrBadPassword
+		}
+	}
+	err := u.beforeCreate(&user)
+	if err != nil{
+		return nil, err
+	}
+
 	newUser, err := u.store.User().ChangeUser(user)
 	if err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
