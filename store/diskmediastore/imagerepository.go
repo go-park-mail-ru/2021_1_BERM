@@ -29,7 +29,7 @@ func (i *ImageRepository) GetImage(imageInfo interface{}) ([]byte, error) {
 	}
 	image := make([]byte, fileStat.Size())
 	_, err = file.Read(image)
-	return image, err
+	return image, nil
 }
 
 func (i *ImageRepository) SetImage(imageInfo interface{}, image []byte) (string, error) {
@@ -40,7 +40,7 @@ func (i *ImageRepository) SetImage(imageInfo interface{}, image []byte) (string,
 		return "", errors.Wrap(err, diskDbSourceError)
 	}
 	_, err = file.Write(image)
-	return imageInfo.(string), err
+	return imageInfo.(string), nil
 
 }
 

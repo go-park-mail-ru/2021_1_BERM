@@ -25,11 +25,11 @@ func (v *VacancyRepository) Create(vacancy model.Vacancy) (uint64, error) {
 		vacancy.VacancyName,
 		vacancy.Description,
 		vacancy.Salary,
-		vacancy.UserId).Scan(&vacancyID)
+		vacancy.UserID).Scan(&vacancyID)
 	if err != nil {
 		pqErr := &pq.Error{}
-		if errors.As(err, &pqErr){
-			if pqErr.Code == duplicateErrorCode{
+		if errors.As(err, &pqErr) {
+			if pqErr.Code == duplicateErrorCode {
 				return 0, errors.Wrap(&DuplicateSourceErr{
 					Err: err,
 				}, sqlDbSourceError)
@@ -43,8 +43,8 @@ func (v *VacancyRepository) Create(vacancy model.Vacancy) (uint64, error) {
 func (v *VacancyRepository) FindByID(id uint64) (*model.Vacancy, error) {
 	vacancy := model.Vacancy{}
 	err := v.store.db.Get(&vacancy, "SELECT * FROM vacancy WHERE id=$1", id)
-	if err != nil{
+	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
-	return &vacancy, err
+	return &vacancy, nil
 }

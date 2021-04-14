@@ -40,8 +40,8 @@ func (o *OrderRepository) Create(order model.Order) (uint64, error) {
 		order.Description).Scan(&orderID)
 	if err != nil {
 		pqErr := &pq.Error{}
-		if errors.As(err, &pqErr){
-			if pqErr.Code == duplicateErrorCode{
+		if errors.As(err, &pqErr) {
+			if pqErr.Code == duplicateErrorCode {
 				return 0, errors.Wrap(&DuplicateSourceErr{
 					Err: err,
 				}, sqlDbSourceError)
@@ -82,4 +82,18 @@ func (o *OrderRepository) GetActualOrders() ([]model.Order, error) {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return orders, nil
+}
+
+func (o *OrderRepository) AddExecutor(order model.Order) error {
+	tx := o.store.db.MustBegin()
+	_, err := tx.NamedExec(`UPDATE orders SET 
+                 executor_id =:executor_id
+				 WHERE id = :id`, &order)
+	if err != nil {
+		return errors.Wrap(err, sqlDbSourceError)
+	}
+	if err := tx.Commit(); err != nil {
+		return errors.Wrap(err, sqlDbSourceError)
+	}
+	return nil
 }

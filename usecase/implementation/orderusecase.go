@@ -3,11 +3,12 @@ package implementation
 import (
 	"FL_2/model"
 	"FL_2/store"
-	 validation "github.com/go-ozzo/ozzo-validation"
+	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
 )
 
-const(
+const (
 	orderUseCaseError = "Order use case error"
 )
 
@@ -20,6 +21,7 @@ func (o *OrderUseCase) Create(order model.Order) (*model.Order, error) {
 	if err := o.validateOrder(&order); err != nil {
 		return nil, err
 	}
+	o.sanitizeOrder(&order)
 	var err error
 	id, err := o.store.Order().Create(order)
 	if err != nil {
@@ -56,6 +58,9 @@ func (o *OrderUseCase) FindByExecutorID(executorID uint64) ([]model.Order, error
 			return nil, errors.Wrap(err, orderUseCaseError)
 		}
 	}
+	if orders == nil {
+		return []model.Order{}, nil
+	}
 	return orders, nil
 }
 
@@ -64,13 +69,17 @@ func (o *OrderUseCase) FindByCustomerID(customerID uint64) ([]model.Order, error
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
-	for _, order := range orders {
+	for i, order := range orders {
 		err = o.supplementingTheOrderModel(&order)
 		if err != nil {
 			return nil, errors.Wrap(err, orderUseCaseError)
 		}
+		orders[i] = order
 	}
-	return orders, err
+	if orders == nil {
+		return []model.Order{}, nil
+	}
+	return orders, nil
 }
 
 func (o *OrderUseCase) GetActualOrders() ([]model.Order, error) {
@@ -78,13 +87,35 @@ func (o *OrderUseCase) GetActualOrders() ([]model.Order, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
-	for _, order := range orders {
+	for i, order := range orders {
 		err = o.supplementingTheOrderModel(&order)
 		if err != nil {
 			return nil, errors.Wrap(err, orderUseCaseError)
 		}
+		orders[i] = order
+	}
+	if orders == nil {
+		return []model.Order{}, nil
 	}
 	return orders, err
+}
+
+func (o *OrderUseCase) SelectExecutor(order model.Order) error {
+	user, err := o.store.User().FindByID(order.ExecutorID)
+	if err != nil {
+		return errors.Wrap(err, orderUseCaseError)
+	}
+	if user.Executor == false {
+		return errors.Wrap(err, orderUseCaseError)
+	}
+	if user.ID == order.CustomerID {
+		return errors.Wrap(err, orderUseCaseError)
+	}
+	err = o.store.Order().AddExecutor(order)
+	if err != nil {
+		return errors.Wrap(err, orderUseCaseError)
+	}
+	return nil
 }
 
 func (o *OrderUseCase) validateOrder(order *model.Order) error {
@@ -109,4 +140,11 @@ func (o *OrderUseCase) supplementingTheOrderModel(order *model.Order) error {
 	}
 	order.Img = string(image)
 	return nil
+}
+
+func (o *OrderUseCase) sanitizeOrder(order *model.Order) {
+	sanitizer := bluemonday.UGCPolicy()
+	order.Category = sanitizer.Sanitize(order.Category)
+	order.OrderName = sanitizer.Sanitize(order.OrderName)
+	order.Description = sanitizer.Sanitize(order.Description)
 }

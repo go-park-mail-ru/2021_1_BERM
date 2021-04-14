@@ -6,15 +6,13 @@ import (
 	"github.com/tarantool/go-tarantool"
 )
 
-
-
 type SessionRepository struct {
 	cache *Cache
 }
 
 func (s *SessionRepository) Create(session *model.Session) error {
 	_, err := s.cache.conn.Insert("session", sessionToTarantoolData(session))
-	if err != nil{
+	if err != nil {
 		return errors.Wrap(err, sessionSourceError)
 	}
 	return err
@@ -23,7 +21,7 @@ func (s *SessionRepository) Create(session *model.Session) error {
 func (s *SessionRepository) Find(session *model.Session) error {
 	resp, err := s.cache.conn.Select("session", "primary",
 		0, 1, tarantool.IterEq, []interface{}{
-			session.SessionId,
+			session.SessionID,
 		})
 	if err != nil {
 		return errors.Wrap(err, sessionSourceError)
@@ -36,12 +34,12 @@ func (s *SessionRepository) Find(session *model.Session) error {
 }
 
 func sessionToTarantoolData(s *model.Session) []interface{} {
-	return []interface{}{s.SessionId, s.UserId}
+	return []interface{}{s.SessionID, s.UserID}
 }
 
 func tarantoolDataToSession(data []interface{}) *model.Session {
 	s := &model.Session{}
-	s.SessionId, _ = data[0].(string)
-	s.UserId, _ = data[1].(uint64)
+	s.SessionID, _ = data[0].(string)
+	s.UserID, _ = data[1].(uint64)
 	return s
 }

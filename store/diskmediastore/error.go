@@ -1,5 +1,5 @@
 package diskmediastore
 
-const(
+const (
 	diskDbSourceError = "Disc db sb source error"
 )

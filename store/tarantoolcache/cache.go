@@ -10,8 +10,8 @@ type Cache struct {
 	SessionRepository *SessionRepository
 }
 
-func New(dbUrl string) (*Cache, error) {
-	conn, err := newTarantoolConnect(dbUrl)
+func New(dbURL string) (*Cache, error) {
+	conn, err := newTarantoolConnect(dbURL)
 	if err != nil {
 		return nil, err
 	}
@@ -30,8 +30,8 @@ func (s *Cache) Session() store.SessionRepository {
 	return s.SessionRepository
 }
 
-func newTarantoolConnect(dbUrl string) (*tarantool.Connection, error) {
+func newTarantoolConnect(dbURL string) (*tarantool.Connection, error) {
 	opts := tarantool.Opts{User: "guest"}
-	db, err := tarantool.Connect(dbUrl, opts)
+	db, err := tarantool.Connect(dbURL, opts)
 	return db, err
 }
