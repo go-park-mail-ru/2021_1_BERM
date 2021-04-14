@@ -3,5 +3,5 @@ log_level = "error"
 database_url = "127.0.0.1:3000"
 origin = ["http://localhost:8000", "http://localhost:63342", "http://localhost:63343", "https://fldebploy.netlify.app", "https://findfreelancer.ru"]
 content_dir = "/home/ubuntu/2021_1_BERM/imgUsrs"
-https = true
+https = false
 dsn = "user=postgres dbname=postgres password=admin host=127.0.0.1 port=5432 sslmode=disable"
