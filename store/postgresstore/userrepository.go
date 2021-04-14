@@ -65,7 +65,7 @@ func (u *UserRepository) Create(user model.User) (uint64, error) {
 				$6	
                 ) RETURNING id`,
 		user.Email,
-		user.Password,
+		user.EncryptPassword,
 		user.Login,
 		user.NameSurname,
 		user.About,

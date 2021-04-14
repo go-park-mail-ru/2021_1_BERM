@@ -12,7 +12,7 @@ CREATE TABLE users
 (
     id           SERIAL PRIMARY KEY NOT NULL,
     email        VARCHAR UNIQUE     NOT NULL,
-    password     VARCHAR            NOT NULL,
+    password     bytea            NOT NULL,
     login        VARCHAR            NOT NULL,
     name_surname VARCHAR            NOT NULL,
     about        VARCHAR DEFAULT NULL,

@@ -76,7 +76,7 @@ func (u *UserUseCase) beforeCreate(user *model.User) error {
 	if err != nil{
 		return err
 	}
-	hashPass(salt, user.Password)
+	user.EncryptPassword = hashPass(salt, user.Password)
 	return nil
 }
 
@@ -93,7 +93,7 @@ func (u *UserUseCase) UserVerification(email string, password string) (*model.Us
 	if err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
 	}
-	if !compPass([]byte(user.Password), password) {
+	if !compPass(user.EncryptPassword, password) {
 		return nil, errors.Wrap(err, userUseCaseError)
 	}
 	u.sanitize(user)
@@ -125,11 +125,11 @@ func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
 	}
   u.sanitizeUser(&user)
 	if user.OldPassword != ""{
-		storingUser, err := u.FindByID(user.ID)
+		storingUser, err := u.store.User().FindByID(user.ID)
 		if  err != nil{
 			return nil, errors.Wrap(err, userUseCaseError)
 		}
-		if !compPass([]byte(storingUser.Password), user.OldPassword){
+		if !compPass(storingUser.EncryptPassword, user.OldPassword){
 			return nil, ErrBadPassword
 		}
 	}
