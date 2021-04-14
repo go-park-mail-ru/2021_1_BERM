@@ -111,7 +111,16 @@ func (o *OrderUseCase) SelectExecutor(order model.Order) error {
 	if user.ID == order.CustomerID {
 		return errors.Wrap(err, orderUseCaseError)
 	}
-	err = o.store.Order().AddExecutor(order)
+	err = o.store.Order().UpdateExecutor(order)
+	if err != nil {
+		return errors.Wrap(err, orderUseCaseError)
+	}
+	return nil
+}
+
+func (o *OrderUseCase) DeleteExecutor(order model.Order) error {
+	order.ExecutorID = 0
+	err := o.store.Order().UpdateExecutor(order)
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}

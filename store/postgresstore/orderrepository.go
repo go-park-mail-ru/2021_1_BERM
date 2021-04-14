@@ -84,7 +84,7 @@ func (o *OrderRepository) GetActualOrders() ([]model.Order, error) {
 	return orders, nil
 }
 
-func (o *OrderRepository) AddExecutor(order model.Order) error {
+func (o *OrderRepository) UpdateExecutor(order model.Order) error {
 	tx := o.store.db.MustBegin()
 	_, err := tx.NamedExec(`UPDATE orders SET 
                  executor_id =:executor_id
