@@ -9,4 +9,5 @@ type OrderUseCase interface {
 	FindByCustomerID(customerID uint64) ([]model.Order, error)
 	GetActualOrders() ([]model.Order, error)
 	SelectExecutor(order model.Order) error
+	DeleteExecutor(order model.Order) error
 }
