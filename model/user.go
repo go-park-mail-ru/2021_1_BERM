@@ -8,7 +8,7 @@ type User struct {
 	ID              uint64         `json:"id,omitempty" db:"id"`
 	Email           string         `json:"email,omitempty" db:"email"`
 	Password        string         `json:"password,omitempty" db:"-"`
-	OldPassword     string         `json:"old_password,omitempty"`
+	NewPassword     string         `json:"new_password,omitempty" db:"-"`
 	EncryptPassword []byte         `json:"-" db:"password"`
 	Login           string         `json:"login,omitempty" db:"login"`
 	NameSurname     string         `json:"name_surname,omitempty" db:"name_surname"`
