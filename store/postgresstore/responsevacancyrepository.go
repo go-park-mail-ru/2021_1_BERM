@@ -41,7 +41,7 @@ const (
 
 func (r *ResponseVacancyRepository) Create(response model.ResponseVacancy) (uint64, error) {
 	var responseID uint64
-	err := r.store.db.QueryRow(
+	err := r.store.Db.QueryRow(
 		insertVacancyResponse,
 		response.VacancyID,
 		response.UserID,
@@ -66,14 +66,14 @@ func (r *ResponseVacancyRepository) Create(response model.ResponseVacancy) (uint
 
 func (r *ResponseVacancyRepository) FindByVacancyID(id uint64) ([]model.ResponseVacancy, error) {
 	var responses []model.ResponseVacancy
-	if err := r.store.db.Select(&responses, selectVacancyResponseByVacancyID, id); err != nil {
+	if err := r.store.Db.Select(&responses, selectVacancyResponseByVacancyID, id); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return responses, nil
 }
 
 func (r *ResponseVacancyRepository) Change(response model.ResponseVacancy) (*model.ResponseVacancy, error) {
-	tx := r.store.db.MustBegin()
+	tx := r.store.Db.MustBegin()
 	_, err := tx.NamedExec(updateVacancyResponse, &response)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
@@ -85,7 +85,7 @@ func (r *ResponseVacancyRepository) Change(response model.ResponseVacancy) (*mod
 }
 
 func (r *ResponseVacancyRepository) Delete(response model.ResponseVacancy) error {
-	tx := r.store.db.MustBegin()
+	tx := r.store.Db.MustBegin()
 	_, err := tx.NamedExec(deleteVacancyResponse, &response)
 	if err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
