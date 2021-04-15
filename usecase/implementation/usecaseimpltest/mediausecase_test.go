@@ -18,7 +18,8 @@ func TestMediaUseCaseSetImage(t *testing.T) {
 	mockStore := mock.NewMockStore(ctrl)
 	userRepMock := mock.NewMockUserRepository(ctrl)
 	userRepMock.EXPECT().ChangeUser(newCorrectUser).Return(newCorrectUser, nil)
-	mockStore.EXPECT().User().Times(1).Return(userRepMock)
+	userRepMock.EXPECT().FindUserByID(uint64(0)).Return(newCorrectUser, nil)
+	mockStore.EXPECT().User().Times(2).Return(userRepMock)
 
 	mockCache := mock.NewMockCaсhe(ctrl)
 
