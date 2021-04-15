@@ -16,7 +16,11 @@ type ResponseVacancyUseCase struct {
 }
 
 func (r *ResponseVacancyUseCase) Create(response model.ResponseVacancy) (*model.ResponseVacancy, error) {
-	user, err := r.store.User().FindByID(response.UserID)
+	user, err := r.store.User().FindUserByID(response.UserID)
+	if err != nil {
+		return nil, errors.Wrap(err, ErrInResponseVacancyUseCase)
+	}
+	user.Specializes, err = r.store.User().FindSpecializesByUserID(response.UserID)
 	if err != nil {
 		return nil, errors.Wrap(err, ErrInResponseVacancyUseCase)
 	}

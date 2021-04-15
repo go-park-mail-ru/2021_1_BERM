@@ -43,12 +43,12 @@ func (v *VacancyUseCase) FindByID(id uint64) (*model.Vacancy, error) {
 }
 
 func (v *VacancyUseCase) supplementingTheVacancyModel(vacancy *model.Vacancy) error {
-	u, err := v.store.User().FindByID(vacancy.UserID)
+	user, err := v.store.User().FindUserByID(vacancy.UserID)
 	if err != nil {
 		return errors.Wrap(err, vacancyUseCaseError)
 	}
-	vacancy.Login = u.Login
-	image, err := v.mediaStore.Image().GetImage(u.Img)
+	vacancy.Login = user.Login
+	image, err := v.mediaStore.Image().GetImage(user.Img)
 	if err != nil {
 		return errors.Wrap(err, vacancyUseCaseError)
 	}

@@ -5,7 +5,7 @@ CREATE TABLE ff.users
 (
     id           SERIAL PRIMARY KEY NOT NULL,
     email        VARCHAR UNIQUE     NOT NULL,
-    password     bytea            NOT NULL,
+    password     bytea              NOT NULL,
     login        VARCHAR            NOT NULL,
     name_surname VARCHAR            NOT NULL,
     about        VARCHAR DEFAULT NULL,
@@ -99,3 +99,6 @@ CREATE TABLE ff.vacancy_responses
         REFERENCES ff.vacancy (id)
 );
 
+SELECT array_agg(specialize_name) AS specializes FROM ff.specializes
+		INNER JOIN ff.user_specializes us on specializes.id = us.specialize_id
+		WHERE user_id = $1

@@ -11,6 +11,7 @@ import (
 type UserRepository struct {
 	store *Store
 }
+
 const (
 	insertToUserSpecTable = `INSERT INTO ff.user_specializes (
                    			user_id, specialize_id
@@ -45,17 +46,17 @@ const (
 
 	selectSpecializesByName = "SELECT * FROM ff.specializes WHERE specialize_name = $1"
 
-	selectCustomerByEmail   = "SELECT * from ff.users WHERE users.email=$1 "
+	selectUserByEmail = "SELECT * from ff.users WHERE users.email=$1 "
 
-	selectExecutorByEmail = "SELECT array_agg(specialize_name) AS specializes FROM specializes " +
-		"INNER JOIN user_specializes us on specializes.id = us.specialize_id "+
-		"INNER JOIN users u on us.user_id = u.id "+
+	selectSpecializesByUserEmail = "SELECT array_agg(specialize_name) AS specializes FROM ff.specializes " +
+		"INNER JOIN ff.user_specializes us on specializes.id = us.specialize_id " +
+		"INNER JOIN ff.users u on us.user_id = u.id " +
 		"WHERE u.email = $1"
 
-	selectCustomerByID = "SELECT * from ff.users WHERE id=$1"
+	selectUserByID = "SELECT * from ff.users WHERE id=$1"
 
-	selectExecutorByID = "SELECT array_agg(specialize_name) AS specializes FROM specializes "+
-		"INNER JOIN user_specializes us on specializes.id = us.specialize_id "+
+	selectSpecializesByUserID = "SELECT array_agg(specialize_name) AS specializes FROM ff.specializes " +
+		"INNER JOIN ff.user_specializes us on specializes.id = us.specialize_id " +
 		"WHERE user_id = $1"
 
 	updateUser = `UPDATE ff.users SET 
@@ -69,9 +70,11 @@ const (
 				 WHERE id = :id`
 
 	deleteSpecializes = "DELETE FROM ff.user_specializes WHERE specialize_id=$1 AND user_id =$2"
+
+	selectUserIDAndSpecID = "SELECT * FROM ff.user_specializes WHERE specialize_id=$1 AND user_id=$2"
 )
 
-func (u *UserRepository) insertToUserSpecTable(userID uint64, specID uint64) error {
+func (u *UserRepository) AddUserSpec(userID uint64, specID uint64) error {
 	_, err := u.store.db.NamedExec(
 		insertToUserSpecTable,
 		map[string]interface{}{
@@ -84,7 +87,33 @@ func (u *UserRepository) insertToUserSpecTable(userID uint64, specID uint64) err
 	return nil
 }
 
-func (u *UserRepository) insertToSpecTable(specName string) (uint64, error) {
+func (u *UserRepository) FindSpecializeByName(specName string) (model.Specialize, error) {
+	specialize := model.Specialize{}
+	err := u.store.db.Get(&specialize, selectSpecializesByName, specName)
+	if errors.Is(err, sql.ErrNoRows) {
+		return model.Specialize{
+			ID:   0,
+			Name: "",
+		}, nil
+	}
+	if err != nil {
+		return model.Specialize{}, errors.Wrap(err, sqlDbSourceError)
+	}
+	return specialize, nil
+}
+
+func (u *UserRepository) IsUserHaveSpec(specID uint64, userID uint64) (bool, error) {
+	rows, err := u.store.db.Queryx(selectUserIDAndSpecID, specID, userID)
+	if err != nil {
+		return true, errors.Wrap(err, sqlDbSourceError)
+	}
+	if rows.Next() != false {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (u *UserRepository) AddSpec(specName string) (uint64, error) {
 	var specID uint64 = 0
 	err := u.store.db.QueryRow(
 		insertToSpecTable, specName).Scan(&specID)
@@ -94,7 +123,7 @@ func (u *UserRepository) insertToSpecTable(specName string) (uint64, error) {
 	return specID, nil
 }
 
-func (u *UserRepository) Create(user model.User) (uint64, error) {
+func (u *UserRepository) AddUser(user model.User) (uint64, error) {
 	var userID uint64
 	err := u.store.db.QueryRow(
 		insertUser,
@@ -115,124 +144,58 @@ func (u *UserRepository) Create(user model.User) (uint64, error) {
 		}
 		return 0, errors.Wrap(err, sqlDbSourceError)
 	}
-	for _, spec := range user.Specializes {
-		rows, err := u.store.db.Queryx(selectSpecializesByName, spec)
-		if err != nil {
-			return 0, errors.Wrap(err, sqlDbSourceError)
-		}
-
-		// если в таблице специализации нет данной специализации - добавляем ее в таблицу специализацй
-		// а затем добаляем в талбицу соответствия юзер-специализация
-		if rows.Next() == false {
-			specID, err := u.insertToSpecTable(spec)
-			if err != nil {
-				return 0, errors.Wrap(err, sqlDbSourceError)
-			}
-			if err := u.insertToUserSpecTable(userID, specID); err != nil {
-				return 0, err
-			}
-		} else {
-			// в ином случае просто добавляем в таблицу соответствий
-			specialize := model.Specialize{}
-			err := rows.StructScan(&specialize)
-			if err != nil {
-				return 0, errors.Wrap(err, sqlDbSourceError)
-			}
-
-			specID := specialize.ID
-
-			if err := u.insertToUserSpecTable(userID, specID); err != nil {
-				return 0, errors.Wrap(err, sqlDbSourceError)
-			}
-		}
-	}
 	return userID, nil
 }
 
-func (u *UserRepository) FindByEmail(email string) (*model.User, error) {
+func (u *UserRepository) FindUserByEmail(email string) (*model.User, error) {
 	user := model.User{}
-	err := u.store.db.Get(&user, selectCustomerByEmail, email)
+	err := u.store.db.Get(&user, selectUserByEmail, email)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
-	if user.Executor {
-		rows, err := u.store.db.Queryx(selectExecutorByEmail, email)
-		if err != nil {
-			return nil, errors.Wrap(err, sqlDbSourceError)
-		}
-		for rows.Next() {
-			if err := rows.StructScan(&user); err != nil {
-				return nil, errors.Wrap(err, sqlDbSourceError)
-			}
-		}
-	}
-
 	return &user, nil
 }
 
-func (u *UserRepository) FindByID(id uint64) (*model.User, error) {
+func (u *UserRepository) FindSpecializesByUserEmail(email string) (pq.StringArray, error) {
 	user := model.User{}
-	err := u.store.db.Get(&user, selectCustomerByID, id)
+	rows, err := u.store.db.Queryx(selectSpecializesByUserEmail, email)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
-	if user.Executor {
-		rows, err := u.store.db.Queryx(selectExecutorByID, id)
-		if err != nil {
+	for rows.Next() {
+		if err := rows.StructScan(&user); err != nil {
 			return nil, errors.Wrap(err, sqlDbSourceError)
 		}
-		for rows.Next() {
-			if err := rows.StructScan(&user); err != nil {
-				return nil, errors.Wrap(err, sqlDbSourceError)
-			}
+	}
+	return user.Specializes, nil
+}
+
+func (u *UserRepository) FindUserByID(id uint64) (*model.User, error) {
+	user := model.User{}
+	err := u.store.db.Get(&user, selectUserByID, id)
+	if err != nil {
+		return nil, errors.Wrap(err, sqlDbSourceError)
+	}
+	return &user, nil
+}
+
+func (u *UserRepository) FindSpecializesByUserID(id uint64) (pq.StringArray, error) {
+	user := model.User{}
+	rows, err := u.store.db.Queryx(selectSpecializesByUserID, id)
+	if err != nil {
+		return nil, errors.Wrap(err, sqlDbSourceError)
+	}
+	for rows.Next() {
+		if err := rows.StructScan(&user); err != nil {
+			return nil, errors.Wrap(err, sqlDbSourceError)
 		}
 	}
-
-	return &user, nil
+	return user.Specializes, nil
 }
 
 func (u *UserRepository) ChangeUser(user model.User) (*model.User, error) {
-	oldUser, err := u.FindByID(user.ID)
-
-	if err != nil {
-		return nil, errors.Wrap(err, sqlDbSourceError)
-	}
-
-	if user.Email == "" {
-		user.Email = oldUser.Email
-	}
-
-	if user.About == "" {
-		user.About = oldUser.About
-	}
-
-	if user.Password == "" {
-		user.Password = oldUser.Password
-	}
-
-	if user.Login == "" {
-		user.Login = oldUser.Login
-	}
-
-	if user.Img == "" {
-		user.Img = oldUser.Img
-	}
-
-	if user.NameSurname == "" {
-		user.NameSurname = oldUser.NameSurname
-	}
-
-	if user.Rating == 0 {
-		user.Rating = oldUser.Rating
-	}
-
-	user.Executor = oldUser.Executor
-	for _, spec := range oldUser.Specializes {
-		user.Specializes = append(user.Specializes, spec)
-	}
-
 	tx := u.store.db.MustBegin()
-	_, err = tx.NamedExec(updateUser, &user)
+	_, err := tx.NamedExec(updateUser, &user)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
@@ -242,45 +205,9 @@ func (u *UserRepository) ChangeUser(user model.User) (*model.User, error) {
 	return &user, nil
 }
 
-func (u *UserRepository) AddSpecialize(specName string, userID uint64) error {
-	specialize := model.Specialize{}
-	err := u.store.db.Get(&specialize, "SELECT * FROM ff.specializes WHERE specialize_name=$1", specName)
 
-	// ошибка не проходит совпадение на no rows, я хз как ее сравнить с этим сраным ерор стринг
-	if !errors.Is(err,sql.ErrNoRows) && err != nil {
-		return errors.Wrap(err, sqlDbSourceError)
-	}
-	if errors.Is(err,sql.ErrNoRows) {
-		specialize.ID, err = u.insertToSpecTable(specName)
-		if err != nil {
-			return errors.Wrap(err, sqlDbSourceError)
-		}
-	}
-	rows, err := u.store.db.Queryx("SELECT * FROM ff.user_specializes WHERE specialize_id=$1 AND user_id=$2", specialize.ID, userID)
-	if err != nil {
-		return errors.Wrap(err, sqlDbSourceError)
-	}
-	if rows.Next() != false  {
-		//TODO: Вернуть не 500!!!
-		return errors.New("Spec duplicate")
-	}
-	if err = u.insertToUserSpecTable(userID, specialize.ID); err != nil {
-		return errors.Wrap(err, sqlDbSourceError)
-	}
-
-	return nil
-}
-
-
-func (u *UserRepository) DelSpecialize(specName string, userID uint64) error {
-	specialize := model.Specialize{}
-	err := u.store.db.Get(&specialize, selectSpecializesByName, specName)
-	if err != nil {
-		return errors.Wrap(err, sqlDbSourceError)
-	}
-
-	_, err = u.store.db.Queryx(deleteSpecializes, specialize.ID, userID)
-
+func (u *UserRepository) DelSpecialize(specID uint64, userID uint64) error {
+	_, err := u.store.db.Queryx(deleteSpecializes, specID, userID)
 	if err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
 	}

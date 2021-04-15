@@ -27,11 +27,14 @@ const (
 				$5,
                 $6
                 ) RETURNING id`
+
 	selectVacancyResponseByVacancyID = "SELECT * FROM ff.vacancy_responses WHERE vacancy_id = $1"
+
 	updateVacancyResponse            = `UPDATE ff.vacancy_responses SET 
                  rate=:rate,
                  time=:time
 				 WHERE user_id=:user_id AND vacancy_id=:order_id`
+
 	deleteVacancyResponse = `DELETE FROM ff.vacancy_responses 
 				 WHERE user_id=:user_id AND vacancy_id=:order_id`
 )

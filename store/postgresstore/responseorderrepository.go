@@ -27,11 +27,14 @@ const (
 				$5,
                 $6
                 ) RETURNING id`
+
 	selectOrderResponseByOrderID = "SELECT * FROM ff.order_responses WHERE order_id = $1"
+
 	updateOrderResponse          = `UPDATE ff.order_responses SET 
                  rate=:rate,
                  time=:time
 				 WHERE user_id=:user_id AND order_id=:order_id`
+
 	deleteOrderResponse = `DELETE FROM ff.order_responses 
 				 WHERE user_id=:user_id AND order_id=:order_id`
 

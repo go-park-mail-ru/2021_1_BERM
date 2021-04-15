@@ -101,7 +101,11 @@ func (o *OrderUseCase) GetActualOrders() ([]model.Order, error) {
 }
 
 func (o *OrderUseCase) SelectExecutor(order model.Order) error {
-	user, err := o.store.User().FindByID(order.ExecutorID)
+	user, err := o.store.User().FindUserByID(order.ExecutorID)
+	if err != nil {
+		return errors.Wrap(err, orderUseCaseError)
+	}
+	user.Specializes, err = o.store.User().FindSpecializesByUserID(order.ExecutorID)
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
@@ -138,7 +142,7 @@ func (o *OrderUseCase) validateOrder(order *model.Order) error {
 }
 
 func (o *OrderUseCase) supplementingTheOrderModel(order *model.Order) error {
-	u, err := o.store.User().FindByID(order.CustomerID)
+	u, err := o.store.User().FindUserByID(order.CustomerID)
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}

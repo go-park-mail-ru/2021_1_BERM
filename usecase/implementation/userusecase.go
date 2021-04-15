@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	saltLength = 8;
+	saltLength = 8
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 	userUseCaseError     = "User use case error"
 )
 
-var(
+var (
 	ErrBadPassword = errors.New("Bad password")
 )
 
@@ -43,11 +43,30 @@ func (u *UserUseCase) Create(user *model.User) error {
 	if user.Specializes != nil {
 		user.Executor = true
 	}
-	id, err := u.store.User().Create(*user)
+	id, err := u.store.User().AddUser(*user)
 	if err != nil {
 		return errors.Wrap(err, userUseCaseError)
 	}
 	user.ID = id
+
+	// если в таблице специализации нет данной специализации - добавляем ее в таблицу специализацй
+	// а затем добаляем в талбицу соответствия юзер-специализация
+	for _, spec := range user.Specializes {
+		specialize, err := u.store.User().FindSpecializeByName(spec)
+		if err != nil {
+			return errors.Wrap(err, userUseCaseError)
+		}
+		if specialize.Name == "" && specialize.ID == 0 {
+			specialize.ID, err = u.store.User().AddSpec(spec)
+			if err != nil {
+				return errors.Wrap(err, userUseCaseError)
+			}
+
+		}
+		if err := u.store.User().AddUserSpec(user.ID, specialize.ID); err != nil {
+			return errors.Wrap(err, userUseCaseError)
+		}
+	}
 	return err
 }
 
@@ -64,7 +83,7 @@ func (u *UserUseCase) validate(user *model.User) error {
 func (u *UserUseCase) beforeCreate(user *model.User) error {
 	salt := make([]byte, saltLength)
 	_, err := rand.Read(salt)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	user.EncryptPassword = hashPass(salt, user.Password)
@@ -76,9 +95,15 @@ func (u *UserUseCase) sanitize(user *model.User) {
 }
 
 func (u *UserUseCase) UserVerification(email string, password string) (*model.User, error) {
-	user, err := u.store.User().FindByEmail(email)
+	user, err := u.store.User().FindUserByEmail(email)
 	if err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
+	}
+	if user.Executor {
+		user.Specializes, err = u.store.User().FindSpecializesByUserEmail(email)
+		if err != nil {
+			return nil, errors.Wrap(err, userUseCaseError)
+		}
 	}
 	if !compPass(user.EncryptPassword, password) {
 		return nil, errors.Wrap(err, userUseCaseError)
@@ -93,9 +118,15 @@ func (u *UserUseCase) UserVerification(email string, password string) (*model.Us
 }
 
 func (u *UserUseCase) FindByID(id uint64) (*model.User, error) {
-	user, err := u.store.User().FindByID(id)
+	user, err := u.store.User().FindUserByID(id)
 	if err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
+	}
+	if user.Executor {
+		user.Specializes, err = u.store.User().FindSpecializesByUserID(id)
+		if err != nil {
+			return nil, errors.Wrap(err, userUseCaseError)
+		}
 	}
 	u.sanitize(user)
 	image, err := u.mediaStore.Image().GetImage(user.Img)
@@ -107,20 +138,54 @@ func (u *UserUseCase) FindByID(id uint64) (*model.User, error) {
 }
 
 func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
-	storingUser, err := u.store.User().FindByID(user.ID)
-	if  err != nil{
+	oldUser, err := u.store.User().FindUserByID(user.ID)
+	if err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
 	}
 
-	if !compPass(storingUser.EncryptPassword, user.Password){
+	if !compPass(oldUser.EncryptPassword, user.Password) {
 		return nil, ErrBadPassword
 	}
-	if user.NewPassword != ""{
+	if user.NewPassword != "" {
 		user.Password = user.NewPassword
 	}
 	if err := u.beforeCreate(&user); err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
 	}
+	if user.Email == "" {
+		user.Email = oldUser.Email
+	}
+
+	if user.About == "" {
+		user.About = oldUser.About
+	}
+
+	if user.Password == "" {
+		user.Password = oldUser.Password
+	}
+
+	if user.Login == "" {
+		user.Login = oldUser.Login
+	}
+
+	if user.Img == "" {
+		user.Img = oldUser.Img
+	}
+
+	if user.NameSurname == "" {
+		user.NameSurname = oldUser.NameSurname
+	}
+
+	if user.Rating == 0 {
+		user.Rating = oldUser.Rating
+	}
+
+	user.Executor = oldUser.Executor
+
+	for _, spec := range oldUser.Specializes {
+		user.Specializes = append(user.Specializes, spec)
+	}
+
 	newUser, err := u.store.User().ChangeUser(user)
 	if err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
@@ -135,18 +200,45 @@ func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
 }
 
 func (u *UserUseCase) AddSpecialize(specName string, userID uint64) error {
-	err := u.store.User().AddSpecialize(specName, userID);
-	if  err != nil {
+	specialize, err := u.store.User().FindSpecializeByName(specName)
+
+	if err != nil {
+		return errors.Wrap(err, userUseCaseError)
+	}
+
+	if specialize.Name == "" && specialize.ID == 0 {
+		specialize.ID, err = u.store.User().AddSpec(specName)
+		if err != nil {
+			return errors.Wrap(err, userUseCaseError)
+		}
+	}
+
+	haveSpec, err := u.store.User().IsUserHaveSpec(specialize.ID, userID)
+	if err != nil {
+		return errors.Wrap(err, userUseCaseError)
+	}
+	if haveSpec {
+		//TODO: Кидать 400 а не 500
+		return errors.New("Spec duplicate")
+	}
+
+	if err = u.store.User().AddUserSpec(userID, specialize.ID); err != nil {
 		return errors.Wrap(err, userUseCaseError)
 	}
 	return nil
 }
 
 func (u *UserUseCase) DelSpecialize(specName string, userID uint64) error {
-	err := u.store.User().DelSpecialize(specName, userID)
+	specialize, err := u.store.User().FindSpecializeByName(specName)
 	if err != nil {
 		return errors.Wrap(err, userUseCaseError)
 	}
+	err = u.store.User().DelSpecialize(specialize.ID, userID)
+
+	if err != nil {
+		return errors.Wrap(err, userUseCaseError)
+	}
+
 	return nil
 }
 

@@ -16,7 +16,11 @@ type ResponseOrderUseCase struct {
 }
 
 func (r *ResponseOrderUseCase) Create(response model.ResponseOrder) (*model.ResponseOrder, error) {
-	user, err := r.store.User().FindByID(response.UserID)
+	user, err := r.store.User().FindUserByID(response.UserID)
+	if err != nil {
+		return nil, errors.Wrap(err, responceUseCaseError)
+	}
+	user.Specializes, err = r.store.User().FindSpecializesByUserID(response.UserID)
 	if err != nil {
 		return nil, errors.Wrap(err, responceUseCaseError)
 	}
@@ -76,12 +80,16 @@ func (r *ResponseOrderUseCase) Delete(response model.ResponseOrder) error {
 }
 
 func (o *ResponseOrderUseCase) supplementingTheResponseModel(response *model.ResponseOrder) error {
-	u, err := o.store.User().FindByID(response.UserID)
+	user, err := o.store.User().FindUserByID(response.UserID)
 	if err != nil {
-		return errors.Wrap(err, orderUseCaseError)
+		return errors.Wrap(err, responceUseCaseError)
 	}
-	response.UserLogin = u.Login
-	image, err := o.mediaStore.Image().GetImage(u.Img)
+	user.Specializes, err = o.store.User().FindSpecializesByUserID(response.UserID)
+	if err != nil {
+		return errors.Wrap(err, responceUseCaseError)
+	}
+	response.UserLogin = user.Login
+	image, err := o.mediaStore.Image().GetImage(user.Img)
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
