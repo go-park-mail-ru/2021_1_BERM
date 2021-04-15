@@ -43,7 +43,7 @@ func (u *UserUseCase) Create(user *model.User) error {
 	if user.Specializes != nil {
 		user.Executor = true
 	}
-	id, err := u.store.User().AddUser(*user)
+	id, err := u.store.User().AddUser(user)
 	if err != nil {
 		return errors.Wrap(err, userUseCaseError)
 	}
@@ -86,7 +86,7 @@ func (u *UserUseCase) beforeCreate(user *model.User) error {
 	if err != nil {
 		return err
 	}
-	user.EncryptPassword = hashPass(salt, user.Password)
+	user.EncryptPassword = HashPass(salt, user.Password)
 	return nil
 }
 
@@ -137,7 +137,7 @@ func (u *UserUseCase) FindByID(id uint64) (*model.User, error) {
 	return user, err
 }
 
-func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
+func (u *UserUseCase) ChangeUser(user* model.User) (*model.User, error) {
 	oldUser, err := u.store.User().FindUserByID(user.ID)
 	if err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
@@ -149,7 +149,7 @@ func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
 	if user.NewPassword != "" {
 		user.Password = user.NewPassword
 	}
-	if err := u.beforeCreate(&user); err != nil {
+	if err := u.beforeCreate(user); err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
 	}
 	if user.Email == "" {
@@ -185,7 +185,6 @@ func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
 	for _, spec := range oldUser.Specializes {
 		user.Specializes = append(user.Specializes, spec)
 	}
-
 	newUser, err := u.store.User().ChangeUser(user)
 	if err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)

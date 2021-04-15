@@ -17,10 +17,6 @@ type MediaUseCase struct {
 	mediaStore store.MediaStore
 }
 
-func (s *MediaUseCase) GetImage(imageInfo interface{}) (*model.User, error) {
-	return nil, nil
-}
-
 func (s *MediaUseCase) SetImage(imageInfo interface{}, image []byte) (*model.User, error) {
 	u := imageInfo.(*model.User)
 	sanitizer := bluemonday.UGCPolicy()
