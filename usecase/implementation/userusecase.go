@@ -62,14 +62,6 @@ func (u *UserUseCase) validate(user *model.User) error {
 	)
 }
 
-//func (u *UserUseCase) encryptPassword(password string, salt string) (string, error) {
-//	b, err := bcrypt.GenerateFromPassword([]byte(salt + password), bcrypt.MinCost)
-//	if err != nil {
-//		return "", errors.Wrap(err, userUseCaseError)
-//	}
-//	return salt + string(b), nil
-//}
-
 func (u *UserUseCase) beforeCreate(user *model.User) error {
 	salt := make([]byte, saltLength)
 	_, err := rand.Read(salt)
@@ -79,10 +71,6 @@ func (u *UserUseCase) beforeCreate(user *model.User) error {
 	user.EncryptPassword = hashPass(salt, user.Password)
 	return nil
 }
-
-//func (u *UserUseCase) comparePassword(user *model.User, password string) bool {
-//	return bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password+passwordSalt)) == nil
-//}
 
 func (u *UserUseCase) sanitize(user *model.User) {
 	user.Password = ""
@@ -123,17 +111,21 @@ func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
 	if err := u.beforeCreate(&user); err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
 	}
-  u.sanitizeUser(&user)
+    u.sanitizeUser(&user)
+	var oldUser *model.User
+	var err error
 	if user.OldPassword != ""{
-		storingUser, err := u.store.User().FindByID(user.ID)
+		oldUser, err = u.store.User().FindByID(user.ID)
 		if  err != nil{
 			return nil, errors.Wrap(err, userUseCaseError)
 		}
-		if !compPass(storingUser.EncryptPassword, user.OldPassword){
+		if !compPass(oldUser.EncryptPassword, user.OldPassword){
 			return nil, ErrBadPassword
 		}
+	} else {
+		oldUser, err = u.store.User().FindByID(user.ID)
 	}
-	err := u.beforeCreate(&user)
+	err = u.beforeCreate(&user)
 	if err != nil{
 		return nil, err
 	}

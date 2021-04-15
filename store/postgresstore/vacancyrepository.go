@@ -10,17 +10,23 @@ type VacancyRepository struct {
 	store *Store
 }
 
-func (v *VacancyRepository) Create(vacancy model.Vacancy) (uint64, error) {
-	var vacancyID uint64
-	err := v.store.db.QueryRow(
-		`INSERT INTO vacancy (
+const (
+	insertVacancy = `INSERT INTO ff.vacancy (
 	                  category, 
 	                  vacancy_name,
 	                  description, 
 	                  salary,
                       user_id
 	                  )
-	       VALUES ($1, $2, $3,$4, $5) RETURNING id`,
+	       VALUES ($1, $2, $3,$4, $5) RETURNING id`
+
+	selectVacancyByID = "SELECT * FROM ff.vacancy WHERE id=$1"
+)
+
+func (v *VacancyRepository) Create(vacancy model.Vacancy) (uint64, error) {
+	var vacancyID uint64
+	err := v.store.db.QueryRow(
+		insertVacancy,
 		vacancy.Category,
 		vacancy.VacancyName,
 		vacancy.Description,
@@ -42,7 +48,7 @@ func (v *VacancyRepository) Create(vacancy model.Vacancy) (uint64, error) {
 
 func (v *VacancyRepository) FindByID(id uint64) (*model.Vacancy, error) {
 	vacancy := model.Vacancy{}
-	err := v.store.db.Get(&vacancy, "SELECT * FROM vacancy WHERE id=$1", id)
+	err := v.store.db.Get(&vacancy, selectVacancyByID, id)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}

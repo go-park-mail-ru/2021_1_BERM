@@ -11,44 +11,22 @@ import (
 type UserRepository struct {
 	store *Store
 }
-
-func (u *UserRepository) insertToUserSpecTable(userID uint64, specID uint64) error {
-	_, err := u.store.db.NamedExec(
-		`INSERT INTO user_specializes (
+const (
+	insertToUserSpecTable = `INSERT INTO ff.user_specializes (
                    			user_id, specialize_id
                         )
 						VALUES (
 							:userID, :specID
-						)`,
-		map[string]interface{}{
-			"userID": strconv.FormatUint(userID, 10),
-			"specID": strconv.FormatUint(specID, 10),
-		})
-	if err != nil {
-		return errors.Wrap(err, sqlDbSourceError)
-	}
-	return nil
-}
+						)`
 
-func (u *UserRepository) insertToSpecTable(specName string) (uint64, error) {
-	var specID uint64 = 0
-	err := u.store.db.QueryRow(
-		`INSERT INTO specializes (
+	insertToSpecTable = `INSERT INTO ff.specializes (
     						specialize_name
     					) 
     					VALUES (
     						$1
-    					)  RETURNING id`, specName).Scan(&specID)
-	if err != nil {
-		return 0, errors.Wrap(err, sqlDbSourceError)
-	}
-	return specID, nil
-}
+    					)  RETURNING id`
 
-func (u *UserRepository) Create(user model.User) (uint64, error) {
-	var userID uint64
-	err := u.store.db.QueryRow(
-		`INSERT INTO users (
+	insertUser = `INSERT INTO ff.users (
                    email, 
                    password, 
                    login, 
@@ -63,7 +41,63 @@ func (u *UserRepository) Create(user model.User) (uint64, error) {
 				$4,
 				$5,
 				$6	
-                ) RETURNING id`,
+                ) RETURNING id`
+
+	selectSpecializesByName = "SELECT * FROM ff.specializes WHERE specialize_name = $1"
+
+	selectCustomerByEmail   = "SELECT * from ff.users WHERE users.email=$1 "
+
+	selectExecutorByEmail = "SELECT array_agg(specialize_name) AS specializes FROM specializes " +
+		"INNER JOIN user_specializes us on specializes.id = us.specialize_id "+
+		"INNER JOIN users u on us.user_id = u.id "+
+		"WHERE u.email = $1"
+
+	selectCustomerByID = "SELECT * from ff.users WHERE id=$1"
+
+	selectExecutorByID = "SELECT array_agg(specialize_name) AS specializes FROM specializes "+
+		"INNER JOIN user_specializes us on specializes.id = us.specialize_id "+
+		"WHERE user_id = $1"
+
+	updateUser = `UPDATE ff.users SET 
+                 password =:password,
+                 login =:login,
+                 name_surname =:name_surname,
+                 about=:about,
+                 executor=:executor,
+                 img=:img,
+                 rating=:rating
+				 WHERE id = :id`
+
+	deleteSpecializes = "DELETE FROM ff.user_specializes WHERE specialize_id=$1 AND user_id =$2"
+)
+
+func (u *UserRepository) insertToUserSpecTable(userID uint64, specID uint64) error {
+	_, err := u.store.db.NamedExec(
+		insertToUserSpecTable,
+		map[string]interface{}{
+			"userID": strconv.FormatUint(userID, 10),
+			"specID": strconv.FormatUint(specID, 10),
+		})
+	if err != nil {
+		return errors.Wrap(err, sqlDbSourceError)
+	}
+	return nil
+}
+
+func (u *UserRepository) insertToSpecTable(specName string) (uint64, error) {
+	var specID uint64 = 0
+	err := u.store.db.QueryRow(
+		insertToSpecTable, specName).Scan(&specID)
+	if err != nil {
+		return 0, errors.Wrap(err, sqlDbSourceError)
+	}
+	return specID, nil
+}
+
+func (u *UserRepository) Create(user model.User) (uint64, error) {
+	var userID uint64
+	err := u.store.db.QueryRow(
+		insertUser,
 		user.Email,
 		user.EncryptPassword,
 		user.Login,
@@ -82,7 +116,7 @@ func (u *UserRepository) Create(user model.User) (uint64, error) {
 		return 0, errors.Wrap(err, sqlDbSourceError)
 	}
 	for _, spec := range user.Specializes {
-		rows, err := u.store.db.Queryx("SELECT * FROM specializes WHERE specialize_name = $1", spec)
+		rows, err := u.store.db.Queryx(selectSpecializesByName, spec)
 		if err != nil {
 			return 0, errors.Wrap(err, sqlDbSourceError)
 		}
@@ -117,15 +151,12 @@ func (u *UserRepository) Create(user model.User) (uint64, error) {
 
 func (u *UserRepository) FindByEmail(email string) (*model.User, error) {
 	user := model.User{}
-	err := u.store.db.Get(&user, "SELECT * from users WHERE users.email=$1 ", email)
+	err := u.store.db.Get(&user, selectCustomerByEmail, email)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	if user.Executor {
-		rows, err := u.store.db.Queryx("SELECT array_agg(specialize_name) AS specializes FROM specializes "+
-			"INNER JOIN user_specializes us on specializes.id = us.specialize_id "+
-			"INNER JOIN users u on us.user_id = u.id "+
-			"WHERE u.email = $1", email)
+		rows, err := u.store.db.Queryx(selectExecutorByEmail, email)
 		if err != nil {
 			return nil, errors.Wrap(err, sqlDbSourceError)
 		}
@@ -141,14 +172,12 @@ func (u *UserRepository) FindByEmail(email string) (*model.User, error) {
 
 func (u *UserRepository) FindByID(id uint64) (*model.User, error) {
 	user := model.User{}
-	err := u.store.db.Get(&user, "SELECT * from users WHERE id=$1 ", id)
+	err := u.store.db.Get(&user, selectCustomerByID, id)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	if user.Executor {
-		rows, err := u.store.db.Queryx("SELECT array_agg(specialize_name) AS specializes FROM specializes "+
-			"INNER JOIN user_specializes us on specializes.id = us.specialize_id "+
-			"WHERE user_id = $1", id)
+		rows, err := u.store.db.Queryx(selectExecutorByID, id)
 		if err != nil {
 			return nil, errors.Wrap(err, sqlDbSourceError)
 		}
@@ -203,15 +232,7 @@ func (u *UserRepository) ChangeUser(user model.User) (*model.User, error) {
 	}
 
 	tx := u.store.db.MustBegin()
-	_, err = tx.NamedExec(`UPDATE users SET 
-                 password =:password,
-                 login =:login,
-                 name_surname =:name_surname,
-                 about=:about,
-                 executor=:executor,
-                 img=:img,
-                 rating=:rating
-				 WHERE id = :id`, &user)
+	_, err = tx.NamedExec(updateUser, &user)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
@@ -223,7 +244,7 @@ func (u *UserRepository) ChangeUser(user model.User) (*model.User, error) {
 
 func (u *UserRepository) AddSpecialize(specName string, userID uint64) error {
 	specialize := model.Specialize{}
-	err := u.store.db.Get(&specialize, "SELECT * FROM specializes WHERE specialize_name=$1", specName)
+	err := u.store.db.Get(&specialize, "SELECT * FROM ff.specializes WHERE specialize_name=$1", specName)
 
 	// ошибка не проходит совпадение на no rows, я хз как ее сравнить с этим сраным ерор стринг
 	if !errors.Is(err,sql.ErrNoRows) && err != nil {
@@ -235,7 +256,7 @@ func (u *UserRepository) AddSpecialize(specName string, userID uint64) error {
 			return errors.Wrap(err, sqlDbSourceError)
 		}
 	}
-	rows, err := u.store.db.Queryx("SELECT * FROM user_specializes WHERE specialize_id=$1 AND user_id=$2", specialize.ID, userID)
+	rows, err := u.store.db.Queryx("SELECT * FROM ff.user_specializes WHERE specialize_id=$1 AND user_id=$2", specialize.ID, userID)
 	if err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
 	}
@@ -250,14 +271,15 @@ func (u *UserRepository) AddSpecialize(specName string, userID uint64) error {
 	return nil
 }
 
+
 func (u *UserRepository) DelSpecialize(specName string, userID uint64) error {
 	specialize := model.Specialize{}
-	err := u.store.db.Get(&specialize, "SELECT * FROM specializes WHERE specialize_name=$1", specName)
+	err := u.store.db.Get(&specialize, selectSpecializesByName, specName)
 	if err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
 	}
 
-	_, err = u.store.db.Queryx("DELETE FROM user_specializes WHERE specialize_id=$1 AND user_id =$2", specialize.ID, userID)
+	_, err = u.store.db.Queryx(deleteSpecializes, specialize.ID, userID)
 
 	if err != nil {
 		return errors.Wrap(err, sqlDbSourceError)

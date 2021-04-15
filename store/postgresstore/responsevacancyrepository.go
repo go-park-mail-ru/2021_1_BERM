@@ -10,10 +10,8 @@ type ResponseVacancyRepository struct {
 	store *Store
 }
 
-func (r *ResponseVacancyRepository) Create(response model.ResponseVacancy) (uint64, error) {
-	var responseID uint64
-	err := r.store.db.QueryRow(
-		`INSERT INTO vacancy_responses (
+const (
+	insertVacancyResponse = `INSERT INTO ff.vacancy_responses (
                    vacancy_id, 
                    user_id, 
                    rate, 
@@ -28,7 +26,20 @@ func (r *ResponseVacancyRepository) Create(response model.ResponseVacancy) (uint
 				$4,
 				$5,
                 $6
-                ) RETURNING id`,
+                ) RETURNING id`
+	selectVacancyResponseByVacancyID = "SELECT * FROM ff.vacancy_responses WHERE vacancy_id = $1"
+	updateVacancyResponse            = `UPDATE ff.vacancy_responses SET 
+                 rate=:rate,
+                 time=:time
+				 WHERE user_id=:user_id AND vacancy_id=:order_id`
+	deleteVacancyResponse = `DELETE FROM ff.vacancy_responses 
+				 WHERE user_id=:user_id AND vacancy_id=:order_id`
+)
+
+func (r *ResponseVacancyRepository) Create(response model.ResponseVacancy) (uint64, error) {
+	var responseID uint64
+	err := r.store.db.QueryRow(
+		insertVacancyResponse,
 		response.VacancyID,
 		response.UserID,
 		response.Rate,
@@ -52,7 +63,7 @@ func (r *ResponseVacancyRepository) Create(response model.ResponseVacancy) (uint
 
 func (r *ResponseVacancyRepository) FindByVacancyID(id uint64) ([]model.ResponseVacancy, error) {
 	var responses []model.ResponseVacancy
-	if err := r.store.db.Select(&responses, "SELECT * FROM vacancy_responses WHERE vacancy_id = $1", id); err != nil {
+	if err := r.store.db.Select(&responses, selectVacancyResponseByVacancyID, id); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return responses, nil
@@ -60,10 +71,7 @@ func (r *ResponseVacancyRepository) FindByVacancyID(id uint64) ([]model.Response
 
 func (r *ResponseVacancyRepository) Change(response model.ResponseVacancy) (*model.ResponseVacancy, error) {
 	tx := r.store.db.MustBegin()
-	_, err := tx.NamedExec(`UPDATE vacancy_responses SET 
-                 rate=:rate,
-                 time=:time
-				 WHERE user_id=:user_id AND vacancy_id=:order_id`, &response)
+	_, err := tx.NamedExec(updateVacancyResponse, &response)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
@@ -75,8 +83,7 @@ func (r *ResponseVacancyRepository) Change(response model.ResponseVacancy) (*mod
 
 func (r *ResponseVacancyRepository) Delete(response model.ResponseVacancy) error {
 	tx := r.store.db.MustBegin()
-	_, err := tx.NamedExec(`DELETE FROM vacancy_responses 
-				 WHERE user_id=:user_id AND vacancy_id=:order_id`, &response)
+	_, err := tx.NamedExec(deleteVacancyResponse, &response)
 	if err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
 	}

@@ -10,10 +10,8 @@ type OrderRepository struct {
 	store *Store
 }
 
-func (o *OrderRepository) Create(order model.Order) (uint64, error) {
-	var orderID uint64
-	err := o.store.db.QueryRow(
-		`INSERT INTO orders (
+const (
+	insertOrder = `INSERT INTO ff.orders (
                    customer_id, 
                    executor_id, 
                    order_name, 
@@ -30,7 +28,20 @@ func (o *OrderRepository) Create(order model.Order) (uint64, error) {
 				$5,
 				$6,
                 $7
-                ) RETURNING id`,
+                ) RETURNING id`
+	selectOrderByID         = "SELECT * FROM ff.orders WHERE id=$1"
+	selectOrderByExecutorID = "SELECT * FROM ff.orders WHERE executor_id=$1"
+	selectOrderByCustomerID = "SELECT * FROM ff.orders WHERE customer_id=$1"
+	selectOrders            = "SELECT * FROM ff.orders"
+	updateExecutor          = `UPDATE ff.orders SET 
+                 executor_id =:executor_id
+				 WHERE id = :id`
+)
+
+func (o *OrderRepository) Create(order model.Order) (uint64, error) {
+	var orderID uint64
+	err := o.store.db.QueryRow(
+		insertOrder,
 		order.CustomerID,
 		order.ExecutorID,
 		order.OrderName,
@@ -54,7 +65,7 @@ func (o *OrderRepository) Create(order model.Order) (uint64, error) {
 
 func (o *OrderRepository) FindByID(id uint64) (*model.Order, error) {
 	order := model.Order{}
-	if err := o.store.db.Get(&order, "SELECT * FROM orders WHERE id=$1", id); err != nil {
+	if err := o.store.db.Get(&order, selectOrderByID, id); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return &order, nil
@@ -62,7 +73,7 @@ func (o *OrderRepository) FindByID(id uint64) (*model.Order, error) {
 
 func (o *OrderRepository) FindByExecutorID(executorID uint64) ([]model.Order, error) {
 	var orders []model.Order
-	if err := o.store.db.Select(&orders, "SELECT * FROM orders WHERE executor_id=$1", executorID); err != nil {
+	if err := o.store.db.Select(&orders, selectOrderByExecutorID, executorID); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return orders, nil
@@ -70,7 +81,7 @@ func (o *OrderRepository) FindByExecutorID(executorID uint64) ([]model.Order, er
 
 func (o *OrderRepository) FindByCustomerID(customerID uint64) ([]model.Order, error) {
 	var orders []model.Order
-	if err := o.store.db.Select(&orders, "SELECT * FROM orders WHERE customer_id=$1", customerID); err != nil {
+	if err := o.store.db.Select(&orders, selectOrderByCustomerID, customerID); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return orders, nil
@@ -78,7 +89,7 @@ func (o *OrderRepository) FindByCustomerID(customerID uint64) ([]model.Order, er
 
 func (o *OrderRepository) GetActualOrders() ([]model.Order, error) {
 	var orders []model.Order
-	if err := o.store.db.Select(&orders, "SELECT * FROM orders"); err != nil {
+	if err := o.store.db.Select(&orders, selectOrders); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return orders, nil
@@ -86,9 +97,7 @@ func (o *OrderRepository) GetActualOrders() ([]model.Order, error) {
 
 func (o *OrderRepository) UpdateExecutor(order model.Order) error {
 	tx := o.store.db.MustBegin()
-	_, err := tx.NamedExec(`UPDATE orders SET 
-                 executor_id =:executor_id
-				 WHERE id = :id`, &order)
+	_, err := tx.NamedExec(updateExecutor, &order)
 	if err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
 	}

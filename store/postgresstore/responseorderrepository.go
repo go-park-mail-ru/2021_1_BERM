@@ -10,10 +10,8 @@ type ResponseOrderRepository struct {
 	store *Store
 }
 
-func (r *ResponseOrderRepository) Create(response model.ResponseOrder) (uint64, error) {
-	var responseID uint64
-	err := r.store.db.QueryRow(
-		`INSERT INTO order_responses (
+const (
+	insertOrderResponse = `INSERT INTO ff.order_responses (
                    order_id, 
                    user_id, 
                    rate, 
@@ -28,7 +26,21 @@ func (r *ResponseOrderRepository) Create(response model.ResponseOrder) (uint64, 
 				$4,
 				$5,
                 $6
-                ) RETURNING id`,
+                ) RETURNING id`
+	selectOrderResponseByOrderID = "SELECT * FROM ff.order_responses WHERE order_id = $1"
+	updateOrderResponse          = `UPDATE ff.order_responses SET 
+                 rate=:rate,
+                 time=:time
+				 WHERE user_id=:user_id AND order_id=:order_id`
+	deleteOrderResponse = `DELETE FROM ff.order_responses 
+				 WHERE user_id=:user_id AND order_id=:order_id`
+
+)
+
+func (r *ResponseOrderRepository) Create(response model.ResponseOrder) (uint64, error) {
+	var responseID uint64
+	err := r.store.db.QueryRow(
+		insertOrderResponse,
 		response.OrderID,
 		response.UserID,
 		response.Rate,
@@ -52,7 +64,7 @@ func (r *ResponseOrderRepository) Create(response model.ResponseOrder) (uint64, 
 
 func (r *ResponseOrderRepository) FindByOrderID(id uint64) ([]model.ResponseOrder, error) {
 	var responses []model.ResponseOrder
-	if err := r.store.db.Select(&responses, "SELECT * FROM order_responses WHERE order_id = $1", id); err != nil {
+	if err := r.store.db.Select(&responses, selectOrderResponseByOrderID, id); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return responses, nil
@@ -60,10 +72,7 @@ func (r *ResponseOrderRepository) FindByOrderID(id uint64) ([]model.ResponseOrde
 
 func (r *ResponseOrderRepository) Change(response model.ResponseOrder) (*model.ResponseOrder, error) {
 	tx := r.store.db.MustBegin()
-	_, err := tx.NamedExec(`UPDATE order_responses SET 
-                 rate=:rate,
-                 time=:time
-				 WHERE user_id=:user_id AND order_id=:order_id`, &response)
+	_, err := tx.NamedExec(updateOrderResponse, &response)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
@@ -75,8 +84,7 @@ func (r *ResponseOrderRepository) Change(response model.ResponseOrder) (*model.R
 
 func (r *ResponseOrderRepository) Delete(response model.ResponseOrder) error {
 	tx := r.store.db.MustBegin()
-	_, err := tx.NamedExec(`DELETE FROM order_responses 
-				 WHERE user_id=:user_id AND order_id=:order_id`, &response)
+	_, err := tx.NamedExec(deleteOrderResponse, &response)
 	if err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
 	}

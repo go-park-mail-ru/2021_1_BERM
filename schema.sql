@@ -1,14 +1,7 @@
-drop table if exists users cascade;
-drop table if exists specializes cascade;
-drop table if exists user_specializes cascade;
-drop table if exists orders cascade;
-drop table if exists order_specializes cascade;
-drop table if exists user_reviews cascade;
-drop table if exists vacancy cascade;
-drop table if exists order_responses cascade;
-drop table if exists vacancy_responses cascade;
+DROP SCHEMA IF EXISTS ff CASCADE;
+CREATE SCHEMA ff;
 
-CREATE TABLE users
+CREATE TABLE ff.users
 (
     id           SERIAL PRIMARY KEY NOT NULL,
     email        VARCHAR UNIQUE     NOT NULL,
@@ -21,23 +14,23 @@ CREATE TABLE users
     rating       INTEGER DEFAULT 0
 );
 
-CREATE TABLE specializes
+CREATE TABLE ff.specializes
 (
     id              SERIAL PRIMARY KEY NOT NULL,
     specialize_name VARCHAR UNIQUE     NOT NULL
 );
 
-CREATE TABLE user_specializes
+CREATE TABLE ff.user_specializes
 (
     user_id       INTEGER NOT NULL,
     specialize_id INTEGER NOT NULL,
     FOREIGN KEY (user_id)
-        REFERENCES users (id),
+        REFERENCES ff.users (id),
     FOREIGN KEY (specialize_id)
-        REFERENCES specializes (id)
+        REFERENCES ff.specializes (id)
 );
 
-CREATE TABLE orders
+CREATE TABLE ff.orders
 (
     id          SERIAL PRIMARY KEY NOT NULL,
     customer_id INTEGER            NOT NULL,
@@ -49,7 +42,7 @@ CREATE TABLE orders
     description VARCHAR            NOT NULL
 );
 
-CREATE TABLE vacancy
+CREATE TABLE ff.vacancy
 (
     id           SERIAL PRIMARY KEY NOT NULL,
     user_id      INTEGER            NOT NULL,
@@ -58,12 +51,12 @@ CREATE TABLE vacancy
     description  VARCHAR            NOT NULL,
     salary       BIGINT             NOT NULL,
     FOREIGN KEY (user_id)
-        REFERENCES users (id)
+        REFERENCES ff.users (id)
 );
 
 
 
-CREATE TABLE user_reviews
+CREATE TABLE ff.user_reviews
 (
     id          SERIAL PRIMARY KEY NOT NULL,
     user_id     INTEGER            NOT NULL,
@@ -71,12 +64,12 @@ CREATE TABLE user_reviews
     description VARCHAR            NOT NULL,
     executor    boolean            NOT NULL,
     FOREIGN KEY (user_id)
-        REFERENCES users (id),
+        REFERENCES ff.users (id),
     FOREIGN KEY (order_id)
-        REFERENCES orders (id)
+        REFERENCES ff.orders (id)
 );
 
-CREATE TABLE order_responses
+CREATE TABLE ff.order_responses
 (
     id         SERIAL PRIMARY KEY NOT NULL,
     order_id   INTEGER            NOT NULL,
@@ -86,12 +79,12 @@ CREATE TABLE order_responses
     user_img   VARCHAR DEFAULT '',
     time       BIGINT             NOT NULL,
     FOREIGN KEY (user_id)
-        REFERENCES users (id),
+        REFERENCES ff.users (id),
     FOREIGN KEY (order_id)
-        REFERENCES orders (id)
+        REFERENCES ff.orders (id)
 );
 
-CREATE TABLE vacancy_responses
+CREATE TABLE ff.vacancy_responses
 (
     id         SERIAL PRIMARY KEY NOT NULL,
     vacancy_id INTEGER            NOT NULL,
@@ -101,19 +94,8 @@ CREATE TABLE vacancy_responses
     user_img   VARCHAR DEFAULT '',
     time       BIGINT             NOT NULL,
     FOREIGN KEY (user_id)
-        REFERENCES users (id),
+        REFERENCES ff.users (id),
     FOREIGN KEY (vacancy_id)
-        REFERENCES vacancy (id)
+        REFERENCES ff.vacancy (id)
 );
--- SELECT array_agg(specialize_name) AS specializes FROM specializes
--- INNER JOIN user_specializes us on specializes.id = us.specialize_id
--- WHERE user_id = 1
 
--- SELECT users.*, array_agg(specialize_name) AS specializes from users
--- INNER JOIN user_specializes ON users.id = user_specializes.user_id
--- INNER JOIN specializes ON user_specializes.specialize_id = specializes.id
--- WHERE users.email = 'kek@mem.ru'
--- GROUP BY users.id
-
--- SELECT * from orders
--- WHERE id = 1
