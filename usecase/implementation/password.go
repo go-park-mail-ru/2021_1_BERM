@@ -17,5 +17,3 @@ func compPass(passHash []byte, plainPassword string) bool {
 	userPassHash := hashPass(salt, plainPassword)
 	return bytes.Equal(userPassHash, passHash)
 }
-
-

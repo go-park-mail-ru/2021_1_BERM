@@ -6,7 +6,7 @@ import (
 )
 
 type UserRepository interface {
-    AddUserSpec(userID uint64, specID uint64) error
+	AddUserSpec(userID uint64, specID uint64) error
 	FindSpecializeByName(specName string) (model.Specialize, error)
 	IsUserHaveSpec(specID uint64, userID uint64) (bool, error)
 	AddSpec(specName string) (uint64, error)

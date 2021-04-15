@@ -30,15 +30,15 @@ const (
                 $7
                 ) RETURNING id`
 
-	selectOrderByID         = "SELECT * FROM ff.orders WHERE id=$1"
+	selectOrderByID = "SELECT * FROM ff.orders WHERE id=$1"
 
 	selectOrderByExecutorID = "SELECT * FROM ff.orders WHERE executor_id=$1"
 
 	selectOrderByCustomerID = "SELECT * FROM ff.orders WHERE customer_id=$1"
 
-	selectOrders            = "SELECT * FROM ff.orders"
+	selectOrders = "SELECT * FROM ff.orders"
 
-	updateExecutor          = `UPDATE ff.orders SET 
+	updateExecutor = `UPDATE ff.orders SET 
                  executor_id =:executor_id
 				 WHERE id = :id`
 )

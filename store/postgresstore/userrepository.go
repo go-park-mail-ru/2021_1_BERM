@@ -205,7 +205,6 @@ func (u *UserRepository) ChangeUser(user model.User) (*model.User, error) {
 	return &user, nil
 }
 
-
 func (u *UserRepository) DelSpecialize(specID uint64, userID uint64) error {
 	_, err := u.store.db.Queryx(deleteSpecializes, specID, userID)
 	if err != nil {

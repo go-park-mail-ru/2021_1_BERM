@@ -92,13 +92,13 @@ func New(err error) *Error {
 			},
 		}
 	}
-	if errors.Is(err, implementation.ErrBadPassword){
+	if errors.Is(err, implementation.ErrBadPassword) {
 		return &Error{
-			Err: err,
+			Err:  err,
 			Type: TypeExternal,
 			Code: http.StatusBadRequest,
 			Field: map[string]interface{}{
-				"Error" : implementation.ErrBadPassword.Error(),
+				"Error": implementation.ErrBadPassword.Error(),
 			},
 		}
 	}
