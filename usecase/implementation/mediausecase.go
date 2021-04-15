@@ -26,7 +26,44 @@ func (s *MediaUseCase) SetImage(imageInfo interface{}, image []byte) (*model.Use
 		return nil, errors.Wrap(err, mediaUseCaseError)
 	}
 	u.Img = imageID
-	u, err = s.store.User().ChangeUser(u)
+	oldUser, err := s.store.User().FindUserByID(u.ID)
+	if err != nil {
+		return nil, errors.Wrap(err, mediaUseCaseError)
+	}
+	if u.Email == "" {
+		u.Email = oldUser.Email
+	}
+
+	if u.About == "" {
+		u.About = oldUser.About
+	}
+
+	if u.Password == "" {
+		u.Password = oldUser.Password
+	}
+
+	if u.Login == "" {
+		u.Login = oldUser.Login
+	}
+
+	if u.Img == "" {
+		u.Img = oldUser.Img
+	}
+
+	if u.NameSurname == "" {
+		u.NameSurname = oldUser.NameSurname
+	}
+
+	if u.Rating == 0 {
+		u.Rating = oldUser.Rating
+	}
+
+	u.Executor = oldUser.Executor
+
+	for _, spec := range oldUser.Specializes {
+		u.Specializes = append(u.Specializes, spec)
+	}
+	u, err = s.store.User().ChangeUser(*u)
 	if err != nil {
 		return nil, errors.Wrap(err, mediaUseCaseError)
 	}

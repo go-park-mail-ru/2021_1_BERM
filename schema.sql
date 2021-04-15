@@ -98,7 +98,3 @@ CREATE TABLE ff.vacancy_responses
     FOREIGN KEY (vacancy_id)
         REFERENCES ff.vacancy (id)
 );
-
-SELECT array_agg(specialize_name) AS specializes FROM ff.specializes
-		INNER JOIN ff.user_specializes us on specializes.id = us.specialize_id
-		WHERE user_id = $1
