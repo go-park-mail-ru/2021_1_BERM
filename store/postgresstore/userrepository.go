@@ -195,7 +195,7 @@ func (u *UserRepository) FindSpecializesByUserID(id uint64) (pq.StringArray, err
 
 
 func (u *UserRepository) ChangeUser(user *model.User) (*model.User, error) {
-	tx := u.store.db.MustBegin()
+	tx := u.store.Db.MustBegin()
 	_, err := tx.NamedExec(updateUser, user)
 
 	if err != nil {

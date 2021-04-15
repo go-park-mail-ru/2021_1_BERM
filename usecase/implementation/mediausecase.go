@@ -38,8 +38,8 @@ func (s *MediaUseCase) SetImage(imageInfo interface{}, image []byte) (*model.Use
 		u.About = oldUser.About
 	}
 
-	if u.Password == "" {
-		u.Password = oldUser.Password
+	if u.EncryptPassword == nil {
+		u.EncryptPassword = oldUser.EncryptPassword
 	}
 
 	if u.Login == "" {
@@ -63,7 +63,7 @@ func (s *MediaUseCase) SetImage(imageInfo interface{}, image []byte) (*model.Use
 	for _, spec := range oldUser.Specializes {
 		u.Specializes = append(u.Specializes, spec)
 	}
-	u, err = s.store.User().ChangeUser(*u)
+	u, err = s.store.User().ChangeUser(u)
 	if err != nil {
 		return nil, errors.Wrap(err, mediaUseCaseError)
 	}
