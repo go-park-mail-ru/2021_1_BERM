@@ -123,7 +123,7 @@ func (u *UserRepository) AddSpec(specName string) (uint64, error) {
 	return specID, nil
 }
 
-func (u *UserRepository) AddUser(user model.User) (uint64, error) {
+func (u *UserRepository) AddUser(user *model.User) (uint64, error) {
 	var userID uint64
 	err := u.store.db.QueryRow(
 		insertUser,
@@ -193,16 +193,16 @@ func (u *UserRepository) FindSpecializesByUserID(id uint64) (pq.StringArray, err
 	return user.Specializes, nil
 }
 
-func (u *UserRepository) ChangeUser(user model.User) (*model.User, error) {
+func (u *UserRepository) ChangeUser(user *model.User) (*model.User, error) {
 	tx := u.store.db.MustBegin()
-	_, err := tx.NamedExec(updateUser, &user)
+	_, err := tx.NamedExec(updateUser, user)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	if err := tx.Commit(); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
-	return &user, nil
+	return user, nil
 }
 
 func (u *UserRepository) DelSpecialize(specID uint64, userID uint64) error {

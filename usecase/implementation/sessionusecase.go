@@ -14,7 +14,7 @@ const (
 )
 
 type SessionUseCase struct {
-	cache store.Cash
+	cache store.Caсhe
 }
 
 func (s *SessionUseCase) Create(u *model.User) (*model.Session, error) {
