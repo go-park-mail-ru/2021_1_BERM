@@ -1,0 +1,2771 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>fl: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">FL_2/fl/main.go (12.5%)</option>
+				
+				<option value="file1">FL_2/server/config.go (0.0%)</option>
+				
+				<option value="file2">FL_2/server/error.go (0.0%)</option>
+				
+				<option value="file3">FL_2/server/server.go (0.0%)</option>
+				
+				<option value="file4">FL_2/server/sevice.go (0.0%)</option>
+				
+				<option value="file5">FL_2/store/diskmediastore/imagerepository.go (0.0%)</option>
+				
+				<option value="file6">FL_2/store/diskmediastore/mediastore.go (0.0%)</option>
+				
+				<option value="file7">FL_2/store/postgresstore/error.go (0.0%)</option>
+				
+				<option value="file8">FL_2/store/postgresstore/orderrepository.go (71.9%)</option>
+				
+				<option value="file9">FL_2/store/postgresstore/responseorderrepository.go (0.0%)</option>
+				
+				<option value="file10">FL_2/store/postgresstore/responsevacancyrepository.go (0.0%)</option>
+				
+				<option value="file11">FL_2/store/postgresstore/store.go (27.3%)</option>
+				
+				<option value="file12">FL_2/store/postgresstore/userrepository.go (33.8%)</option>
+				
+				<option value="file13">FL_2/store/postgresstore/vacancyrepository.go (0.0%)</option>
+				
+				<option value="file14">FL_2/store/tarantoolcache/cache.go (0.0%)</option>
+				
+				<option value="file15">FL_2/store/tarantoolcache/sessionrepository.go (0.0%)</option>
+				
+				<option value="file16">FL_2/usecase/implementation/mediausecase.go (0.0%)</option>
+				
+				<option value="file17">FL_2/usecase/implementation/orderusecase.go (0.0%)</option>
+				
+				<option value="file18">FL_2/usecase/implementation/password.go (0.0%)</option>
+				
+				<option value="file19">FL_2/usecase/implementation/responseorderusecase.go (0.0%)</option>
+				
+				<option value="file20">FL_2/usecase/implementation/responsevacancyusecase.go (0.0%)</option>
+				
+				<option value="file21">FL_2/usecase/implementation/sessionusecase.go (0.0%)</option>
+				
+				<option value="file22">FL_2/usecase/implementation/usecase.go (0.0%)</option>
+				
+				<option value="file23">FL_2/usecase/implementation/userusecase.go (0.0%)</option>
+				
+				<option value="file24">FL_2/usecase/implementation/vacancyusecase.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "FL_2/server"
+        "flag"
+        "github.com/BurntSushi/toml"
+        "log"
+)
+
+var (
+        configPath string
+)
+
+func init() <span class="cov8" title="1">{
+        flag.StringVar(&amp;configPath, "config-path", "config/server.toml", "path to config file")
+}</span>
+
+func main() <span class="cov0" title="0">{
+        flag.Parse()
+        config := server.NewConfig()
+        _, err := toml.DecodeFile(configPath, config)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+        }</span>
+
+        <span class="cov0" title="0">if err := server.Start(config, config.HTTPS); err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package server
+
+type Config struct {
+        BindAddr    string   `toml:"bind_addr"`
+        LogLevel    string   `toml:"log_level"`
+        DatabaseURL string   `toml:"database_url"`
+        Origin      []string `toml:"origin"`
+        ContentDir  string   `toml:"content_dir"`
+        HTTPS       bool     `toml:"https"`
+        DSN         string   `toml:"dsn"`
+        LogFile     string   `toml:"log_file"`
+}
+
+func NewConfig() *Config <span class="cov0" title="0">{
+        return &amp;Config{
+                BindAddr: ":8080",
+                LogLevel: "debug",
+        }
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package server
+
+import (
+        "FL_2/store/postgresstore"
+        "FL_2/store/tarantoolcache"
+        "FL_2/usecase/implementation"
+        "database/sql"
+        "encoding/json"
+        validation "github.com/go-ozzo/ozzo-validation"
+        "github.com/pkg/errors"
+        "net/http"
+)
+
+const (
+        TypeInternal = "Internal"
+        TypeExternal = "External"
+)
+
+type Error struct {
+        Err   error
+        Type  string
+        Field map[string]interface{}
+        Code  int
+}
+
+func (e *Error) Error() string <span class="cov0" title="0">{
+        return e.Err.Error()
+}</span>
+
+func New(err error) *Error <span class="cov0" title="0">{
+
+        if errors.Is(err, sql.ErrNoRows) </span><span class="cov0" title="0">{
+                return &amp;Error{
+                        Err:  err,
+                        Type: TypeExternal,
+                        Code: http.StatusNotFound,
+                        Field: map[string]interface{}{
+                                "error": sql.ErrNoRows,
+                        },
+                }
+        }</span>
+        <span class="cov0" title="0">dup := &amp;postgresstore.DuplicateSourceErr{}
+        if errors.As(err, &amp;dup) </span><span class="cov0" title="0">{
+                return &amp;Error{
+                        Err:  err,
+                        Type: TypeExternal,
+                        Code: http.StatusBadRequest,
+                        Field: map[string]interface{}{
+                                "error": "Duplicate error",
+                        },
+                }
+        }</span>
+        <span class="cov0" title="0">valid := &amp;validation.Errors{}
+        if errors.As(err, valid) </span><span class="cov0" title="0">{
+                j, errJ := valid.MarshalJSON()
+                if errJ != nil </span><span class="cov0" title="0">{
+                        return &amp;Error{
+                                Err:  errors.Wrap(errJ, "Error json marshal on create htttp error"),
+                                Type: TypeInternal,
+                                Code: http.StatusInternalServerError,
+                                Field: map[string]interface{}{
+                                        "error": "Intertnal server error",
+                                },
+                        }
+                }</span>
+                <span class="cov0" title="0">field := make(map[string]interface{})
+                errJ = json.Unmarshal(j, &amp;field)
+                if errJ != nil </span><span class="cov0" title="0">{
+                        return &amp;Error{
+                                Err:  errors.Wrap(errJ, "Error json marshal on create htttp error"),
+                                Type: TypeInternal,
+                                Code: http.StatusInternalServerError,
+                                Field: map[string]interface{}{
+                                        "error": "Intertnal server error",
+                                },
+                        }
+                }</span>
+                <span class="cov0" title="0">return &amp;Error{
+                        Err:   err,
+                        Type:  TypeExternal,
+                        Code:  http.StatusBadRequest,
+                        Field: field,
+                }</span>
+        }
+        <span class="cov0" title="0">if errors.Is(err, tarantoolcache.NotAuthorized) </span><span class="cov0" title="0">{
+                return &amp;Error{
+                        Err:  err,
+                        Type: TypeExternal,
+                        Code: http.StatusUnauthorized,
+                        Field: map[string]interface{}{
+                                "Error": "Not authorized",
+                        },
+                }
+        }</span>
+        <span class="cov0" title="0">if errors.Is(err, implementation.ErrBadPassword) </span><span class="cov0" title="0">{
+                return &amp;Error{
+                        Err:  err,
+                        Type: TypeExternal,
+                        Code: http.StatusBadRequest,
+                        Field: map[string]interface{}{
+                                "Error": implementation.ErrBadPassword.Error(),
+                        },
+                }
+        }</span>
+        <span class="cov0" title="0">return &amp;Error{
+                Err:  err,
+                Type: TypeInternal,
+                Code: http.StatusInternalServerError,
+                Field: map[string]interface{}{
+                        "error": "Intertnal server error",
+                },
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package server
+
+import (
+        "FL_2/store/diskmediastore"
+        "FL_2/store/postgresstore"
+        "FL_2/store/tarantoolcache"
+        "FL_2/usecase/implementation"
+        "log"
+        "net/http"
+)
+
+func Start(config *Config, https bool) error <span class="cov0" title="0">{
+        store := postgresstore.New(config.DSN)
+        cache, err := tarantoolcache.New(config.DatabaseURL)
+        mediaStore := diskmediastore.New(config.ContentDir)
+        useCase := implementation.New(store, cache, mediaStore)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+        }</span>
+        <span class="cov0" title="0">if err = store.Open(); err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+        }</span>
+
+        <span class="cov0" title="0">s := newServer(useCase, config)
+        if https </span><span class="cov0" title="0">{
+                return http.ListenAndServeTLS(config.BindAddr,
+                        "/etc/letsencrypt/live/findfreelancer.ru/cert.pem",
+                        "/etc/letsencrypt/live/findfreelancer.ru/privkey.pem",
+                        s)
+        }</span>
+
+        <span class="cov0" title="0">return http.ListenAndServe(config.BindAddr, s)</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package server
+
+import (
+        "FL_2/model"
+        "FL_2/store/tarantoolcache"
+        "FL_2/usecase"
+        "context"
+        "encoding/json"
+        "errors"
+        "github.com/gorilla/csrf"
+        "github.com/gorilla/mux"
+        "github.com/rs/cors"
+        "github.com/sirupsen/logrus"
+        "math/rand"
+        "net/http"
+        "os"
+        "strconv"
+        "time"
+)
+
+type ctxKey uint8
+
+const (
+        ctxKeySession ctxKey = iota
+        ctxKeyReqID   ctxKey = 1
+)
+
+var (
+        InvalidJSON = &amp;Error{
+                Err:  errors.New("Invalid json. "),
+                Code: http.StatusBadRequest,
+                Type: TypeExternal,
+                Field: map[string]interface{}{
+                        "error": "Invalid json",
+                },
+        }
+
+        InvalidCookies = &amp;Error{
+                Err:  errors.New("Invalid cookie.\n"),
+                Code: http.StatusBadRequest,
+                Type: TypeExternal,
+        }
+)
+
+type server struct {
+        router  http.Handler
+        logger  *logrus.Logger
+        useCase usecase.UseCase
+}
+
+func newServer(useCase usecase.UseCase, config *Config) *server <span class="cov0" title="0">{
+        s := &amp;server{
+                router:  mux.NewRouter(),
+                logger:  logrus.New(),
+                useCase: useCase,
+        }
+        s.configureRouter(config)
+        if config.LogFile == "" </span><span class="cov0" title="0">{
+                s.logger.Out = os.Stdout
+        }</span> else<span class="cov0" title="0"> {
+                logFileStream, err := os.Open(config.LogFile)
+                if err != nil </span><span class="cov0" title="0">{
+                        logrus.Fatal(err)
+                }</span>
+                <span class="cov0" title="0">s.logger.Out = logFileStream</span>
+        }
+        <span class="cov0" title="0">return s</span>
+}
+
+func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        s.router.ServeHTTP(w, r)
+}</span>
+
+func (s *server) configureRouter(config *Config) <span class="cov0" title="0">{
+        router := mux.NewRouter()
+        router.Use(s.loggingRequest)
+
+        csrfMiddleware := csrf.Protect(
+                []byte("very-secret-string"),
+                csrf.SameSite(csrf.SameSiteLaxMode),
+                csrf.Secure(config.HTTPS),
+                csrf.MaxAge(900),
+                csrf.Path("/"),
+                csrf.ErrorHandler(s.logginCSRF()))
+
+        router.HandleFunc("/profile", s.handleProfile).Methods(http.MethodPost)
+        router.HandleFunc("/login", s.handleLogin).Methods(http.MethodPost)
+
+        logout := router.PathPrefix("/logout").Subrouter()
+        logout.Use(s.authenticateUser)
+        logout.Use(csrfMiddleware)
+        logout.HandleFunc("", s.handleLogout).Methods(http.MethodDelete)
+
+        profile := router.PathPrefix("/profile").Subrouter()
+        profile.Use(s.authenticateUser)
+        profile.Use(csrfMiddleware)
+        profile.HandleFunc("/{id:[0-9]+}", s.handleChangeProfile).Methods(http.MethodPut)
+        profile.HandleFunc("/{id:[0-9]+}", s.handleGetProfile).Methods(http.MethodGet)
+        profile.HandleFunc("/authorized", s.handleCheckAuthorized).Methods(http.MethodGet)
+        profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleAddSpecialize).Methods(http.MethodPost)
+        profile.HandleFunc("/{id:[0-9]+}/specialize", s.handleDelSpecialize).Methods(http.MethodDelete)
+        profile.HandleFunc("/avatar", s.handlePutAvatar).Methods(http.MethodPut)
+        order := router.PathPrefix("/order").Subrouter()
+        order.Use(s.authenticateUser)
+        order.Use(csrfMiddleware)
+        order.HandleFunc("", s.handleCreateOrder).Methods(http.MethodPost)
+        order.HandleFunc("", s.handleGetActualOrder).Methods(http.MethodGet)
+
+        //order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodPut)
+        order.HandleFunc("/{id:[0-9]+}", s.handleGetOrder).Methods(http.MethodGet)
+        order.HandleFunc("/{id:[0-9]+}/response", s.handleCreateOrderResponse).Methods(http.MethodPost)
+        order.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllOrderResponses).Methods(http.MethodGet)
+        order.HandleFunc("/{id:[0-9]+}/response", s.handleChangeOrderResponse).Methods(http.MethodPut)
+        order.HandleFunc("/{id:[0-9]+}/response", s.handleDeleteOrderResponse).Methods(http.MethodDelete)
+        order.HandleFunc("/{id:[0-9]+}/select", s.handleSelectExecutor).Methods(http.MethodPut)
+        order.HandleFunc("/{id:[0-9]+}/select", s.handleDeleteExecutor).Methods(http.MethodDelete)
+        order.HandleFunc("/profile/{id:[0-9]+}", s.handleGetAllUserOrders).Methods(http.MethodGet)
+
+        vacancy := router.PathPrefix("/vacancy").Subrouter()
+        vacancy.Use(s.authenticateUser)
+        vacancy.Use(csrfMiddleware)
+        vacancy.HandleFunc("", s.handleCreateVacancy).Methods(http.MethodPost)
+        vacancy.HandleFunc("/{id:[0-9]+}", s.handleGetVacancy).Methods(http.MethodGet)
+        vacancy.HandleFunc("/{id:[0-9]+}/response", s.handleCreateVacancyResponse).Methods(http.MethodPost)
+        vacancy.HandleFunc("/{id:[0-9]+}/response", s.handleGetAllVacancyResponses).Methods(http.MethodGet)
+
+        c := cors.New(cors.Options{
+                AllowedOrigins:   config.Origin,
+                AllowedMethods:   []string{"POST", "GET", "OPTIONS", "PUT", "DELETE", "PATCH"},
+                AllowedHeaders:   []string{"Content-Type", "X-Requested-With", "Accept", "X-Csrf-Token"},
+                ExposedHeaders:   []string{"X-Csrf-Token"},
+                AllowCredentials: true,
+                MaxAge:           86400,
+        })
+        s.router = c.Handler(router)
+}</span>
+
+func (s *server) logginCSRF() http.Handler <span class="cov0" title="0">{
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span><span class="cov0" title="0">{
+                reqID := r.Context().Value(ctxKeyReqID).(uint64)
+                s.logger.WithFields(logrus.Fields{
+                        "request_id": reqID,
+                        "error":      "Invalid CSRF token",
+                }).Error()
+                s.respond(w, reqID, http.StatusForbidden, map[string]interface{}{
+                        "error": "Invalid CSRF token",
+                })
+        }</span>)
+}
+
+func (s *server) loggingRequest(next http.Handler) http.Handler <span class="cov0" title="0">{
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span><span class="cov0" title="0">{
+                reqID := rand.Uint64()
+                s.logger.WithFields(logrus.Fields{
+                        "request_id": reqID,
+                        "url":        r.URL,
+                        "method":     r.Method,
+                }).Info()
+                next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyReqID, reqID)))
+        }</span>)
+}
+
+func (s *server) handleCreateOrderResponse(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        response := &amp;model.ResponseOrder{}
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+
+        if err := json.NewDecoder(r.Body).Decode(response); err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, InvalidJSON) //Bad json
+                return
+        }</span>
+        <span class="cov0" title="0">params := mux.Vars(r)
+        id, err := strconv.ParseUint(params["id"], 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, InvalidJSON) //Bad json
+                return
+        }</span>
+        <span class="cov0" title="0">response.OrderID = id
+        response, err = s.useCase.ResponseOrder().Create(*response)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusCreated, response)</span>
+}
+
+func (s *server) handleGetAllOrderResponses(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        params := mux.Vars(r)
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        id, err := strconv.ParseUint(params["id"], 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err)) //Bad json
+                return
+        }</span>
+        <span class="cov0" title="0">responses, err := s.useCase.ResponseOrder().FindByVacancyID(id)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err)) //Bad json
+                return
+        }</span>
+
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusOK, responses)</span>
+}
+
+func (s *server) handleChangeOrderResponse(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        response := &amp;model.ResponseOrder{}
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+
+        if err := json.NewDecoder(r.Body).Decode(response); err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, InvalidJSON)
+                return
+        }</span>
+        <span class="cov0" title="0">params := mux.Vars(r)
+        var err error
+        response.OrderID, err = strconv.ParseUint(params["id"], 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">response.UserID = r.Context().Value(ctxKeySession).(*model.Session).UserID
+        responses, err := s.useCase.ResponseOrder().Change(*response)
+
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusOK, responses)</span>
+}
+
+func (s *server) handleDeleteOrderResponse(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        response := &amp;model.ResponseOrder{}
+        params := mux.Vars(r)
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        var err error
+        response.OrderID, err = strconv.ParseUint(params["id"], 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err)) //Bad json
+                return
+        }</span>
+        <span class="cov0" title="0">response.UserID = r.Context().Value(ctxKeySession).(*model.Session).UserID
+        err = s.useCase.ResponseOrder().Delete(*response)
+
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err)) //Bad json
+                return
+        }</span>
+        <span class="cov0" title="0">var emptyInterface interface{}
+
+        s.respond(w, reqId, http.StatusOK, emptyInterface)</span>
+}
+
+func (s *server) handleSelectExecutor(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        params := mux.Vars(r)
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+
+        order := model.Order{}
+        if err := json.NewDecoder(r.Body).Decode(&amp;order); err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, InvalidJSON)
+                return
+        }</span>
+        <span class="cov0" title="0">var err error
+        order.ID, err = strconv.ParseUint(params["id"], 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, http.StatusBadRequest, InvalidJSON)
+                return
+        }</span>
+        <span class="cov0" title="0">err = s.useCase.Order().SelectExecutor(order)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, http.StatusInternalServerError, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusOK, order)</span>
+}
+
+func (s *server) handleDeleteExecutor(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        params := mux.Vars(r)
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+
+        order := model.Order{}
+        var err error
+        order.ID, err = strconv.ParseUint(params["id"], 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, http.StatusBadRequest, InvalidJSON)
+                return
+        }</span>
+        <span class="cov0" title="0">err = s.useCase.Order().DeleteExecutor(order)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, http.StatusInternalServerError, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">var emptyInterface interface{}
+        s.respond(w, reqId, http.StatusOK, emptyInterface)</span>
+}
+
+func (s *server) handleGetAllUserOrders(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        params := mux.Vars(r)
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        userID, err := strconv.ParseUint(params["id"], 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, http.StatusBadRequest, InvalidJSON)
+                return
+        }</span>
+        <span class="cov0" title="0">user, err := s.useCase.User().FindByID(userID)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, http.StatusInternalServerError, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">isExecutor := user.Executor
+        var o []model.Order
+        if isExecutor </span><span class="cov0" title="0">{
+                o, err = s.useCase.Order().FindByExecutorID(userID)
+        }</span> else<span class="cov0" title="0"> {
+                o, err = s.useCase.Order().FindByCustomerID(userID)
+        }</span>
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                s.error(w, http.StatusNotFound, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusOK, o)</span>
+}
+
+func (s *server) handleProfile(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        defer r.Body.Close()
+        u := &amp;model.User{}
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        if err := json.NewDecoder(r.Body).Decode(u); err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, InvalidJSON) //Bad json
+                return
+        }</span>
+        <span class="cov0" title="0">err := s.useCase.User().Create(u)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">cookies, err := s.createCookies(u)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err)) //ошибка создания сессии
+                return
+        }</span>
+        <span class="cov0" title="0">for _, cookie := range cookies </span><span class="cov0" title="0">{
+                http.SetCookie(w, &amp;cookie)
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusCreated, u)</span>
+}
+
+func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        u := &amp;model.User{}
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        if err := json.NewDecoder(r.Body).Decode(u); err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, InvalidJSON) //Bad json
+                return
+        }</span>
+        <span class="cov0" title="0">u, err := s.useCase.User().UserVerification(u.Email, u.Password)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err)) //Unauthorized
+                return
+        }</span>
+        <span class="cov0" title="0">cookies, err := s.createCookies(u)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err)) // ошибка создания сессии
+                return
+        }</span>
+        <span class="cov0" title="0">for _, cookie := range cookies </span><span class="cov0" title="0">{
+                http.SetCookie(w, &amp;cookie)
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusOK, u)</span>
+}
+
+func (s *server) handleLogout(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        cookies := r.Cookies()
+        s.delCookies(cookies)
+        for _, cookie := range cookies </span><span class="cov0" title="0">{
+                http.SetCookie(w, cookie)
+        }</span>
+}
+
+func (s *server) authenticateUser(next http.Handler) http.Handler <span class="cov0" title="0">{
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span><span class="cov0" title="0">{
+                reqId := r.Context().Value(ctxKeyReqID).(uint64)
+                sessionID, err := r.Cookie("session")
+                cookieErr := *InvalidCookies
+                if err != nil </span><span class="cov0" title="0">{
+                        cookieErr.Field = map[string]interface{}{
+                                "session_id": "absent",
+                                "status":     "Not uthorized",
+                        }
+                        s.error(w, reqId, &amp;cookieErr)
+                        return
+                }</span>
+                <span class="cov0" title="0">executor, err := r.Cookie("executor")
+                if err != nil </span><span class="cov0" title="0">{
+                        cookieErr.Field = map[string]interface{}{
+                                "executor": "absent",
+                                "status":   "Not executor",
+                        }
+                        s.error(w, reqId, &amp;cookieErr)
+                        return
+                }</span>
+                <span class="cov0" title="0">session, err := s.useCase.Session().FindBySessionID(sessionID.Value)
+                if err != nil </span><span class="cov0" title="0">{
+                        s.error(w, reqId, New(err))
+                        return
+                }</span>
+                <span class="cov0" title="0">session.Executor, err = strconv.ParseBool(executor.Value)
+                if err != nil </span><span class="cov0" title="0">{
+                        s.error(w, reqId, New(err))
+                        return
+                }</span>
+
+                <span class="cov0" title="0">next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeySession, session)))</span>
+        })
+}
+
+func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        params := mux.Vars(r)
+        id, err := strconv.ParseUint(params["id"], 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err)) //Bad json
+                return
+        }</span>
+        <span class="cov0" title="0">u := &amp;model.User{}
+        if err := json.NewDecoder(r.Body).Decode(u); err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, InvalidJSON) //Bad json
+                return
+        }</span>
+        <span class="cov0" title="0">userCookieID := r.Context().Value(ctxKeySession).(*model.Session).UserID
+        if userCookieID != id </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(tarantoolcache.NotAuthorized))
+                return
+        }</span>
+        <span class="cov0" title="0">u.ID = id
+        u, err = s.useCase.User().ChangeUser(*u)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusOK, u)</span>
+}
+
+func (s *server) handleGetProfile(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        params := mux.Vars(r)
+        id, err := strconv.ParseUint(params["id"], 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">u, err := s.useCase.User().FindByID(id)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusOK, u)</span>
+}
+
+func (s *server) handleCheckAuthorized(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        w.Header().Set("X-CSRF-Token", csrf.Token(r))
+        session := r.Context().Value(ctxKeySession).(*model.Session)
+        s.respond(w, reqId, http.StatusOK, session)
+}</span>
+
+func (s *server) handleAddSpecialize(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        id := r.Context().Value(ctxKeySession).(*model.Session).UserID
+        specialize := &amp;model.Specialize{}
+        if err := json.NewDecoder(r.Body).Decode(specialize); err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, InvalidJSON)
+                return
+        }</span>
+
+        <span class="cov0" title="0">if err := s.useCase.User().AddSpecialize(specialize.Name, id); err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">var emptyInterface interface{}
+        s.respond(w, reqId, http.StatusCreated, emptyInterface)</span>
+}
+
+func (s *server) handleDelSpecialize(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        userID := r.Context().Value(ctxKeySession).(*model.Session).UserID
+        specialize := &amp;model.Specialize{}
+        if err := json.NewDecoder(r.Body).Decode(specialize); err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, InvalidJSON)
+                return
+        }</span>
+        <span class="cov0" title="0">if err := s.useCase.User().DelSpecialize(specialize.Name, userID); err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">var emptyInterface interface{}
+        s.respond(w, reqId, http.StatusCreated, emptyInterface)</span>
+}
+
+func (s *server) handlePutAvatar(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        defer r.Body.Close()
+        u := &amp;model.User{}
+        err := json.NewDecoder(r.Body).Decode(u)
+        u.ID = r.Context().Value(ctxKeySession).(*model.Session).UserID
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, InvalidJSON)
+                return
+        }</span>
+
+        <span class="cov0" title="0">u, err = s.useCase.Media().SetImage(u, []byte(u.Img))
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusOK, u)</span>
+
+}
+
+func (s *server) handleCreateOrder(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        id := r.Context().Value(ctxKeySession).(*model.Session).UserID
+        o := &amp;model.Order{}
+        if err := json.NewDecoder(r.Body).Decode(o); err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, InvalidJSON)
+                return
+        }</span>
+        <span class="cov0" title="0">o.CustomerID = id
+        var err error
+        o, err = s.useCase.Order().Create(*o)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusCreated, o)</span>
+}
+
+func (s *server) handleGetOrder(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        params := mux.Vars(r)
+        id, err := strconv.ParseUint(params["id"], 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">o, err := s.useCase.Order().FindByID(id)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusOK, o)</span>
+}
+
+func (s *server) handleGetActualOrder(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        o, err := s.useCase.Order().GetActualOrders()
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusOK, o)</span>
+}
+
+func (s *server) handleCreateVacancy(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        id := r.Context().Value(ctxKeySession).(*model.Session).UserID
+        v := &amp;model.Vacancy{
+                UserID: id,
+        }
+        if err := json.NewDecoder(r.Body).Decode(v); err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, InvalidJSON)
+                return
+        }</span>
+        <span class="cov0" title="0">var err error
+        if v, err = s.useCase.Vacancy().Create(*v); err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusCreated, v)</span>
+}
+
+func (s *server) handleGetVacancy(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        params := mux.Vars(r)
+        id, err := strconv.ParseUint(params["id"], 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, InvalidJSON)
+                return
+        }</span>
+        <span class="cov0" title="0">v, err := s.useCase.Vacancy().FindByID(id)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, reqId, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusOK, v)</span>
+}
+
+func (s *server) error(w http.ResponseWriter, requestId uint64, err error) <span class="cov0" title="0">{
+        httpError := &amp;Error{}
+        s.logger.WithFields(logrus.Fields{
+                "error":      err.Error(),
+                "field":      httpError.Field,
+                "request_id": requestId,
+        }).Error()
+        if errors.As(err, &amp;httpError) </span><span class="cov0" title="0">{
+                s.respond(w, requestId, httpError.Code, httpError.Field)
+                return
+        }</span>
+        <span class="cov0" title="0">s.respond(w, requestId, http.StatusInternalServerError, map[string]string{"error": "Internal server error"})</span>
+
+}
+func (s *server) handleCreateVacancyResponse(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        response := &amp;model.ResponseVacancy{}
+        if err := json.NewDecoder(r.Body).Decode(response); err != nil </span><span class="cov0" title="0">{
+                s.error(w, http.StatusBadRequest, InvalidJSON) //Bad json
+                return
+        }</span>
+        <span class="cov0" title="0">params := mux.Vars(r)
+        id, err := strconv.ParseUint(params["id"], 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, http.StatusBadRequest, New(err)) //Bad json
+                return
+        }</span>
+        <span class="cov0" title="0">response.VacancyID = id
+        response, err = s.useCase.ResponseVacancy().Create(*response)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, http.StatusBadRequest, New(err))
+                return
+        }</span>
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusCreated, response)</span>
+}
+
+func (s *server) handleGetAllVacancyResponses(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        params := mux.Vars(r)
+        reqId := r.Context().Value(ctxKeyReqID).(uint64)
+        id, err := strconv.ParseUint(params["id"], 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, http.StatusBadRequest, InvalidJSON) //Bad json
+                return
+        }</span>
+        <span class="cov0" title="0">responses, err := s.useCase.ResponseVacancy().FindByVacancyID(id)
+        if err != nil </span><span class="cov0" title="0">{
+                s.error(w, http.StatusBadRequest, New(err)) //Bad json
+                return
+        }</span>
+
+        <span class="cov0" title="0">s.respond(w, reqId, http.StatusOK, responses)</span>
+}
+
+func (s *server) respond(w http.ResponseWriter, requestId uint64, code int, data interface{}) <span class="cov0" title="0">{
+        w.WriteHeader(code)
+        if data != nil </span><span class="cov0" title="0">{
+                err := json.NewEncoder(w).Encode(data)
+                if err != nil </span><span class="cov0" title="0">{
+                        s.error(w, requestId, err)
+                        return
+                }</span>
+        }
+        <span class="cov0" title="0">s.logger.WithFields(logrus.Fields{
+                "request_id": requestId,
+                "reply_code": code,
+        }).Info()</span>
+}
+
+func (s *server) delCookies(cookies []*http.Cookie) <span class="cov0" title="0">{
+        for _, cookie := range cookies </span><span class="cov0" title="0">{
+                cookie.Expires = time.Now().AddDate(0, 0, -1)
+                cookie.HttpOnly = true
+        }</span>
+}
+
+func (s *server) createCookies(u *model.User) ([]http.Cookie, error) <span class="cov0" title="0">{
+
+        session, err := s.useCase.Session().Create(u)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">cookies := []http.Cookie{
+                {
+                        Name:     "session",
+                        Value:    session.SessionID,
+                        Expires:  time.Now().AddDate(0, 1, 0),
+                        HttpOnly: true,
+                },
+                {
+                        Name:     "executor",
+                        Value:    strconv.FormatBool(u.Executor),
+                        Expires:  time.Now().AddDate(0, 1, 0),
+                        HttpOnly: true,
+                },
+        }
+
+        return cookies, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package diskmediastore
+
+import (
+        "github.com/pkg/errors"
+        "os"
+)
+
+type ImageRepository struct {
+        workDir string
+}
+
+const (
+        imageExtend = ".base64"
+)
+
+func (i *ImageRepository) GetImage(imageInfo interface{}) ([]byte, error) <span class="cov0" title="0">{
+        if imageName := imageInfo.(string); imageName == "" </span><span class="cov0" title="0">{
+                return nil, nil
+        }</span>
+        <span class="cov0" title="0">imagePath := i.formImagePath(imageInfo.(string))
+        file, err := os.Open(imagePath)
+        defer file.Close()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, diskDbSourceError)
+        }</span>
+        <span class="cov0" title="0">fileStat, err := file.Stat()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, diskDbSourceError)
+        }</span>
+        <span class="cov0" title="0">image := make([]byte, fileStat.Size())
+        _, err = file.Read(image)
+        return image, nil</span>
+}
+
+func (i *ImageRepository) SetImage(imageInfo interface{}, image []byte) (string, error) <span class="cov0" title="0">{
+        imagePath := i.formImagePath(imageInfo.(string))
+        file, err := os.Create(imagePath)
+        defer file.Close()
+        if err != nil </span><span class="cov0" title="0">{
+                return "", errors.Wrap(err, diskDbSourceError)
+        }</span>
+        <span class="cov0" title="0">_, err = file.Write(image)
+        return imageInfo.(string), nil</span>
+
+}
+
+func (i ImageRepository) formImagePath(imageName string) string <span class="cov0" title="0">{
+        var imagePath string
+        if imageName[0:1] != "/" </span><span class="cov0" title="0">{
+                imagePath = i.workDir + "/" + imageName + imageExtend
+        }</span> else<span class="cov0" title="0"> {
+                imagePath = i.workDir + imageName + imageExtend
+        }</span>
+        <span class="cov0" title="0">return imagePath</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package diskmediastore
+
+import "FL_2/store"
+
+type MediaStore struct {
+        imageRepository *ImageRepository
+        workDir         string
+}
+
+func New(workDir string) *MediaStore <span class="cov0" title="0">{
+        s := &amp;MediaStore{
+                workDir: workDir,
+        }
+        return s
+}</span>
+
+func (s *MediaStore) Image() store.ImageRepository <span class="cov0" title="0">{
+        if s.imageRepository == nil </span><span class="cov0" title="0">{
+                s.imageRepository = &amp;ImageRepository{
+                        workDir: s.workDir,
+                }
+        }</span>
+        <span class="cov0" title="0">return s.imageRepository</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package postgresstore
+
+const (
+        duplicateErrorCode = "23505"
+        sqlDbSourceError   = "SQL sb source error"
+)
+
+type DuplicateSourceErr struct {
+        Err error
+}
+
+func (e *DuplicateSourceErr) Error() string <span class="cov0" title="0">{
+        return e.Err.Error()
+}</span>
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package postgresstore
+
+import (
+        "FL_2/model"
+        "github.com/lib/pq"
+        "github.com/pkg/errors"
+)
+
+type OrderRepository struct {
+        store *Store
+}
+
+const (
+        insertOrder = `INSERT INTO ff.orders (
+                   customer_id, 
+                   executor_id, 
+                   order_name, 
+                   category, 
+                   budget, 
+                   deadline,
+                   description
+                )
+        VALUES (
+                $1, 
+                $2, 
+                $3,
+                                $4,
+                                $5,
+                                $6,
+                $7
+                ) RETURNING id`
+
+        selectOrderByID = "SELECT * FROM ff.orders WHERE id=$1"
+
+        selectOrderByExecutorID = "SELECT * FROM ff.orders WHERE executor_id=$1"
+
+        selectOrderByCustomerID = "SELECT * FROM ff.orders WHERE customer_id=$1"
+
+        selectOrders = "SELECT * FROM ff.orders"
+
+        updateExecutor = `UPDATE ff.orders SET 
+                 executor_id =:executor_id
+                                 WHERE id = :id`
+)
+
+func (o *OrderRepository) Create(order model.Order) (uint64, error) <span class="cov8" title="1">{
+        var orderID uint64
+        err := o.store.Db.QueryRow(
+                insertOrder,
+                order.CustomerID,
+                order.ExecutorID,
+                order.OrderName,
+                order.Category,
+                order.Budget,
+                order.Deadline,
+                order.Description).Scan(&amp;orderID)
+        if err != nil </span><span class="cov8" title="1">{
+                pqErr := &amp;pq.Error{}
+                if errors.As(err, &amp;pqErr) </span><span class="cov0" title="0">{
+                        if pqErr.Code == duplicateErrorCode </span><span class="cov0" title="0">{
+                                return 0, errors.Wrap(&amp;DuplicateSourceErr{
+                                        Err: err,
+                                }, sqlDbSourceError)
+                        }</span>
+                }
+                <span class="cov8" title="1">return 0, errors.Wrap(err, sqlDbSourceError)</span>
+        }
+        <span class="cov8" title="1">return orderID, nil</span>
+}
+
+func (o *OrderRepository) FindByID(id uint64) (*model.Order, error) <span class="cov8" title="1">{
+        order := model.Order{}
+        if err := o.store.Db.Get(&amp;order, selectOrderByID, id); err != nil </span><span class="cov8" title="1">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov8" title="1">return &amp;order, nil</span>
+}
+
+func (o *OrderRepository) FindByExecutorID(executorID uint64) ([]model.Order, error) <span class="cov8" title="1">{
+        var orders []model.Order
+        if err := o.store.Db.Select(&amp;orders, selectOrderByExecutorID, executorID); err != nil </span><span class="cov8" title="1">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov8" title="1">return orders, nil</span>
+}
+
+func (o *OrderRepository) FindByCustomerID(customerID uint64) ([]model.Order, error) <span class="cov8" title="1">{
+        var orders []model.Order
+        if err := o.store.Db.Select(&amp;orders, selectOrderByCustomerID, customerID); err != nil </span><span class="cov8" title="1">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov8" title="1">return orders, nil</span>
+}
+
+func (o *OrderRepository) GetActualOrders() ([]model.Order, error) <span class="cov8" title="1">{
+        var orders []model.Order
+        if err := o.store.Db.Select(&amp;orders, selectOrders); err != nil </span><span class="cov8" title="1">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov8" title="1">return orders, nil</span>
+}
+
+func (o *OrderRepository) UpdateExecutor(order model.Order) error <span class="cov0" title="0">{
+        tx := o.store.Db.MustBegin()
+        _, err := tx.NamedExec(updateExecutor, &amp;order)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">if err := tx.Commit(); err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package postgresstore
+
+import (
+        "FL_2/model"
+        "github.com/lib/pq"
+        "github.com/pkg/errors"
+)
+
+type ResponseOrderRepository struct {
+        store *Store
+}
+
+const (
+        insertOrderResponse = `INSERT INTO ff.order_responses (
+                   order_id, 
+                   user_id, 
+                   rate, 
+                   user_login, 
+                   user_img, 
+                   time
+                )
+        VALUES (
+                $1, 
+                $2, 
+                $3,
+                                $4,
+                                $5,
+                $6
+                ) RETURNING id`
+
+        selectOrderResponseByOrderID = "SELECT * FROM ff.order_responses WHERE order_id = $1"
+
+        updateOrderResponse = `UPDATE ff.order_responses SET 
+                 rate=:rate,
+                 time=:time
+                                 WHERE user_id=:user_id AND order_id=:order_id`
+
+        deleteOrderResponse = `DELETE FROM ff.order_responses 
+                                 WHERE user_id=:user_id AND order_id=:order_id`
+)
+
+func (r *ResponseOrderRepository) Create(response model.ResponseOrder) (uint64, error) <span class="cov0" title="0">{
+        var responseID uint64
+        err := r.store.Db.QueryRow(
+                insertOrderResponse,
+                response.OrderID,
+                response.UserID,
+                response.Rate,
+                response.UserLogin,
+                response.UserImg,
+                response.Time).Scan(&amp;responseID)
+        if err != nil </span><span class="cov0" title="0">{
+                pqErr := &amp;pq.Error{}
+                if errors.As(err, &amp;pqErr) </span><span class="cov0" title="0">{
+                        if pqErr.Code == duplicateErrorCode </span><span class="cov0" title="0">{
+                                return 0, errors.Wrap(&amp;DuplicateSourceErr{
+                                        Err: err,
+                                }, sqlDbSourceError)
+                        }</span>
+                }
+                <span class="cov0" title="0">return 0, errors.Wrap(err, sqlDbSourceError)</span>
+        }
+
+        <span class="cov0" title="0">return responseID, nil</span>
+}
+
+func (r *ResponseOrderRepository) FindByOrderID(id uint64) ([]model.ResponseOrder, error) <span class="cov0" title="0">{
+        var responses []model.ResponseOrder
+        if err := r.store.Db.Select(&amp;responses, selectOrderResponseByOrderID, id); err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">return responses, nil</span>
+}
+
+func (r *ResponseOrderRepository) Change(response model.ResponseOrder) (*model.ResponseOrder, error) <span class="cov0" title="0">{
+        tx := r.store.Db.MustBegin()
+        _, err := tx.NamedExec(updateOrderResponse, &amp;response)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">if err := tx.Commit(); err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">return &amp;response, nil</span>
+}
+
+func (r *ResponseOrderRepository) Delete(response model.ResponseOrder) error <span class="cov0" title="0">{
+        tx := r.store.Db.MustBegin()
+        _, err := tx.NamedExec(deleteOrderResponse, &amp;response)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">if err = tx.Commit(); err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package postgresstore
+
+import (
+        "FL_2/model"
+        "github.com/lib/pq"
+        "github.com/pkg/errors"
+)
+
+type ResponseVacancyRepository struct {
+        store *Store
+}
+
+const (
+        insertVacancyResponse = `INSERT INTO ff.vacancy_responses (
+                   vacancy_id, 
+                   user_id, 
+                   rate, 
+                   user_login, 
+                   user_img, 
+                   time
+                )
+        VALUES (
+                $1, 
+                $2, 
+                $3,
+                                $4,
+                                $5,
+                $6
+                ) RETURNING id`
+
+        selectVacancyResponseByVacancyID = "SELECT * FROM ff.vacancy_responses WHERE vacancy_id = $1"
+
+        updateVacancyResponse = `UPDATE ff.vacancy_responses SET 
+                 rate=:rate,
+                 time=:time
+                                 WHERE user_id=:user_id AND vacancy_id=:order_id`
+
+        deleteVacancyResponse = `DELETE FROM ff.vacancy_responses 
+                                 WHERE user_id=:user_id AND vacancy_id=:order_id`
+)
+
+func (r *ResponseVacancyRepository) Create(response model.ResponseVacancy) (uint64, error) <span class="cov0" title="0">{
+        var responseID uint64
+        err := r.store.Db.QueryRow(
+                insertVacancyResponse,
+                response.VacancyID,
+                response.UserID,
+                response.Rate,
+                response.UserLogin,
+                response.UserImg,
+                response.Time).Scan(&amp;responseID)
+        if err != nil </span><span class="cov0" title="0">{
+                pqErr := &amp;pq.Error{}
+                if errors.As(err, &amp;pqErr) </span><span class="cov0" title="0">{
+                        if pqErr.Code == duplicateErrorCode </span><span class="cov0" title="0">{
+                                return 0, errors.Wrap(&amp;DuplicateSourceErr{
+                                        Err: err,
+                                }, sqlDbSourceError)
+                        }</span>
+                }
+                <span class="cov0" title="0">return 0, errors.Wrap(err, sqlDbSourceError)</span>
+        }
+
+        <span class="cov0" title="0">return responseID, nil</span>
+}
+
+func (r *ResponseVacancyRepository) FindByVacancyID(id uint64) ([]model.ResponseVacancy, error) <span class="cov0" title="0">{
+        var responses []model.ResponseVacancy
+        if err := r.store.Db.Select(&amp;responses, selectVacancyResponseByVacancyID, id); err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">return responses, nil</span>
+}
+
+func (r *ResponseVacancyRepository) Change(response model.ResponseVacancy) (*model.ResponseVacancy, error) <span class="cov0" title="0">{
+        tx := r.store.Db.MustBegin()
+        _, err := tx.NamedExec(updateVacancyResponse, &amp;response)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">if err := tx.Commit(); err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">return &amp;response, nil</span>
+}
+
+func (r *ResponseVacancyRepository) Delete(response model.ResponseVacancy) error <span class="cov0" title="0">{
+        tx := r.store.Db.MustBegin()
+        _, err := tx.NamedExec(deleteVacancyResponse, &amp;response)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">if err := tx.Commit(); err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package postgresstore
+
+import (
+        "FL_2/store"
+        "github.com/jmoiron/sqlx"
+)
+
+type Store struct {
+        Db                        *sqlx.DB
+        dsn                       string
+        userRepository            *UserRepository
+        orderRepository           *OrderRepository
+        vacancyRepository         *VacancyRepository
+        responseOrderRepository   *ResponseOrderRepository
+        responseVacancyRepository *ResponseVacancyRepository
+}
+
+func New(dsn string) *Store <span class="cov0" title="0">{
+        return &amp;Store{
+                dsn: dsn,
+        }
+}</span>
+
+func (s *Store) Open() error <span class="cov0" title="0">{
+        db, err := sqlx.Connect("postgres", s.dsn)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">s.Db = db
+
+        return nil</span>
+}
+
+func (s *Store) Close() error <span class="cov0" title="0">{
+        return s.Db.Close()
+}</span>
+
+func (s *Store) User() store.UserRepository <span class="cov8" title="1">{
+        if s.userRepository == nil </span><span class="cov8" title="1">{
+                s.userRepository = &amp;UserRepository{
+                        store: s,
+                }
+        }</span>
+
+        <span class="cov8" title="1">return s.userRepository</span>
+}
+
+func (s *Store) Order() store.OrderRepository <span class="cov8" title="1">{
+        if s.orderRepository == nil </span><span class="cov8" title="1">{
+                s.orderRepository = &amp;OrderRepository{
+                        store: s,
+                }
+        }</span>
+
+        <span class="cov8" title="1">return s.orderRepository</span>
+}
+
+func (s *Store) Vacancy() store.VacancyRepository <span class="cov0" title="0">{
+        if s.vacancyRepository == nil </span><span class="cov0" title="0">{
+                s.vacancyRepository = &amp;VacancyRepository{
+                        store: s,
+                }
+        }</span>
+
+        <span class="cov0" title="0">return s.vacancyRepository</span>
+}
+
+func (s *Store) ResponseOrder() store.ResponseOrderRepository <span class="cov0" title="0">{
+        if s.responseOrderRepository == nil </span><span class="cov0" title="0">{
+                s.responseOrderRepository = &amp;ResponseOrderRepository{
+                        store: s,
+                }
+        }</span>
+
+        <span class="cov0" title="0">return s.responseOrderRepository</span>
+}
+
+func (s *Store) ResponseVacancy() store.ResponseVacancyRepository <span class="cov0" title="0">{
+        if s.responseVacancyRepository == nil </span><span class="cov0" title="0">{
+                s.responseVacancyRepository = &amp;ResponseVacancyRepository{
+                        store: s,
+                }
+        }</span>
+
+        <span class="cov0" title="0">return s.responseVacancyRepository</span>
+}
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">package postgresstore
+
+import (
+        "FL_2/model"
+        "database/sql"
+        "github.com/lib/pq"
+        "github.com/pkg/errors"
+        "strconv"
+)
+
+type UserRepository struct {
+        store *Store
+}
+
+const (
+        insertToUserSpecTable = `INSERT INTO ff.user_specializes (
+                                           user_id, specialize_id
+                        )
+                                                VALUES (
+                                                        :userID, :specID
+                                                )`
+
+        insertToSpecTable = `INSERT INTO ff.specializes (
+                                                    specialize_name
+                                            ) 
+                                            VALUES (
+                                                    $1
+                                            )  RETURNING id`
+
+        insertUser = `INSERT INTO ff.users (
+                   email, 
+                   password, 
+                   login, 
+                   name_surname, 
+                   about, 
+                   executor 
+                )
+        VALUES (
+                $1, 
+                $2, 
+                $3,
+                                $4,
+                                $5,
+                                $6        
+                ) RETURNING id`
+
+        selectSpecializesByName = "SELECT * FROM ff.specializes WHERE specialize_name = $1"
+
+        selectUserByEmail = "SELECT * from ff.users WHERE users.email=$1 "
+
+        selectSpecializesByUserEmail = "SELECT array_agg(specialize_name) AS specializes FROM ff.specializes " +
+                "INNER JOIN ff.user_specializes us on specializes.id = us.specialize_id " +
+                "INNER JOIN ff.users u on us.user_id = u.id " +
+                "WHERE u.email = $1"
+
+        selectUserByID = "SELECT * from ff.users WHERE id=$1"
+
+        selectSpecializesByUserID = "SELECT array_agg(specialize_name) AS specializes FROM ff.specializes " +
+                "INNER JOIN ff.user_specializes us on specializes.id = us.specialize_id " +
+                "WHERE user_id = $1"
+
+        updateUser = `UPDATE ff.users SET 
+                 password =:password,
+                 login =:login,
+                 name_surname =:name_surname,
+                 about=:about,
+                 executor=:executor,
+                 img=:img,
+                 rating=:rating
+                                 WHERE id = :id`
+
+        deleteSpecializes = "DELETE FROM ff.user_specializes WHERE specialize_id=$1 AND user_id =$2"
+
+        selectUserIDAndSpecID = "SELECT * FROM ff.user_specializes WHERE specialize_id=$1 AND user_id=$2"
+)
+
+func (u *UserRepository) AddUserSpec(userID uint64, specID uint64) error <span class="cov0" title="0">{
+        _, err := u.store.Db.NamedExec(
+                insertToUserSpecTable,
+                map[string]interface{}{
+                        "userID": strconv.FormatUint(userID, 10),
+                        "specID": strconv.FormatUint(specID, 10),
+                })
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+
+func (u *UserRepository) FindSpecializeByName(specName string) (model.Specialize, error) <span class="cov8" title="1">{
+        specialize := model.Specialize{}
+        err := u.store.Db.Get(&amp;specialize, selectSpecializesByName, specName)
+        if errors.Is(err, sql.ErrNoRows) </span><span class="cov0" title="0">{
+                return model.Specialize{
+                        ID:   0,
+                        Name: "",
+                }, nil
+        }</span>
+        <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
+                return model.Specialize{}, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov8" title="1">return specialize, nil</span>
+}
+
+func (u *UserRepository) IsUserHaveSpec(specID uint64, userID uint64) (bool, error) <span class="cov0" title="0">{
+        rows, err := u.store.Db.Queryx(selectUserIDAndSpecID, specID, userID)
+        if err != nil </span><span class="cov0" title="0">{
+                return true, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">if rows.Next() != false </span><span class="cov0" title="0">{
+                return true, nil
+        }</span>
+        <span class="cov0" title="0">return false, nil</span>
+}
+
+func (u *UserRepository) AddSpec(specName string) (uint64, error) <span class="cov0" title="0">{
+        var specID uint64 = 0
+        err := u.store.Db.QueryRow(
+                insertToSpecTable, specName).Scan(&amp;specID)
+        if err != nil </span><span class="cov0" title="0">{
+                return 0, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">return specID, nil</span>
+}
+
+func (u *UserRepository) AddUser(user model.User) (uint64, error) <span class="cov8" title="1">{
+        var userID uint64
+        err := u.store.Db.QueryRow(
+                insertUser,
+                user.Email,
+                user.EncryptPassword,
+                user.Login,
+                user.NameSurname,
+                user.About,
+                user.Executor).Scan(&amp;userID)
+        if err != nil </span><span class="cov8" title="1">{
+                pqErr := &amp;pq.Error{}
+                if errors.As(err, &amp;pqErr) </span><span class="cov0" title="0">{
+                        if pqErr.Code == duplicateErrorCode </span><span class="cov0" title="0">{
+                                return 0, errors.Wrap(&amp;DuplicateSourceErr{
+                                        Err: err,
+                                }, sqlDbSourceError)
+                        }</span>
+                }
+                <span class="cov8" title="1">return 0, errors.Wrap(err, sqlDbSourceError)</span>
+        }
+        <span class="cov8" title="1">return userID, nil</span>
+}
+
+func (u *UserRepository) FindUserByEmail(email string) (*model.User, error) <span class="cov8" title="1">{
+        user := model.User{}
+        err := u.store.Db.Get(&amp;user, selectUserByEmail, email)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov8" title="1">return &amp;user, nil</span>
+}
+
+func (u *UserRepository) FindSpecializesByUserEmail(email string) (pq.StringArray, error) <span class="cov0" title="0">{
+        user := model.User{}
+        rows, err := u.store.Db.Queryx(selectSpecializesByUserEmail, email)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">for rows.Next() </span><span class="cov0" title="0">{
+                if err := rows.StructScan(&amp;user); err != nil </span><span class="cov0" title="0">{
+                        return nil, errors.Wrap(err, sqlDbSourceError)
+                }</span>
+        }
+        <span class="cov0" title="0">return user.Specializes, nil</span>
+}
+
+func (u *UserRepository) FindUserByID(id uint64) (*model.User, error) <span class="cov8" title="1">{
+        user := model.User{}
+        err := u.store.Db.Get(&amp;user, selectUserByID, id)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov8" title="1">return &amp;user, nil</span>
+}
+
+func (u *UserRepository) FindSpecializesByUserID(id uint64) (pq.StringArray, error) <span class="cov0" title="0">{
+        user := model.User{}
+        rows, err := u.store.Db.Queryx(selectSpecializesByUserID, id)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">for rows.Next() </span><span class="cov0" title="0">{
+                if err := rows.StructScan(&amp;user); err != nil </span><span class="cov0" title="0">{
+                        return nil, errors.Wrap(err, sqlDbSourceError)
+                }</span>
+        }
+        <span class="cov0" title="0">return user.Specializes, nil</span>
+}
+
+func (u *UserRepository) ChangeUser(user model.User) (*model.User, error) <span class="cov0" title="0">{
+        tx := u.store.Db.MustBegin()
+        _, err := tx.NamedExec(updateUser, &amp;user)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">if err := tx.Commit(); err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">return &amp;user, nil</span>
+}
+
+func (u *UserRepository) DelSpecialize(specID uint64, userID uint64) error <span class="cov0" title="0">{
+        _, err := u.store.Db.Queryx(deleteSpecializes, specID, userID)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package postgresstore
+
+import (
+        "FL_2/model"
+        "github.com/lib/pq"
+        "github.com/pkg/errors"
+)
+
+type VacancyRepository struct {
+        store *Store
+}
+
+const (
+        insertVacancy = `INSERT INTO ff.vacancy (
+                          category, 
+                          vacancy_name,
+                          description, 
+                          salary,
+                      user_id
+                          )
+               VALUES ($1, $2, $3,$4, $5) RETURNING id`
+
+        selectVacancyByID = "SELECT * FROM ff.vacancy WHERE id=$1"
+)
+
+func (v *VacancyRepository) Create(vacancy model.Vacancy) (uint64, error) <span class="cov0" title="0">{
+        var vacancyID uint64
+        err := v.store.Db.QueryRow(
+                insertVacancy,
+                vacancy.Category,
+                vacancy.VacancyName,
+                vacancy.Description,
+                vacancy.Salary,
+                vacancy.UserID).Scan(&amp;vacancyID)
+        if err != nil </span><span class="cov0" title="0">{
+                pqErr := &amp;pq.Error{}
+                if errors.As(err, &amp;pqErr) </span><span class="cov0" title="0">{
+                        if pqErr.Code == duplicateErrorCode </span><span class="cov0" title="0">{
+                                return 0, errors.Wrap(&amp;DuplicateSourceErr{
+                                        Err: err,
+                                }, sqlDbSourceError)
+                        }</span>
+                }
+                <span class="cov0" title="0">return 0, errors.Wrap(err, sqlDbSourceError)</span>
+        }
+        <span class="cov0" title="0">return vacancyID, nil</span>
+}
+
+func (v *VacancyRepository) FindByID(id uint64) (*model.Vacancy, error) <span class="cov0" title="0">{
+        vacancy := model.Vacancy{}
+        err := v.store.Db.Get(&amp;vacancy, selectVacancyByID, id)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, sqlDbSourceError)
+        }</span>
+        <span class="cov0" title="0">return &amp;vacancy, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file14" style="display: none">package tarantoolcache
+
+import (
+        "FL_2/store"
+        "github.com/tarantool/go-tarantool"
+)
+
+type Cache struct {
+        conn              *tarantool.Connection
+        SessionRepository *SessionRepository
+}
+
+func New(dbURL string) (*Cache, error) <span class="cov0" title="0">{
+        conn, err := newTarantoolConnect(dbURL)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return &amp;Cache{
+                conn: conn,
+        }, nil</span>
+}
+
+func (s *Cache) Session() store.SessionRepository <span class="cov0" title="0">{
+        if s.SessionRepository != nil </span><span class="cov0" title="0">{
+                return s.SessionRepository
+        }</span>
+        <span class="cov0" title="0">s.SessionRepository = &amp;SessionRepository{
+                cache: s,
+        }
+        return s.SessionRepository</span>
+}
+
+func newTarantoolConnect(dbURL string) (*tarantool.Connection, error) <span class="cov0" title="0">{
+        opts := tarantool.Opts{User: "guest"}
+        db, err := tarantool.Connect(dbURL, opts)
+        return db, err
+}</span>
+</pre>
+		
+		<pre class="file" id="file15" style="display: none">package tarantoolcache
+
+import (
+        "FL_2/model"
+        "github.com/pkg/errors"
+        "github.com/tarantool/go-tarantool"
+)
+
+type SessionRepository struct {
+        cache *Cache
+}
+
+func (s *SessionRepository) Create(session *model.Session) error <span class="cov0" title="0">{
+        _, err := s.cache.conn.Insert("session", sessionToTarantoolData(session))
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, sessionSourceError)
+        }</span>
+        <span class="cov0" title="0">return err</span>
+}
+
+func (s *SessionRepository) Find(session *model.Session) error <span class="cov0" title="0">{
+        resp, err := s.cache.conn.Select("session", "primary",
+                0, 1, tarantool.IterEq, []interface{}{
+                        session.SessionID,
+                })
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, sessionSourceError)
+        }</span>
+        <span class="cov0" title="0">if len(resp.Tuples()) == 0 </span><span class="cov0" title="0">{
+                return errors.Wrap(NotAuthorized, sessionSourceError)
+        }</span>
+        <span class="cov0" title="0">*session = *tarantoolDataToSession(resp.Tuples()[0])
+        return nil</span>
+}
+
+func sessionToTarantoolData(s *model.Session) []interface{} <span class="cov0" title="0">{
+        return []interface{}{s.SessionID, s.UserID}
+}</span>
+
+func tarantoolDataToSession(data []interface{}) *model.Session <span class="cov0" title="0">{
+        s := &amp;model.Session{}
+        s.SessionID, _ = data[0].(string)
+        s.UserID, _ = data[1].(uint64)
+        return s
+}</span>
+</pre>
+		
+		<pre class="file" id="file16" style="display: none">package implementation
+
+import (
+        "FL_2/model"
+        "FL_2/store"
+        "github.com/microcosm-cc/bluemonday"
+        "github.com/pkg/errors"
+        "strconv"
+)
+
+const (
+        mediaUseCaseError = "Media use case error."
+)
+
+type MediaUseCase struct {
+        store      store.Store
+        mediaStore store.MediaStore
+}
+
+func (s *MediaUseCase) GetImage(imageInfo interface{}) (*model.User, error) <span class="cov0" title="0">{
+        return nil, nil
+}</span>
+
+func (s *MediaUseCase) SetImage(imageInfo interface{}, image []byte) (*model.User, error) <span class="cov0" title="0">{
+        u := imageInfo.(*model.User)
+        sanitizer := bluemonday.UGCPolicy()
+        image = sanitizer.SanitizeBytes(image)
+        imageID, err := s.mediaStore.Image().SetImage(strconv.FormatUint(u.ID, 10), image)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, mediaUseCaseError)
+        }</span>
+        <span class="cov0" title="0">u.Img = imageID
+        u, err = s.store.User().ChangeUser(*u)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, mediaUseCaseError)
+        }</span>
+        <span class="cov0" title="0">u.Img = string(image)
+        return u, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file17" style="display: none">package implementation
+
+import (
+        "FL_2/model"
+        "FL_2/store"
+        validation "github.com/go-ozzo/ozzo-validation"
+        "github.com/microcosm-cc/bluemonday"
+        "github.com/pkg/errors"
+)
+
+const (
+        orderUseCaseError = "Order use case error"
+)
+
+type OrderUseCase struct {
+        store      store.Store
+        mediaStore store.MediaStore
+}
+
+func (o *OrderUseCase) Create(order model.Order) (*model.Order, error) <span class="cov0" title="0">{
+        if err := o.validateOrder(&amp;order); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">o.sanitizeOrder(&amp;order)
+        var err error
+        id, err := o.store.Order().Create(order)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">order.ID = id
+        err = o.supplementingTheOrderModel(&amp;order)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">return &amp;order, err</span>
+}
+
+func (o *OrderUseCase) FindByID(id uint64) (*model.Order, error) <span class="cov0" title="0">{
+        order, err := o.store.Order().FindByID(id)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">err = o.supplementingTheOrderModel(order)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">return order, err</span>
+}
+
+func (o *OrderUseCase) FindByExecutorID(executorID uint64) ([]model.Order, error) <span class="cov0" title="0">{
+        orders, err := o.store.Order().FindByExecutorID(executorID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">for _, order := range orders </span><span class="cov0" title="0">{
+                err = o.supplementingTheOrderModel(&amp;order)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, errors.Wrap(err, orderUseCaseError)
+                }</span>
+        }
+        <span class="cov0" title="0">if orders == nil </span><span class="cov0" title="0">{
+                return []model.Order{}, nil
+        }</span>
+        <span class="cov0" title="0">return orders, nil</span>
+}
+
+func (o *OrderUseCase) FindByCustomerID(customerID uint64) ([]model.Order, error) <span class="cov0" title="0">{
+        orders, err := o.store.Order().FindByCustomerID(customerID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">for i, order := range orders </span><span class="cov0" title="0">{
+                err = o.supplementingTheOrderModel(&amp;order)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, errors.Wrap(err, orderUseCaseError)
+                }</span>
+                <span class="cov0" title="0">orders[i] = order</span>
+        }
+        <span class="cov0" title="0">if orders == nil </span><span class="cov0" title="0">{
+                return []model.Order{}, nil
+        }</span>
+        <span class="cov0" title="0">return orders, nil</span>
+}
+
+func (o *OrderUseCase) GetActualOrders() ([]model.Order, error) <span class="cov0" title="0">{
+        orders, err := o.store.Order().GetActualOrders()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">for i, order := range orders </span><span class="cov0" title="0">{
+                err = o.supplementingTheOrderModel(&amp;order)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, errors.Wrap(err, orderUseCaseError)
+                }</span>
+                <span class="cov0" title="0">orders[i] = order</span>
+        }
+        <span class="cov0" title="0">if orders == nil </span><span class="cov0" title="0">{
+                return []model.Order{}, nil
+        }</span>
+        <span class="cov0" title="0">return orders, err</span>
+}
+
+func (o *OrderUseCase) SelectExecutor(order model.Order) error <span class="cov0" title="0">{
+        user, err := o.store.User().FindUserByID(order.ExecutorID)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">user.Specializes, err = o.store.User().FindSpecializesByUserID(order.ExecutorID)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">if user.Executor == false </span><span class="cov0" title="0">{
+                return errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">if user.ID == order.CustomerID </span><span class="cov0" title="0">{
+                return errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">err = o.store.Order().UpdateExecutor(order)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+
+func (o *OrderUseCase) DeleteExecutor(order model.Order) error <span class="cov0" title="0">{
+        order.ExecutorID = 0
+        err := o.store.Order().UpdateExecutor(order)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+
+func (o *OrderUseCase) validateOrder(order *model.Order) error <span class="cov0" title="0">{
+        err := validation.ValidateStruct(
+                order,
+                validation.Field(&amp;order.OrderName, validation.Required, validation.Length(5, 300)),
+                validation.Field(&amp;order.Description, validation.Required),
+                validation.Field(&amp;order.Category, validation.Required),
+        )
+        return err
+}</span>
+
+func (o *OrderUseCase) supplementingTheOrderModel(order *model.Order) error <span class="cov0" title="0">{
+        u, err := o.store.User().FindUserByID(order.CustomerID)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">order.Login = u.Login
+        image, err := o.mediaStore.Image().GetImage(u.Img)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">order.Img = string(image)
+        return nil</span>
+}
+
+func (o *OrderUseCase) sanitizeOrder(order *model.Order) <span class="cov0" title="0">{
+        sanitizer := bluemonday.UGCPolicy()
+        order.Category = sanitizer.Sanitize(order.Category)
+        order.OrderName = sanitizer.Sanitize(order.OrderName)
+        order.Description = sanitizer.Sanitize(order.Description)
+}</span>
+</pre>
+		
+		<pre class="file" id="file18" style="display: none">package implementation
+
+import (
+        "bytes"
+        "golang.org/x/crypto/argon2"
+)
+
+func hashPass(salt []byte, plainPassword string) []byte <span class="cov0" title="0">{
+        hashedPass := argon2.IDKey([]byte(plainPassword), []byte(salt), 1, 64*1024, 4, 32)
+        return append(salt, hashedPass...)
+}</span>
+
+func compPass(passHash []byte, plainPassword string) bool <span class="cov0" title="0">{
+        salt := make([]byte, 8)
+        copy(salt, passHash[0:8])
+
+        userPassHash := hashPass(salt, plainPassword)
+        return bytes.Equal(userPassHash, passHash)
+}</span>
+</pre>
+		
+		<pre class="file" id="file19" style="display: none">package implementation
+
+import (
+        "FL_2/model"
+        "FL_2/store"
+        "github.com/pkg/errors"
+)
+
+const (
+        responceUseCaseError = "Responce use case error"
+)
+
+type ResponseOrderUseCase struct {
+        store      store.Store
+        mediaStore store.MediaStore
+}
+
+func (r *ResponseOrderUseCase) Create(response model.ResponseOrder) (*model.ResponseOrder, error) <span class="cov0" title="0">{
+        user, err := r.store.User().FindUserByID(response.UserID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, responceUseCaseError)
+        }</span>
+        <span class="cov0" title="0">user.Specializes, err = r.store.User().FindSpecializesByUserID(response.UserID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, responceUseCaseError)
+        }</span>
+        <span class="cov0" title="0">response.UserLogin = user.Login
+        response.UserImg = user.Img
+        id, err := r.store.ResponseOrder().Create(response)
+        response.ID = id
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, responceUseCaseError)
+        }</span>
+        <span class="cov0" title="0">response.ID = id
+        img, err := r.mediaStore.Image().GetImage(response.UserImg)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, responceUseCaseError)
+        }</span>
+        <span class="cov0" title="0">response.UserImg = string(img)
+        return &amp;response, nil</span>
+}
+
+func (r *ResponseOrderUseCase) FindByVacancyID(id uint64) ([]model.ResponseOrder, error) <span class="cov0" title="0">{
+        responses, err := r.store.ResponseOrder().FindByOrderID(id)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, responceUseCaseError)
+        }</span>
+        <span class="cov0" title="0">for i, response := range responses </span><span class="cov0" title="0">{
+                err := r.supplementingTheResponseModel(&amp;response)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, errors.Wrap(err, responceUseCaseError)
+                }</span>
+                <span class="cov0" title="0">responses[i].UserImg = response.UserImg
+                responses[i].UserLogin = response.UserLogin</span>
+        }
+        <span class="cov0" title="0">if responses == nil </span><span class="cov0" title="0">{
+                return []model.ResponseOrder{}, nil
+        }</span>
+        <span class="cov0" title="0">return responses, nil</span>
+}
+
+func (r *ResponseOrderUseCase) Change(response model.ResponseOrder) (*model.ResponseOrder, error) <span class="cov0" title="0">{
+        changedResponse, err := r.store.ResponseOrder().Change(response)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, responceUseCaseError)
+        }</span>
+        <span class="cov0" title="0">err = r.supplementingTheResponseModel(changedResponse)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, responceUseCaseError)
+        }</span>
+        <span class="cov0" title="0">return changedResponse, nil</span>
+}
+
+func (r *ResponseOrderUseCase) Delete(response model.ResponseOrder) error <span class="cov0" title="0">{
+        err := r.store.ResponseOrder().Delete(response)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, responceUseCaseError)
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+
+func (o *ResponseOrderUseCase) supplementingTheResponseModel(response *model.ResponseOrder) error <span class="cov0" title="0">{
+        user, err := o.store.User().FindUserByID(response.UserID)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, responceUseCaseError)
+        }</span>
+        <span class="cov0" title="0">user.Specializes, err = o.store.User().FindSpecializesByUserID(response.UserID)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, responceUseCaseError)
+        }</span>
+        <span class="cov0" title="0">response.UserLogin = user.Login
+        image, err := o.mediaStore.Image().GetImage(user.Img)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, orderUseCaseError)
+        }</span>
+        <span class="cov0" title="0">response.UserImg = string(image)
+        return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file20" style="display: none">package implementation
+
+import (
+        "FL_2/model"
+        "FL_2/store"
+        errors "github.com/pkg/errors"
+)
+
+const (
+        ErrInResponseVacancyUseCase = "Error in response vacancy use case"
+)
+
+type ResponseVacancyUseCase struct {
+        store      store.Store
+        mediaStore store.MediaStore
+}
+
+func (r *ResponseVacancyUseCase) Create(response model.ResponseVacancy) (*model.ResponseVacancy, error) <span class="cov0" title="0">{
+        user, err := r.store.User().FindUserByID(response.UserID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, ErrInResponseVacancyUseCase)
+        }</span>
+        <span class="cov0" title="0">user.Specializes, err = r.store.User().FindSpecializesByUserID(response.UserID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, ErrInResponseVacancyUseCase)
+        }</span>
+        <span class="cov0" title="0">response.UserLogin = user.Login
+        response.UserImg = user.Img
+        id, err := r.store.ResponseVacancy().Create(response)
+        response.ID = id
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, ErrInResponseVacancyUseCase)
+        }</span>
+        <span class="cov0" title="0">img, err := r.mediaStore.Image().GetImage(response.UserImg)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, ErrInResponseVacancyUseCase)
+        }</span>
+        <span class="cov0" title="0">response.UserImg = string(img)
+        return &amp;response, nil</span>
+}
+
+func (r *ResponseVacancyUseCase) FindByVacancyID(id uint64) ([]model.ResponseVacancy, error) <span class="cov0" title="0">{
+        responses, err := r.store.ResponseVacancy().FindByVacancyID(id)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, ErrInResponseVacancyUseCase)
+        }</span>
+        <span class="cov0" title="0">for _, response := range responses </span><span class="cov0" title="0">{
+                img, err := r.mediaStore.Image().GetImage(response.UserImg)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, errors.Wrap(err, ErrInResponseVacancyUseCase)
+                }</span>
+                <span class="cov0" title="0">response.UserImg = string(img)</span>
+        }
+        <span class="cov0" title="0">if responses == nil </span><span class="cov0" title="0">{
+                return []model.ResponseVacancy{}, nil
+        }</span>
+        <span class="cov0" title="0">return responses, nil</span>
+}
+
+func (r *ResponseVacancyUseCase) Change(response model.ResponseVacancy) (*model.ResponseVacancy, error) <span class="cov0" title="0">{
+        changedResponse, err := r.store.ResponseVacancy().Change(response)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, ErrInResponseVacancyUseCase)
+        }</span>
+        <span class="cov0" title="0">return changedResponse, nil</span>
+}
+
+func (r *ResponseVacancyUseCase) Delete(response model.ResponseVacancy) error <span class="cov0" title="0">{
+        err := r.store.ResponseVacancy().Delete(response)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, ErrInResponseVacancyUseCase)
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file21" style="display: none">package implementation
+
+import (
+        "FL_2/model"
+        "FL_2/store"
+        "github.com/pkg/errors"
+        "golang.org/x/crypto/bcrypt"
+        "time"
+)
+
+const (
+        cookieSalt          = "wdsamlsdm2094dmfh"
+        sessionUseCaseError = "Session use case error"
+)
+
+type SessionUseCase struct {
+        cache store.Cash
+}
+
+func (s *SessionUseCase) Create(u *model.User) (*model.Session, error) <span class="cov0" title="0">{
+        session := &amp;model.Session{
+                SessionID: u.Email + time.Now().String(),
+                UserID:    u.ID,
+        }
+
+        err := s.beforeCreate(session)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, sessionUseCaseError)
+        }</span>
+        <span class="cov0" title="0">if err = s.cache.Session().Create(session); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return session, nil</span>
+}
+
+func (s *SessionUseCase) FindBySessionID(sessionID string) (*model.Session, error) <span class="cov0" title="0">{
+        session := &amp;model.Session{
+                SessionID: sessionID,
+        }
+        err := s.cache.Session().Find(session)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, sessionUseCaseError)
+        }</span>
+        <span class="cov0" title="0">session.SessionID = ""
+        return session, err</span>
+}
+
+func (s *SessionUseCase) encryptString(password string, salt string) (string, error) <span class="cov0" title="0">{
+        b, err := bcrypt.GenerateFromPassword([]byte(password+salt), bcrypt.MinCost)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", errors.Wrap(err, sessionUseCaseError)
+        }</span>
+        <span class="cov0" title="0">return string(b), nil</span>
+}
+
+func (s *SessionUseCase) beforeCreate(session *model.Session) error <span class="cov0" title="0">{
+        var err error
+        session.SessionID, err = s.encryptString(session.SessionID, cookieSalt)
+        return err
+}</span>
+</pre>
+		
+		<pre class="file" id="file22" style="display: none">package implementation
+
+import (
+        "FL_2/store"
+        "FL_2/usecase"
+)
+
+type UseCase struct {
+        orderUseCase           *OrderUseCase
+        userUseCase            *UserUseCase
+        mediaUseCase           *MediaUseCase
+        sessionUseCase         *SessionUseCase
+        vacancyUseCase         *VacancyUseCase
+        responseOrderUseCase   *ResponseOrderUseCase
+        responseVacancyUseCase *ResponseVacancyUseCase
+}
+
+func New(store store.Store, cache store.Cash, mediaStore store.MediaStore) *UseCase <span class="cov0" title="0">{
+
+        useCase := &amp;UseCase{
+                orderUseCase: &amp;OrderUseCase{
+                        store:      store,
+                        mediaStore: mediaStore,
+                },
+                userUseCase: &amp;UserUseCase{
+                        store:      store,
+                        mediaStore: mediaStore,
+                },
+                mediaUseCase: &amp;MediaUseCase{
+                        store:      store,
+                        mediaStore: mediaStore,
+                },
+                sessionUseCase: &amp;SessionUseCase{
+                        cache: cache,
+                },
+                vacancyUseCase: &amp;VacancyUseCase{
+                        store:      store,
+                        mediaStore: mediaStore,
+                },
+                responseOrderUseCase: &amp;ResponseOrderUseCase{
+                        store:      store,
+                        mediaStore: mediaStore,
+                },
+                responseVacancyUseCase: &amp;ResponseVacancyUseCase{
+                        store:      store,
+                        mediaStore: mediaStore,
+                },
+        }
+
+        return useCase
+}</span>
+
+func (c *UseCase) Order() usecase.OrderUseCase <span class="cov0" title="0">{
+        return c.orderUseCase
+}</span>
+
+func (c *UseCase) User() usecase.UserUseCase <span class="cov0" title="0">{
+        return c.userUseCase
+}</span>
+
+func (c *UseCase) Media() usecase.MediaUseCase <span class="cov0" title="0">{
+        return c.mediaUseCase
+}</span>
+
+func (c *UseCase) Session() usecase.SessionUseCase <span class="cov0" title="0">{
+        return c.sessionUseCase
+}</span>
+
+func (c *UseCase) Vacancy() usecase.VacancyUseCase <span class="cov0" title="0">{
+        return c.vacancyUseCase
+}</span>
+
+func (c *UseCase) ResponseOrder() usecase.ResponseOrderUseCase <span class="cov0" title="0">{
+        return c.responseOrderUseCase
+}</span>
+
+func (c *UseCase) ResponseVacancy() usecase.ResponseVacancyUseCase <span class="cov0" title="0">{
+        return c.responseVacancyUseCase
+}</span>
+</pre>
+		
+		<pre class="file" id="file23" style="display: none">package implementation
+
+import (
+        "FL_2/model"
+        "FL_2/store"
+        validation "github.com/go-ozzo/ozzo-validation"
+        "github.com/go-ozzo/ozzo-validation/is"
+        "github.com/microcosm-cc/bluemonday"
+        "github.com/pkg/errors"
+        "math/rand"
+)
+
+const (
+        saltLength = 8
+)
+
+const (
+        MinPswdLenght    int = 5
+        MaxPswdLength    int = 300
+        userUseCaseError     = "User use case error"
+)
+
+var (
+        ErrBadPassword = errors.New("Bad password")
+)
+
+type UserUseCase struct {
+        store      store.Store
+        mediaStore store.MediaStore
+}
+
+func (u *UserUseCase) Create(user *model.User) error <span class="cov0" title="0">{
+
+        if err := u.validate(user); err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, userUseCaseError)
+        }</span>
+        <span class="cov0" title="0">if err := u.beforeCreate(user); err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, userUseCaseError)
+        }</span>
+
+        <span class="cov0" title="0">u.sanitizeUser(user)
+
+        if user.Specializes != nil </span><span class="cov0" title="0">{
+                user.Executor = true
+        }</span>
+        <span class="cov0" title="0">id, err := u.store.User().AddUser(*user)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, userUseCaseError)
+        }</span>
+        <span class="cov0" title="0">user.ID = id
+
+        // если в таблице специализации нет данной специализации - добавляем ее в таблицу специализацй
+        // а затем добаляем в талбицу соответствия юзер-специализация
+        for _, spec := range user.Specializes </span><span class="cov0" title="0">{
+                specialize, err := u.store.User().FindSpecializeByName(spec)
+                if err != nil </span><span class="cov0" title="0">{
+                        return errors.Wrap(err, userUseCaseError)
+                }</span>
+                <span class="cov0" title="0">if specialize.Name == "" &amp;&amp; specialize.ID == 0 </span><span class="cov0" title="0">{
+                        specialize.ID, err = u.store.User().AddSpec(spec)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return errors.Wrap(err, userUseCaseError)
+                        }</span>
+
+                }
+                <span class="cov0" title="0">if err := u.store.User().AddUserSpec(user.ID, specialize.ID); err != nil </span><span class="cov0" title="0">{
+                        return errors.Wrap(err, userUseCaseError)
+                }</span>
+        }
+        <span class="cov0" title="0">return err</span>
+}
+
+func (u *UserUseCase) validate(user *model.User) error <span class="cov0" title="0">{
+        return validation.ValidateStruct(
+                user,
+                validation.Field(&amp;user.Email, validation.Required, is.Email),
+                validation.Field(&amp;user.Password, validation.Required, validation.Length(MinPswdLenght, MaxPswdLength)),
+                validation.Field(&amp;user.Login, validation.Required),
+                validation.Field(&amp;user.NameSurname, validation.Required),
+        )
+}</span>
+
+func (u *UserUseCase) beforeCreate(user *model.User) error <span class="cov0" title="0">{
+        salt := make([]byte, saltLength)
+        _, err := rand.Read(salt)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">user.EncryptPassword = hashPass(salt, user.Password)
+        return nil</span>
+}
+
+func (u *UserUseCase) sanitize(user *model.User) <span class="cov0" title="0">{
+        user.Password = ""
+}</span>
+
+func (u *UserUseCase) UserVerification(email string, password string) (*model.User, error) <span class="cov0" title="0">{
+        user, err := u.store.User().FindUserByEmail(email)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, userUseCaseError)
+        }</span>
+        <span class="cov0" title="0">if user.Executor </span><span class="cov0" title="0">{
+                user.Specializes, err = u.store.User().FindSpecializesByUserEmail(email)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, errors.Wrap(err, userUseCaseError)
+                }</span>
+        }
+        <span class="cov0" title="0">if !compPass(user.EncryptPassword, password) </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, userUseCaseError)
+        }</span>
+        <span class="cov0" title="0">u.sanitize(user)
+        image, err := u.mediaStore.Image().GetImage(user.Img)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, userUseCaseError)
+        }</span>
+        <span class="cov0" title="0">user.Img = string(image)
+        return user, err</span>
+}
+
+func (u *UserUseCase) FindByID(id uint64) (*model.User, error) <span class="cov0" title="0">{
+        user, err := u.store.User().FindUserByID(id)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, userUseCaseError)
+        }</span>
+        <span class="cov0" title="0">if user.Executor </span><span class="cov0" title="0">{
+                user.Specializes, err = u.store.User().FindSpecializesByUserID(id)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, errors.Wrap(err, userUseCaseError)
+                }</span>
+        }
+        <span class="cov0" title="0">u.sanitize(user)
+        image, err := u.mediaStore.Image().GetImage(user.Img)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, userUseCaseError)
+        }</span>
+        <span class="cov0" title="0">user.Img = string(image)
+        return user, err</span>
+}
+
+func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) <span class="cov0" title="0">{
+        oldUser, err := u.store.User().FindUserByID(user.ID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, userUseCaseError)
+        }</span>
+
+        <span class="cov0" title="0">if !compPass(oldUser.EncryptPassword, user.Password) </span><span class="cov0" title="0">{
+                return nil, ErrBadPassword
+        }</span>
+        <span class="cov0" title="0">if user.NewPassword != "" </span><span class="cov0" title="0">{
+                user.Password = user.NewPassword
+        }</span>
+        <span class="cov0" title="0">if err := u.beforeCreate(&amp;user); err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, userUseCaseError)
+        }</span>
+        <span class="cov0" title="0">if user.Email == "" </span><span class="cov0" title="0">{
+                user.Email = oldUser.Email
+        }</span>
+
+        <span class="cov0" title="0">if user.About == "" </span><span class="cov0" title="0">{
+                user.About = oldUser.About
+        }</span>
+
+        <span class="cov0" title="0">if user.Password == "" </span><span class="cov0" title="0">{
+                user.Password = oldUser.Password
+        }</span>
+
+        <span class="cov0" title="0">if user.Login == "" </span><span class="cov0" title="0">{
+                user.Login = oldUser.Login
+        }</span>
+
+        <span class="cov0" title="0">if user.Img == "" </span><span class="cov0" title="0">{
+                user.Img = oldUser.Img
+        }</span>
+
+        <span class="cov0" title="0">if user.NameSurname == "" </span><span class="cov0" title="0">{
+                user.NameSurname = oldUser.NameSurname
+        }</span>
+
+        <span class="cov0" title="0">if user.Rating == 0 </span><span class="cov0" title="0">{
+                user.Rating = oldUser.Rating
+        }</span>
+
+        <span class="cov0" title="0">user.Executor = oldUser.Executor
+
+        for _, spec := range oldUser.Specializes </span><span class="cov0" title="0">{
+                user.Specializes = append(user.Specializes, spec)
+        }</span>
+
+        <span class="cov0" title="0">newUser, err := u.store.User().ChangeUser(user)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, userUseCaseError)
+        }</span>
+        <span class="cov0" title="0">u.sanitize(newUser)
+        image, err := u.mediaStore.Image().GetImage(newUser.Img)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, userUseCaseError)
+        }</span>
+        <span class="cov0" title="0">newUser.Img = string(image)
+        return newUser, err</span>
+}
+
+func (u *UserUseCase) AddSpecialize(specName string, userID uint64) error <span class="cov0" title="0">{
+        specialize, err := u.store.User().FindSpecializeByName(specName)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, userUseCaseError)
+        }</span>
+
+        <span class="cov0" title="0">if specialize.Name == "" &amp;&amp; specialize.ID == 0 </span><span class="cov0" title="0">{
+                specialize.ID, err = u.store.User().AddSpec(specName)
+                if err != nil </span><span class="cov0" title="0">{
+                        return errors.Wrap(err, userUseCaseError)
+                }</span>
+        }
+
+        <span class="cov0" title="0">haveSpec, err := u.store.User().IsUserHaveSpec(specialize.ID, userID)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, userUseCaseError)
+        }</span>
+        <span class="cov0" title="0">if haveSpec </span><span class="cov0" title="0">{
+                //TODO: Кидать 400 а не 500
+                return errors.New("Spec duplicate")
+        }</span>
+
+        <span class="cov0" title="0">if err = u.store.User().AddUserSpec(userID, specialize.ID); err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, userUseCaseError)
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+
+func (u *UserUseCase) DelSpecialize(specName string, userID uint64) error <span class="cov0" title="0">{
+        specialize, err := u.store.User().FindSpecializeByName(specName)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, userUseCaseError)
+        }</span>
+        <span class="cov0" title="0">err = u.store.User().DelSpecialize(specialize.ID, userID)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, userUseCaseError)
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+func (u *UserUseCase) sanitizeUser(user *model.User) <span class="cov0" title="0">{
+        sanitizer := bluemonday.UGCPolicy()
+        user.Img = sanitizer.Sanitize(user.Img)
+        user.Email = sanitizer.Sanitize(user.Email)
+        user.Login = sanitizer.Sanitize(user.Login)
+        user.NameSurname = sanitizer.Sanitize(user.NameSurname)
+        user.About = sanitizer.Sanitize(user.About)
+}</span>
+</pre>
+		
+		<pre class="file" id="file24" style="display: none">package implementation
+
+import (
+        "FL_2/model"
+        "FL_2/store"
+        "github.com/microcosm-cc/bluemonday"
+        "github.com/pkg/errors"
+)
+
+const (
+        vacancyUseCaseError = "Vacancy use case error"
+)
+
+type VacancyUseCase struct {
+        store      store.Store
+        mediaStore store.MediaStore
+}
+
+func (v *VacancyUseCase) Create(vacancy model.Vacancy) (*model.Vacancy, error) <span class="cov0" title="0">{
+        v.sanitizeVacancy(&amp;vacancy)
+        id, err := v.store.Vacancy().Create(vacancy)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, vacancyUseCaseError)
+        }</span>
+        <span class="cov0" title="0">vacancy.ID = id
+        err = v.supplementingTheVacancyModel(&amp;vacancy)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, vacancyUseCaseError)
+        }</span>
+        <span class="cov0" title="0">return &amp;vacancy, err</span>
+}
+
+func (v *VacancyUseCase) FindByID(id uint64) (*model.Vacancy, error) <span class="cov0" title="0">{
+        vacancy, err := v.store.Vacancy().FindByID(id)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, vacancyUseCaseError)
+        }</span>
+        <span class="cov0" title="0">err = v.supplementingTheVacancyModel(vacancy)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrap(err, vacancyUseCaseError)
+        }</span>
+        <span class="cov0" title="0">return vacancy, nil</span>
+}
+
+func (v *VacancyUseCase) supplementingTheVacancyModel(vacancy *model.Vacancy) error <span class="cov0" title="0">{
+        user, err := v.store.User().FindUserByID(vacancy.UserID)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, vacancyUseCaseError)
+        }</span>
+        <span class="cov0" title="0">vacancy.Login = user.Login
+        image, err := v.mediaStore.Image().GetImage(user.Img)
+        if err != nil </span><span class="cov0" title="0">{
+                return errors.Wrap(err, vacancyUseCaseError)
+        }</span>
+        <span class="cov0" title="0">vacancy.Img = string(image)
+        return nil</span>
+}
+
+func (v *VacancyUseCase) sanitizeVacancy(vacancy *model.Vacancy) <span class="cov0" title="0">{
+        sanitizer := bluemonday.UGCPolicy()
+        vacancy.VacancyName = sanitizer.Sanitize(vacancy.VacancyName)
+        vacancy.Description = sanitizer.Sanitize(vacancy.Description)
+        vacancy.Category = sanitizer.Sanitize(vacancy.Category)
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

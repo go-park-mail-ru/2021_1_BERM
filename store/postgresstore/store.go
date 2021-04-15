@@ -6,7 +6,7 @@ import (
 )
 
 type Store struct {
-	db                        *sqlx.DB
+	Db                        *sqlx.DB
 	dsn                       string
 	userRepository            *UserRepository
 	orderRepository           *OrderRepository
@@ -27,13 +27,13 @@ func (s *Store) Open() error {
 		return err
 	}
 
-	s.db = db
+	s.Db = db
 
 	return nil
 }
 
 func (s *Store) Close() error {
-	return s.db.Close()
+	return s.Db.Close()
 }
 
 func (s *Store) User() store.UserRepository {

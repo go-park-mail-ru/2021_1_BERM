@@ -41,7 +41,7 @@ const (
 
 func (r *ResponseOrderRepository) Create(response model.ResponseOrder) (uint64, error) {
 	var responseID uint64
-	err := r.store.db.QueryRow(
+	err := r.store.Db.QueryRow(
 		insertOrderResponse,
 		response.OrderID,
 		response.UserID,
@@ -66,14 +66,14 @@ func (r *ResponseOrderRepository) Create(response model.ResponseOrder) (uint64, 
 
 func (r *ResponseOrderRepository) FindByOrderID(id uint64) ([]model.ResponseOrder, error) {
 	var responses []model.ResponseOrder
-	if err := r.store.db.Select(&responses, selectOrderResponseByOrderID, id); err != nil {
+	if err := r.store.Db.Select(&responses, selectOrderResponseByOrderID, id); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return responses, nil
 }
 
 func (r *ResponseOrderRepository) Change(response model.ResponseOrder) (*model.ResponseOrder, error) {
-	tx := r.store.db.MustBegin()
+	tx := r.store.Db.MustBegin()
 	_, err := tx.NamedExec(updateOrderResponse, &response)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
@@ -85,7 +85,7 @@ func (r *ResponseOrderRepository) Change(response model.ResponseOrder) (*model.R
 }
 
 func (r *ResponseOrderRepository) Delete(response model.ResponseOrder) error {
-	tx := r.store.db.MustBegin()
+	tx := r.store.Db.MustBegin()
 	_, err := tx.NamedExec(deleteOrderResponse, &response)
 	if err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
