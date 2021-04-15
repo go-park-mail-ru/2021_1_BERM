@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	passwordSalt = "asdknj279312kasl0sshALkMnHG"
 	saltLength = 8;
 )
 
@@ -108,28 +107,20 @@ func (u *UserUseCase) FindByID(id uint64) (*model.User, error) {
 }
 
 func (u *UserUseCase) ChangeUser(user model.User) (*model.User, error) {
+	storingUser, err := u.store.User().FindByID(user.ID)
+	if  err != nil{
+		return nil, errors.Wrap(err, userUseCaseError)
+	}
+
+	if !compPass(storingUser.EncryptPassword, user.Password){
+		return nil, ErrBadPassword
+	}
+	if user.NewPassword != ""{
+		user.Password = user.NewPassword
+	}
 	if err := u.beforeCreate(&user); err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
 	}
-    u.sanitizeUser(&user)
-	var oldUser *model.User
-	var err error
-	if user.OldPassword != ""{
-		oldUser, err = u.store.User().FindByID(user.ID)
-		if  err != nil{
-			return nil, errors.Wrap(err, userUseCaseError)
-		}
-		if !compPass(oldUser.EncryptPassword, user.OldPassword){
-			return nil, ErrBadPassword
-		}
-	} else {
-		oldUser, err = u.store.User().FindByID(user.ID)
-	}
-	err = u.beforeCreate(&user)
-	if err != nil{
-		return nil, err
-	}
-
 	newUser, err := u.store.User().ChangeUser(user)
 	if err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)
