@@ -1,4 +1,4 @@
-module FL_2
+module ff
 
 go 1.16
 
