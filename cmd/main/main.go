@@ -1,7 +1,7 @@
 package main
 
 import (
-	"FL_2/server"
+	"ff/internal/app/server"
 	"flag"
 	"github.com/BurntSushi/toml"
 	"log"
