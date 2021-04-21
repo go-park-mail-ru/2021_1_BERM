@@ -1,0 +1,4 @@
+.idea
+*.xlog
+*.snap
+.DS_Store
