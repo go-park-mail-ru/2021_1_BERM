@@ -75,7 +75,7 @@ const (
 )
 
 func (u *UserRepository) AddUserSpec(userID uint64, specID uint64) error {
-	_, err := u.store.db.NamedExec(
+	_, err := u.store.Db.NamedExec(
 		insertToUserSpecTable,
 		map[string]interface{}{
 			"userID": strconv.FormatUint(userID, 10),
@@ -89,7 +89,7 @@ func (u *UserRepository) AddUserSpec(userID uint64, specID uint64) error {
 
 func (u *UserRepository) FindSpecializeByName(specName string) (model.Specialize, error) {
 	specialize := model.Specialize{}
-	err := u.store.db.Get(&specialize, selectSpecializesByName, specName)
+	err := u.store.Db.Get(&specialize, selectSpecializesByName, specName)
 	if errors.Is(err, sql.ErrNoRows) {
 		return model.Specialize{
 			ID:   0,
@@ -103,7 +103,7 @@ func (u *UserRepository) FindSpecializeByName(specName string) (model.Specialize
 }
 
 func (u *UserRepository) IsUserHaveSpec(specID uint64, userID uint64) (bool, error) {
-	rows, err := u.store.db.Queryx(selectUserIDAndSpecID, specID, userID)
+	rows, err := u.store.Db.Queryx(selectUserIDAndSpecID, specID, userID)
 	if err != nil {
 		return true, errors.Wrap(err, sqlDbSourceError)
 	}
@@ -115,7 +115,7 @@ func (u *UserRepository) IsUserHaveSpec(specID uint64, userID uint64) (bool, err
 
 func (u *UserRepository) AddSpec(specName string) (uint64, error) {
 	var specID uint64 = 0
-	err := u.store.db.QueryRow(
+	err := u.store.Db.QueryRow(
 		insertToSpecTable, specName).Scan(&specID)
 	if err != nil {
 		return 0, errors.Wrap(err, sqlDbSourceError)
@@ -123,9 +123,9 @@ func (u *UserRepository) AddSpec(specName string) (uint64, error) {
 	return specID, nil
 }
 
-func (u *UserRepository) AddUser(user model.User) (uint64, error) {
+func (u *UserRepository) AddUser(user *model.User) (uint64, error) {
 	var userID uint64
-	err := u.store.db.QueryRow(
+	err := u.store.Db.QueryRow(
 		insertUser,
 		user.Email,
 		user.EncryptPassword,
@@ -149,7 +149,7 @@ func (u *UserRepository) AddUser(user model.User) (uint64, error) {
 
 func (u *UserRepository) FindUserByEmail(email string) (*model.User, error) {
 	user := model.User{}
-	err := u.store.db.Get(&user, selectUserByEmail, email)
+	err := u.store.Db.Get(&user, selectUserByEmail, email)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
@@ -158,7 +158,7 @@ func (u *UserRepository) FindUserByEmail(email string) (*model.User, error) {
 
 func (u *UserRepository) FindSpecializesByUserEmail(email string) (pq.StringArray, error) {
 	user := model.User{}
-	rows, err := u.store.db.Queryx(selectSpecializesByUserEmail, email)
+	rows, err := u.store.Db.Queryx(selectSpecializesByUserEmail, email)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
@@ -172,7 +172,7 @@ func (u *UserRepository) FindSpecializesByUserEmail(email string) (pq.StringArra
 
 func (u *UserRepository) FindUserByID(id uint64) (*model.User, error) {
 	user := model.User{}
-	err := u.store.db.Get(&user, selectUserByID, id)
+	err := u.store.Db.Get(&user, selectUserByID, id)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
@@ -181,7 +181,7 @@ func (u *UserRepository) FindUserByID(id uint64) (*model.User, error) {
 
 func (u *UserRepository) FindSpecializesByUserID(id uint64) (pq.StringArray, error) {
 	user := model.User{}
-	rows, err := u.store.db.Queryx(selectSpecializesByUserID, id)
+	rows, err := u.store.Db.Queryx(selectSpecializesByUserID, id)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
@@ -193,20 +193,22 @@ func (u *UserRepository) FindSpecializesByUserID(id uint64) (pq.StringArray, err
 	return user.Specializes, nil
 }
 
-func (u *UserRepository) ChangeUser(user model.User) (*model.User, error) {
-	tx := u.store.db.MustBegin()
-	_, err := tx.NamedExec(updateUser, &user)
+
+func (u *UserRepository) ChangeUser(user *model.User) (*model.User, error) {
+	tx := u.store.Db.MustBegin()
+	_, err := tx.NamedExec(updateUser, user)
+
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	if err := tx.Commit(); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
-	return &user, nil
+	return user, nil
 }
 
 func (u *UserRepository) DelSpecialize(specID uint64, userID uint64) error {
-	_, err := u.store.db.Queryx(deleteSpecializes, specID, userID)
+	_, err := u.store.Db.Queryx(deleteSpecializes, specID, userID)
 	if err != nil {
 		return errors.Wrap(err, sqlDbSourceError)
 	}

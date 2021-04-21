@@ -25,7 +25,7 @@ const (
 
 func (v *VacancyRepository) Create(vacancy model.Vacancy) (uint64, error) {
 	var vacancyID uint64
-	err := v.store.db.QueryRow(
+	err := v.store.Db.QueryRow(
 		insertVacancy,
 		vacancy.Category,
 		vacancy.VacancyName,
@@ -48,7 +48,7 @@ func (v *VacancyRepository) Create(vacancy model.Vacancy) (uint64, error) {
 
 func (v *VacancyRepository) FindByID(id uint64) (*model.Vacancy, error) {
 	vacancy := model.Vacancy{}
-	err := v.store.db.Get(&vacancy, selectVacancyByID, id)
+	err := v.store.Db.Get(&vacancy, selectVacancyByID, id)
 	if err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}

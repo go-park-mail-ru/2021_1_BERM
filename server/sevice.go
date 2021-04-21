@@ -429,7 +429,7 @@ func (s *server) handleChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u.ID = id
-	u, err = s.useCase.User().ChangeUser(*u)
+	u, err = s.useCase.User().ChangeUser(u)
 	if err != nil {
 		s.error(w, reqId, New(err))
 		return

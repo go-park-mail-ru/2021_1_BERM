@@ -45,7 +45,7 @@ const (
 
 func (o *OrderRepository) Create(order model.Order) (uint64, error) {
 	var orderID uint64
-	err := o.store.db.QueryRow(
+	err := o.store.Db.QueryRow(
 		insertOrder,
 		order.CustomerID,
 		order.ExecutorID,
@@ -70,7 +70,7 @@ func (o *OrderRepository) Create(order model.Order) (uint64, error) {
 
 func (o *OrderRepository) FindByID(id uint64) (*model.Order, error) {
 	order := model.Order{}
-	if err := o.store.db.Get(&order, selectOrderByID, id); err != nil {
+	if err := o.store.Db.Get(&order, selectOrderByID, id); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return &order, nil
@@ -78,7 +78,7 @@ func (o *OrderRepository) FindByID(id uint64) (*model.Order, error) {
 
 func (o *OrderRepository) FindByExecutorID(executorID uint64) ([]model.Order, error) {
 	var orders []model.Order
-	if err := o.store.db.Select(&orders, selectOrderByExecutorID, executorID); err != nil {
+	if err := o.store.Db.Select(&orders, selectOrderByExecutorID, executorID); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return orders, nil
@@ -86,7 +86,7 @@ func (o *OrderRepository) FindByExecutorID(executorID uint64) ([]model.Order, er
 
 func (o *OrderRepository) FindByCustomerID(customerID uint64) ([]model.Order, error) {
 	var orders []model.Order
-	if err := o.store.db.Select(&orders, selectOrderByCustomerID, customerID); err != nil {
+	if err := o.store.Db.Select(&orders, selectOrderByCustomerID, customerID); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return orders, nil
@@ -94,14 +94,14 @@ func (o *OrderRepository) FindByCustomerID(customerID uint64) ([]model.Order, er
 
 func (o *OrderRepository) GetActualOrders() ([]model.Order, error) {
 	var orders []model.Order
-	if err := o.store.db.Select(&orders, selectOrders); err != nil {
+	if err := o.store.Db.Select(&orders, selectOrders); err != nil {
 		return nil, errors.Wrap(err, sqlDbSourceError)
 	}
 	return orders, nil
 }
 
 func (o *OrderRepository) UpdateExecutor(order model.Order) error {
-	tx := o.store.db.MustBegin()
+	tx := o.store.Db.MustBegin()
 	_, err := tx.NamedExec(updateExecutor, &order)
 	if err != nil {
 		return errors.Wrap(err, sqlDbSourceError)

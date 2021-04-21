@@ -15,7 +15,7 @@ type UseCase struct {
 	responseVacancyUseCase *ResponseVacancyUseCase
 }
 
-func New(store store.Store, cache store.Cash, mediaStore store.MediaStore) *UseCase {
+func New(store store.Store, cache store.Caсhe, mediaStore store.MediaStore) *UseCase {
 
 	useCase := &UseCase{
 		orderUseCase: &OrderUseCase{
