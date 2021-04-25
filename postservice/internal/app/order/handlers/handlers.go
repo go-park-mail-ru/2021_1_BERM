@@ -12,23 +12,6 @@ import (
 
 type ctxKey uint8
 
-var (
-	InvalidJSON = &Error{
-		Err:  errors.New("Invalid json. "),
-		Code: http.StatusBadRequest,
-		Type: TypeExternal,
-		Field: map[string]interface{}{
-			"error": "Invalid json",
-		},
-	}
-
-	InvalidCookies = &Error{
-		Err:  errors.New("Invalid cookie.\n"),
-		Code: http.StatusBadRequest,
-		Type: TypeExternal,
-	}
-)
-
 const (
 	ctxKeySession ctxKey = iota
 	ctxKeyReqID   ctxKey = 1

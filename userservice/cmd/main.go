@@ -4,21 +4,26 @@ import (
 	"flag"
 	"github.com/BurntSushi/toml"
 	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
+	"net"
+	"user/api"
 	"user/internal/app/user/handlers"
 	"user/pkg/midlewhare"
 
 	"log"
 	"net/http"
 	"user/configs"
-	specializeRepository "user/internal/app/specialize/repository/postgresql"
-	userRepository  "user/internal/app/user/repository/postgresql"
+	specializeRepo "user/internal/app/specialize/repository/postgresql"
+	userRepo "user/internal/app/user/repository/postgresql"
 	"user/internal/app/user/usecase/impl"
 	"user/pkg/database/postgresql"
 	"user/pkg/logger"
 )
+
 var (
 	configPath string
 )
+
 func init() {
 	flag.StringVar(&configPath, "config-path", "config/server.toml", "path to config file")
 }
@@ -35,7 +40,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-
 	postgres, err := postgresql.NewPostgres(config.DSN)
 	if err != nil {
 		log.Fatal(err)
@@ -46,10 +50,10 @@ func main() {
 		}
 	}()
 
-	userRepository := &userRepository.Repository{
+	userRepository := &userRepo.Repository{
 		Db: postgres.GetPostgres(),
 	}
-	specializeRepository :=  &specializeRepository.Repository{
+	specializeRepository := &specializeRepo.Repository{
 		Db: postgres.GetPostgres(),
 	}
 
@@ -61,14 +65,28 @@ func main() {
 	router.HandleFunc("", userHandler.GetUserInfo).Methods(http.MethodGet)
 	router.HandleFunc("", userHandler.ChangeProfile).Methods(http.MethodPut)
 
-
 	c := midlewhare.CorsMiddleware(config.Origin)
 	server := &http.Server{
 		Addr:    config.BindAddr,
 		Handler: c.Handler(router),
 	}
 
-	if err := server.ListenAndServe(); err != nil {
+	go func() {
+		if err := server.ListenAndServe(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	s := grpc.NewServer()
+	srv := handlers.NewGRPCServer(userUseCase)
+	api.RegisterUserServer(s, srv)
+
+	l, err := net.Listen("tcp", ":8081")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := s.Serve(l); err != nil {
 		log.Fatal(err)
 	}
 }

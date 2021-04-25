@@ -16,13 +16,13 @@ type Handlers struct {
 	userUseCase usecase.UseCase
 }
 
-func New(userUseCase usecase.UseCase) *Handlers{
+func New(userUseCase usecase.UseCase) *Handlers {
 	return &Handlers{
 		userUseCase: userUseCase,
 	}
 }
 
-func(h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	reqId, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
 	if err != nil {
 		httputils.RespondError(w, reqId, err, http.StatusInternalServerError)
@@ -44,9 +44,9 @@ func(h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		httpErr := &Error.Error{}
 		errors.As(err, httpErr)
-		if httpErr.InternalError{
+		if httpErr.InternalError {
 			httputils.RespondError(w, reqId, err, http.StatusInternalServerError)
-		} else{
+		} else {
 			httputils.RespondError(w, reqId, err, http.StatusBadRequest)
 		}
 		return
@@ -54,8 +54,7 @@ func(h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	httputils.Respond(w, reqId, http.StatusOK, response)
 }
 
-
-func(h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
 	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
@@ -71,9 +70,9 @@ func(h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		httpErr := &Error.Error{}
 		errors.As(err, httpErr)
-		if httpErr.InternalError{
+		if httpErr.InternalError {
 			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-		} else{
+		} else {
 			httputils.RespondError(w, reqID, err, http.StatusBadRequest)
 		}
 		return

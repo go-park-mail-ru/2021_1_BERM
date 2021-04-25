@@ -2,10 +2,8 @@ package repository
 
 import (
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
-	"github.com/pkg/errors"
-	customErr "post/internal/app/errors"
 	"post/internal/app/models"
+	"post/internal/postgresql"
 )
 
 const (
@@ -68,15 +66,7 @@ func (r *Repository) Create(order models.Order) (uint64, error) {
 		order.Deadline,
 		order.Description).Scan(&orderID)
 	if err != nil {
-		pqErr := &pq.Error{}
-		if errors.As(err, &pqErr) {
-			if pqErr.Code == duplicateErrorCode {
-				return 0, errors.Wrap(&customErr.DuplicateSourceErr{
-					Err: err,
-				}, sqlDbSourceError)
-			}
-		}
-		return 0, errors.Wrap(err, sqlDbSourceError)
+		return 0, postgresql.WrapPostgreError(err)
 	}
 	return orderID, nil
 }
@@ -84,7 +74,7 @@ func (r *Repository) Create(order models.Order) (uint64, error) {
 func (r *Repository) FindByID(id uint64) (*models.Order, error) {
 	order := models.Order{}
 	if err := r.db.Get(&order, selectOrderByID, id); err != nil {
-		return nil, errors.Wrap(err, sqlDbSourceError)
+		return nil, postgresql.WrapPostgreError(err)
 	}
 	return &order, nil
 }
@@ -92,7 +82,7 @@ func (r *Repository) FindByID(id uint64) (*models.Order, error) {
 func (r *Repository) FindByExecutorID(executorID uint64) ([]models.Order, error) {
 	var orders []models.Order
 	if err := r.db.Select(&orders, selectOrderByExecutorID, executorID); err != nil {
-		return nil, errors.Wrap(err, sqlDbSourceError)
+		return nil, postgresql.WrapPostgreError(err)
 	}
 	return orders, nil
 }
@@ -100,7 +90,7 @@ func (r *Repository) FindByExecutorID(executorID uint64) ([]models.Order, error)
 func (r *Repository) FindByCustomerID(customerID uint64) ([]models.Order, error) {
 	var orders []models.Order
 	if err := r.db.Select(&orders, selectOrderByCustomerID, customerID); err != nil {
-		return nil, errors.Wrap(err, sqlDbSourceError)
+		return nil, postgresql.WrapPostgreError(err)
 	}
 	return orders, nil
 }
@@ -108,7 +98,7 @@ func (r *Repository) FindByCustomerID(customerID uint64) ([]models.Order, error)
 func (r *Repository) GetActualOrders() ([]models.Order, error) {
 	var orders []models.Order
 	if err := r.db.Select(&orders, selectOrders); err != nil {
-		return nil, errors.Wrap(err, sqlDbSourceError)
+		return nil, postgresql.WrapPostgreError(err)
 	}
 	return orders, nil
 }
@@ -117,10 +107,9 @@ func (r *Repository) UpdateExecutor(order models.Order) error {
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(updateExecutor, &order)
 	if err != nil {
-		return errors.Wrap(err, sqlDbSourceError)
+		return postgresql.WrapPostgreError(err)
 	}
 	if err := tx.Commit(); err != nil {
-		return errors.Wrap(err, sqlDbSourceError)
-	}
+		return postgresql.WrapPostgreError(err)	}
 	return nil
 }

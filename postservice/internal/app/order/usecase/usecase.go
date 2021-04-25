@@ -6,6 +6,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
 	"post/api"
+	"post/internal/Error"
 	"post/internal/app/models"
 	orderRepo "post/internal/app/order/repository"
 )
@@ -16,13 +17,13 @@ const (
 
 type UseCase struct {
 	OrderRepo orderRepo.Repository
-	UserRepo api.UserClient
+	UserRepo  api.UserClient
 }
 
 func NewUseCase(orderRepo orderRepo.Repository, userRepo api.UserClient) *UseCase {
 	return &UseCase{
 		OrderRepo: orderRepo,
-		UserRepo: userRepo,
+		UserRepo:  userRepo,
 	}
 }
 
@@ -150,7 +151,12 @@ func (u *UseCase) sanitizeOrder(order *models.Order) {
 func (u *UseCase) supplementingTheOrderModel(order *models.Order) error {
 	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: order.CustomerID})
 	if err != nil {
-		return errors.Wrap(err, orderUseCaseError)
+		return &Error.Error{
+			Err: err,
+			ErrorDescription: map[string]interface{}{
+			"Error": Error.InternalServerErrorDescription},
+			InternalError: true,
+		}
 	}
 	order.Login = userR.GetLogin()
 	order.Img = userR.GetImg()

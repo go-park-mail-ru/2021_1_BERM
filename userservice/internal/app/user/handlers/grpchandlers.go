@@ -8,12 +8,18 @@ import (
 	"user/internal/app/user/usecase"
 )
 
-type server struct {
+type GRPCServer struct {
 	api.UnimplementedUserServer
 	userUseCase usecase.UseCase
 }
 
-func (s *server) RegistrationUser(ctx context.Context, in *api.NewUserRequest) (*api.UserResponse, error) {
+func NewGRPCServer(userUseCase usecase.UseCase) *GRPCServer {
+	return &GRPCServer{
+		userUseCase: userUseCase,
+	}
+}
+
+func (s *GRPCServer) RegistrationUser(ctx context.Context, in *api.NewUserRequest) (*api.UserResponse, error) {
 	u := models.NewUser{
 		Email: in.GetEmail(),
 		Login: in.GetLogin(),
@@ -34,7 +40,7 @@ func (s *server) RegistrationUser(ctx context.Context, in *api.NewUserRequest) (
 	}, nil
 }
 
-func (s *server)  AuthorizationUser(ctx context.Context, in *api.AuthorizationUserRequest) (*api.UserResponse, error) {
+func (s *GRPCServer)  AuthorizationUser(ctx context.Context, in *api.AuthorizationUserRequest) (*api.UserResponse, error) {
 	answer, err := s.userUseCase.Verification(in.GetEmail(), in.GetPassword())
 	if err != nil{
 		return nil, err
@@ -45,7 +51,7 @@ func (s *server)  AuthorizationUser(ctx context.Context, in *api.AuthorizationUs
 	}, nil
 }
 
-func (s *server) GetUserById(ctx context.Context, in *api.UserRequest) (*api.UserInfoResponse, error) {
+func (s *GRPCServer) GetUserById(ctx context.Context, in *api.UserRequest) (*api.UserInfoResponse, error) {
 	userInfo, err := s.userUseCase.GetById(in.GetId())
 	if err != nil{
 		return nil, err
@@ -62,12 +68,12 @@ func (s *server) GetUserById(ctx context.Context, in *api.UserRequest) (*api.Use
 	}, nil
 }
 
-func (s *server) GetSpecializeByUserId(ctx context.Context, in *api.UserRequest) (*api.GetUserSpecializeResponse, error)  {
+func (s *GRPCServer) GetSpecializeByUserId(ctx context.Context, in *api.UserRequest) (*api.GetUserSpecializeResponse, error)  {
 	ctx.Done()
 	return nil, nil
 }
 
-func (s *server) SetImgUrl(context.Context, *api.SetImgUrlRequest) (*api.UserInfoResponse, error) {
+func (s *GRPCServer) SetImgUrl(context.Context, *api.SetImgUrlRequest) (*api.UserInfoResponse, error) {
 
 	return nil, nil
 }
