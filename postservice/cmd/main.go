@@ -1,13 +1,13 @@
 package main
 
 import (
+	database2 "FL_2/database"
 	"flag"
 	"github.com/BurntSushi/toml"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"post/configs"
-	"post/internal/app/database"
 	"post/internal/app/logger"
 	"post/internal/app/middleware"
 
@@ -44,7 +44,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	postgres, err := database.NewPostgres(config.DSN)
+	postgres, err := database2.NewPostgres(config.DSN)
 	if err != nil {
 		log.Fatal(err)
 	}

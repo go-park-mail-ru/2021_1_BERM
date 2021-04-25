@@ -31,3 +31,4 @@ CREATE TABLE post.responses
     rate    INTEGER            NOT NULL,
     time    BIGINT             NOT NULL
 );
+
