@@ -8,5 +8,5 @@ type Vacancy struct {
 	Description string `json:"description,omitempty" db:"description"`
 	Salary      uint64 `json:"salary,omitempty" db:"salary"`
 	Login       string `json:"login,omitempty"`
-	Img         string `json:"img,omitempty"`
+	Img         string `json:"imgcreator,omitempty"`
 }

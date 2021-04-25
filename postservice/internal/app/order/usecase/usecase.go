@@ -1,9 +1,11 @@
 package usecase
 
 import (
+	"context"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
+	"post/api"
 	"post/internal/app/models"
 	orderRepo "post/internal/app/order/repository"
 )
@@ -13,12 +15,14 @@ const (
 )
 
 type UseCase struct {
-	repo orderRepo.Repository
+	OrderRepo orderRepo.Repository
+	UserRepo api.UserClient
 }
 
-func NewUseCase(repo orderRepo.Repository) *UseCase {
+func NewUseCase(orderRepo orderRepo.Repository, userRepo api.UserClient) *UseCase {
 	return &UseCase{
-		repo: repo,
+		OrderRepo: orderRepo,
+		UserRepo: userRepo,
 	}
 }
 
@@ -28,7 +32,7 @@ func (u *UseCase) Create(order models.Order) (*models.Order, error) {
 	}
 	u.sanitizeOrder(&order)
 	var err error
-	id, err := u.repo.Create(order)
+	id, err := u.OrderRepo.Create(order)
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
@@ -41,7 +45,7 @@ func (u *UseCase) Create(order models.Order) (*models.Order, error) {
 }
 
 func (u *UseCase) FindByID(id uint64) (*models.Order, error) {
-	order, err := u.repo.FindByID(id)
+	order, err := u.OrderRepo.FindByID(id)
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
@@ -52,8 +56,18 @@ func (u *UseCase) FindByID(id uint64) (*models.Order, error) {
 	return order, err
 }
 
-func (u *UseCase) FindByExecutorID(executorID uint64) ([]models.Order, error) {
-	orders, err := u.repo.FindByExecutorID(executorID)
+func (u *UseCase) FindByUserID(userID uint64) ([]models.Order, error) {
+	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: userID})
+	if err != nil {
+		return nil, errors.Wrap(err, orderUseCaseError)
+	}
+	isExecutor := userR.GetExecutor()
+	var orders []models.Order
+	if isExecutor {
+		orders, err = u.OrderRepo.FindByExecutorID(userID)
+	} else {
+		orders, err = u.OrderRepo.FindByCustomerID(userID)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
@@ -69,26 +83,8 @@ func (u *UseCase) FindByExecutorID(executorID uint64) ([]models.Order, error) {
 	return orders, nil
 }
 
-func (u *UseCase) FindByCustomerID(customerID uint64) ([]models.Order, error) {
-	orders, err := u.repo.FindByCustomerID(customerID)
-	if err != nil {
-		return nil, errors.Wrap(err, orderUseCaseError)
-	}
-	for i, order := range orders {
-		err = u.supplementingTheOrderModel(&order)
-		if err != nil {
-			return nil, errors.Wrap(err, orderUseCaseError)
-		}
-		orders[i] = order
-	}
-	if orders == nil {
-		return []models.Order{}, nil
-	}
-	return orders, nil
-}
-
 func (u *UseCase) GetActualOrders() ([]models.Order, error) {
-	orders, err := u.repo.GetActualOrders()
+	orders, err := u.OrderRepo.GetActualOrders()
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
@@ -106,23 +102,17 @@ func (u *UseCase) GetActualOrders() ([]models.Order, error) {
 }
 
 func (u *UseCase) SelectExecutor(order models.Order) error {
-	//TODO: grpc-запрос за юзером
-	user, err := o.store.User().FindUserByID(order.ExecutorID)
+	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: order.ExecutorID})
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
-	//TODO: grpc-запрос за юзером
-	user.Specializes, err = o.store.User().FindSpecializesByUserID(order.ExecutorID)
-	if err != nil {
+	if userR.GetExecutor() == false {
 		return errors.Wrap(err, orderUseCaseError)
 	}
-	if user.Executor == false {
+	if order.ExecutorID == order.CustomerID {
 		return errors.Wrap(err, orderUseCaseError)
 	}
-	if user.ID == order.CustomerID {
-		return errors.Wrap(err, orderUseCaseError)
-	}
-	err = u.repo.UpdateExecutor(order)
+	err = u.OrderRepo.UpdateExecutor(order)
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
@@ -131,7 +121,7 @@ func (u *UseCase) SelectExecutor(order models.Order) error {
 
 func (u *UseCase) DeleteExecutor(order models.Order) error {
 	order.ExecutorID = 0
-	err := u.repo.UpdateExecutor(order)
+	err := u.OrderRepo.UpdateExecutor(order)
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
@@ -158,18 +148,11 @@ func (u *UseCase) sanitizeOrder(order *models.Order) {
 }
 
 func (u *UseCase) supplementingTheOrderModel(order *models.Order) error {
-	//TODO: grpc-запрос за юзером
-	u, err := o.store.User().FindUserByID(order.CustomerID)
+	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: order.CustomerID})
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
-	//FIXME: Нaхуй не нужно
-	order.Login = u.Login
-	//TODO: grpc-запрос за имгой
-	image, err := o.mediaStore.Image().GetImage(u.Img)
-	if err != nil {
-		return errors.Wrap(err, orderUseCaseError)
-	}
-	order.Img = string(image)
+	order.Login = userR.GetLogin()
+	order.Img = userR.GetImg()
 	return nil
 }

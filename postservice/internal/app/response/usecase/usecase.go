@@ -1,7 +1,9 @@
 package usecase
 
 import (
+	"context"
 	"github.com/pkg/errors"
+	"post/api"
 	"post/internal/app/models"
 	responseRepo "post/internal/app/response/repository"
 )
@@ -11,45 +13,36 @@ const (
 )
 
 type UseCase struct {
-	repo responseRepo.Repository
+	ResponseRepo responseRepo.Repository
+	UserRepo api.UserClient
 }
 
-func NewUseCase(repo responseRepo.Repository) *UseCase {
+func NewUseCase(responseRepo responseRepo.Repository, userRepo api.UserClient) *UseCase {
 	return &UseCase{
-		repo: repo,
+		ResponseRepo: responseRepo,
+		UserRepo: userRepo,
 	}
 }
 
 func (u *UseCase) Create(response models.Response) (*models.Response, error) {
 	//TODO: grpc запрос за юзером
-	user, err := u.repo.FindUserByID(response.UserID)
+	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: response.UserID})
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
 	}
-	//TODO: grpc запрос за юзером
-	user.Specializes, err = r.store.User().FindSpecializesByUserID(response.UserID)
-	if err != nil {
-		return nil, errors.Wrap(err, responseUseCaseError)
-	}
-	response.UserLogin = user.Login
-	response.UserImg = user.Img
-	id, err := u.repo.Create(response)
+
+	response.UserLogin = userR.GetLogin()
+	response.UserImg = userR.GetImg()
+	id, err := u.ResponseRepo.Create(response)
 	response.ID = id
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
 	}
-	response.ID = id
-	//TODO: grpc-запрос за имгой
-	img, err := r.mediaStore.Image().GetImage(response.UserImg)
-	if err != nil {
-		return nil, errors.Wrap(err, responseUseCaseError)
-	}
-	response.UserImg = string(img)
 	return &response, nil
 }
 
 func (u *UseCase) FindByPostID(postID uint64) ([]models.Response, error) {
-	responses, err := u.repo.FindByPostID(postID)
+	responses, err := u.ResponseRepo.FindByPostID(postID)
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
 	}
@@ -68,7 +61,7 @@ func (u *UseCase) FindByPostID(postID uint64) ([]models.Response, error) {
 }
 
 func (u *UseCase) Change(response models.Response) (*models.Response, error) {
-	changedResponse, err := u.repo.Change(response)
+	changedResponse, err := u.ResponseRepo.Change(response)
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
 	}
@@ -80,7 +73,7 @@ func (u *UseCase) Change(response models.Response) (*models.Response, error) {
 }
 
 func (u *UseCase) Delete(response models.Response) error {
-	err := u.repo.Delete(response)
+	err := u.ResponseRepo.Delete(response)
 	if err != nil {
 		return errors.Wrap(err, responseUseCaseError)
 	}
@@ -88,22 +81,11 @@ func (u *UseCase) Delete(response models.Response) error {
 }
 
 func (u *UseCase) supplementingTheResponseModel(response *models.Response) error {
-	//TODO: grpc-запрос в юзер-репо
-	user, err := o.store.User().FindUserByID(response.UserID)
+	user, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: response.UserID})
 	if err != nil {
 		return errors.Wrap(err, responseUseCaseError)
 	}
-	//TODO: grpc-запрос в юзер-репо
-	user.Specializes, err = o.store.User().FindSpecializesByUserID(response.UserID)
-	if err != nil {
-		return errors.Wrap(err, responseUseCaseError)
-	}
-	response.UserLogin = user.Login
-	//TODO: grpc-запрос в картинки
-	image, err := o.mediaStore.Image().GetImage(user.Img)
-	if err != nil {
-		return errors.Wrap(err, responseUseCaseError)
-	}
-	response.UserImg = string(image)
+	response.UserLogin = user.GetLogin()
+	response.UserImg = user.GetImg()
 	return nil
 }

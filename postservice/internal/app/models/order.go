@@ -10,5 +10,5 @@ type Order struct {
 	Description string `json:"description,omitempty" db:"description"`
 	Category    string `json:"category,omitempty" db:"category"`
 	Login       string `json:"login,omitempty"`
-	Img         string `json:"img,omitempty"`
+	Img         string `json:"imgcreator,omitempty"`
 }

@@ -3,7 +3,7 @@ package httputils
 import (
 	"encoding/json"
 	"github.com/pkg/errors"
-	logger2 "image/internal/app/logger"
+	"image/internal/app/logger"
 	"net/http"
 )
 
@@ -21,13 +21,13 @@ func Respond(w http.ResponseWriter, requestId uint64, code int, data interface{}
 			return
 		}
 	}
-	logger2.LoggingResponse(requestId, code)
+	logger.LoggingResponse(requestId, code)
 }
 
 func RespondCSRF() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqID := r.Context().Value(ctxKeyReqID).(uint64)
-		logger2.LoggingError(reqID, errors.New("Invalid CSRF token"))
+		logger.LoggingError(reqID, errors.New("Invalid CSRF token"))
 		Respond(w, reqID, http.StatusForbidden, map[string]interface{}{
 			"error": "Invalid CSRF token",
 		})
@@ -37,7 +37,7 @@ func RespondCSRF() http.Handler {
 func RespondError(w http.ResponseWriter, requestId uint64, err error) {
 	//TODO: прикрутить ошибки
 	httpError := &Error{}
-	logger2.LoggingError(requestId, err)
+	logger.LoggingError(requestId, err)
 	if errors.As(err, &httpError) {
 		Respond(w, requestId, httpError.Code, httpError.Field)
 		return

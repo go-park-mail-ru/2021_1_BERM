@@ -4,10 +4,10 @@ import (
 	"context"
 	"github.com/gorilla/csrf"
 	"github.com/rs/cors"
-	logger2 "image/internal/app/logger"
+	"image/internal/app/httputils"
+	"image/internal/app/logger"
 	"math/rand"
 	"net/http"
-	"post/internal/app/httputils"
 )
 
 
@@ -19,7 +19,7 @@ const (
 func LoggingRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqID := rand.Uint64()
-		logger2.LoggingRequest(reqID, r.URL, r.Method)
+		logger.LoggingRequest(reqID, r.URL, r.Method)
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyReqID, reqID)))
 	})
 }

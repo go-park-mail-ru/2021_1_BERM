@@ -146,21 +146,10 @@ func(h *Handlers) GetAllUserOrders(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, http.StatusBadRequest, InvalidJSON)
 		return
 	}
-	//TODO: внедрить grpc-запрос
-	user, err := h.useCase.FindByID(userID)
+
+	o, err := h.useCase.FindByUserID(userID)
 	if err != nil {
 		//TODO: ошибка
-		httputils.RespondError(w, http.StatusInternalServerError, New(err))
-		return
-	}
-	isExecutor := user.Executor
-	var o []models.Order
-	if isExecutor {
-		o, err = h.useCase.FindByExecutorID(userID)
-	} else {
-		o, err = h.useCase.FindByCustomerID(userID)
-	}
-	if err != nil {
 		httputils.RespondError(w, http.StatusNotFound, New(err))
 		return
 	}

@@ -1,8 +1,10 @@
 package usecase
 
 import (
+	"context"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
+	"post/api"
 	"post/internal/app/models"
 	vacancyRepo "post/internal/app/vacancy/repository"
 )
@@ -13,18 +15,20 @@ const (
 
 
 type UseCase struct {
-	repo vacancyRepo.Repository
+	VacancyRepo vacancyRepo.Repository
+	UserRepo api.UserClient
 }
 
-func NewUseCase(repo vacancyRepo.Repository) *UseCase {
+func NewUseCase(vacancyRepo vacancyRepo.Repository, userRepo api.UserClient) *UseCase {
 	return &UseCase{
-		repo: repo,
+		VacancyRepo: vacancyRepo,
+		UserRepo: userRepo,
 	}
 }
 
 func (u *UseCase) Create(vacancy models.Vacancy) (*models.Vacancy, error) {
 	u.sanitizeVacancy(&vacancy)
-	id, err := u.repo.Create(vacancy)
+	id, err := u.VacancyRepo.Create(vacancy)
 	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)
 	}
@@ -37,7 +41,7 @@ func (u *UseCase) Create(vacancy models.Vacancy) (*models.Vacancy, error) {
 }
 
 func (u *UseCase) FindByID(id uint64) (*models.Vacancy, error) {
-	vacancy, err := u.repo.FindByID(id)
+	vacancy, err := u.VacancyRepo.FindByID(id)
 	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)
 	}
@@ -49,18 +53,12 @@ func (u *UseCase) FindByID(id uint64) (*models.Vacancy, error) {
 }
 
 func (u *UseCase) supplementingTheVacancyModel(vacancy *models.Vacancy) error {
-	//TODO: grpc-запрос за юзером
-	user, err := v.store.User().FindUserByID(vacancy.UserID)
+	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: vacancy.UserID})
 	if err != nil {
 		return errors.Wrap(err, vacancyUseCaseError)
 	}
-	vacancy.Login = user.Login
-	//TODO: grpc-запрос за img
-	image, err := v.mediaStore.Image().GetImage(user.Img)
-	if err != nil {
-		return errors.Wrap(err, vacancyUseCaseError)
-	}
-	vacancy.Img = string(image)
+	vacancy.Login = userR.GetLogin()
+	vacancy.Img = userR.GetImg()
 	return nil
 }
 

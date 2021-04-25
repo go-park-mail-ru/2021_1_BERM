@@ -4,8 +4,10 @@ import (
 	"flag"
 	"github.com/BurntSushi/toml"
 	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
 	"log"
 	"net/http"
+	pb "post/api"
 	"post/configs"
 	"post/internal/app/database"
 	"post/internal/app/logger"
@@ -54,13 +56,21 @@ func main() {
 		}
 	}()
 
+	//TODO: поправить порт коннекта
+	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	if err != nil {
+		log .Fatal(err)
+	}
+	defer conn.Close()
+	userRepo := pb.NewUserClient(conn)
+
 	orderRepository := orderRepo.NewRepo(postgres.GetPostgres())
 	vacancyRepository := vacancyRepo.NewRepo(postgres.GetPostgres())
 	responseRepository := responseRepo.NewRepo(postgres.GetPostgres())
 
-	orderUseCase := orderUCase.NewUseCase(*orderRepository)
-	vacancyUseCase := vacancyUCase.NewUseCase(*vacancyRepository)
-	responseUseCase := responseUCase.NewUseCase(*responseRepository)
+	orderUseCase := orderUCase.NewUseCase(*orderRepository, userRepo)
+	vacancyUseCase := vacancyUCase.NewUseCase(*vacancyRepository, userRepo)
+	responseUseCase := responseUCase.NewUseCase(*responseRepository, userRepo)
 
 	orderHandler := orderHandlers.NewHandler(*orderUseCase)
 	vacancyHandler := vacancyHandlers.NewHandler(*vacancyUseCase)
@@ -100,8 +110,15 @@ func main() {
 		Handler: c.Handler(router),
 	}
 
+	if config.HTTPS {
+		if err := server.ListenAndServeTLS(
+			"/etc/letsencrypt/live/findfreelancer.ru/cert.pem",
+			"/etc/letsencrypt/live/findfreelancer.ru/privkey.pem"); err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
-
 }

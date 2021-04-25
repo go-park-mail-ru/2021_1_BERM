@@ -248,7 +248,7 @@ func (s *server) handleDeleteOrderResponse(w http.ResponseWriter, r *http.Reques
 	s.respond(w, reqId, http.StatusOK, emptyInterface)
 }
 
-func (s *server) handleSelectExecutor(w http.ResponseWriter, r *http.Request) {
+func (s *server) handleSelectExecutor(w http.ResponseWriter,r *http.Request) {
 	params := mux.Vars(r)
 	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 
@@ -604,6 +604,7 @@ func (s *server) error(w http.ResponseWriter, requestId uint64, err error) {
 	s.respond(w, requestId, http.StatusInternalServerError, map[string]string{"error": "Internal server error"})
 
 }
+
 func (s *server) handleCreateVacancyResponse(w http.ResponseWriter, r *http.Request) {
 	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	response := &model.ResponseVacancy{}
