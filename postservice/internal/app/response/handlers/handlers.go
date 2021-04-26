@@ -1,37 +1,17 @@
 package handlers
 
 import (
-	"FL_2/model"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	"net/http"
-	"post/internal/app/httputils"
 	"post/internal/app/models"
 	responseUseCase "post/internal/app/response/usecase"
+	"post/pkg/Error"
+	"post/pkg/httputils"
 	"strconv"
 )
 
-var (
-	InvalidJSON = &Error{
-		Err:  errors.New("Invalid json. "),
-		Code: http.StatusBadRequest,
-		Type: TypeExternal,
-		Field: map[string]interface{}{
-			"error": "Invalid json",
-		},
-	}
-
-	InvalidCookies = &Error{
-		Err:  errors.New("Invalid cookie.\n"),
-		Code: http.StatusBadRequest,
-		Type: TypeExternal,
-	}
-)
-
-const (
-	ctxKeySession uint8 = iota
-	ctxKeyReqID   uint8 = 1
-)
 
 type Handlers struct {
 	useCase responseUseCase.UseCase
@@ -44,24 +24,31 @@ func NewHandler(useCase responseUseCase.UseCase) *Handlers {
 }
 
 func(h *Handlers) CreatePostResponse(w http.ResponseWriter, r *http.Request) {
-	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
 	response := &models.Response{}
 	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
-		httputils.RespondError(w, http.StatusBadRequest, InvalidJSON) //Bad json
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, http.StatusBadRequest, New(err)) //Bad json
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	response.PostID = id
 	response, err = h.useCase.Create(*response)
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, http.StatusBadRequest, New(err))
+		httpErr := &Error.Error{}
+		errors.As(err, &httpErr)
+		if httpErr.InternalError {
+			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		} else {
+			httputils.RespondError(w, reqID, err, http.StatusBadRequest)
+		}
 		return
 	}
 	httputils.Respond(w, reqID, http.StatusCreated, response)
@@ -69,47 +56,63 @@ func(h *Handlers) CreatePostResponse(w http.ResponseWriter, r *http.Request) {
 
 func(h *Handlers) GetAllPostResponses(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	reqId := r.Context().Value(ctxKeyReqID).(uint64)
+	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, reqId, New(err)) //Bad json
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	//TODO: откуда-то брать инфу о том ордер это или вакансия
 	responses, err := h.useCase.FindByPostID(id)
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, reqId, New(err)) //Bad json
+		httpErr := &Error.Error{}
+		errors.As(err, &httpErr)
+		if httpErr.InternalError {
+			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		} else {
+			httputils.RespondError(w, reqID, err, http.StatusBadRequest)
+		}
 		return
 	}
 
-	httputils.Respond(w, reqId, http.StatusOK, responses)
+	httputils.Respond(w, reqID, http.StatusOK, responses)
 }
 
 func(h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 	response := &models.Response{}
-	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
 
 	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
-		httputils.RespondError(w, reqID, InvalidJSON)
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	params := mux.Vars(r)
-	var err error
 	response.PostID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, reqID, New(err))
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	//TODO: не понятно откуда брать инфу об айдишнике
-	response.UserID = r.Context().Value(ctxKeySession).(*model.Session).UserID
+	response.UserID, err  = strconv.ParseUint(r.Header.Get("X_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
 	responses, err := h.useCase.Change(*response)
 
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, reqID, New(err))
+		httpErr := &Error.Error{}
+		errors.As(err, &httpErr)
+		if httpErr.InternalError {
+			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		} else {
+			httputils.RespondError(w, reqID, err, http.StatusBadRequest)
+		}
 		return
 	}
 
@@ -119,21 +122,31 @@ func(h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 func(h *Handlers) DelPostResponse(w http.ResponseWriter, r *http.Request) {
 	response := &models.Response{}
 	params := mux.Vars(r)
-	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	var err error
+	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
 	response.PostID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, reqID, New(err)) //Bad json
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
-	//TODO: откуда-то брать этот чертов айдишник
-	response.UserID = r.Context().Value(ctxKeySession).(*model.Session).UserID
+
+	response.UserID, err = strconv.ParseUint(r.Header.Get("X_Id"), 10, 64)
+	if err != nil {
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		return
+	}
 	err = h.useCase.Delete(*response)
 
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, reqID, New(err)) //Bad json
+		httpErr := &Error.Error{}
+		errors.As(err, &httpErr)
+		if httpErr.InternalError {
+			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		} else {
+			httputils.RespondError(w, reqID, err, http.StatusBadRequest)
+		}
 		return
 	}
 	var emptyInterface interface{}

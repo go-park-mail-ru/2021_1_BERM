@@ -1,12 +1,9 @@
 package repository
 
 import (
-	"FL_2/model"
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
-	"github.com/pkg/errors"
 	"post/internal/app/models"
-	customErr "post/internal/app/errors"
+	"post/pkg/postgresql"
 )
 
 const (
@@ -47,15 +44,7 @@ func (r *Repository) Create(vacancy models.Vacancy) (uint64, error) {
 		vacancy.Salary,
 		vacancy.UserID).Scan(&vacancyID)
 	if err != nil {
-		pqErr := &pq.Error{}
-		if errors.As(err, &pqErr) {
-			if pqErr.Code == duplicateErrorCode {
-				return 0, errors.Wrap(&customErr.DuplicateSourceErr{
-					Err: err,
-				}, sqlDbSourceError)
-			}
-		}
-		return 0, errors.Wrap(err, sqlDbSourceError)
+		return 0, postgresql.WrapPostgreError(err)
 	}
 	return vacancyID, nil
 }
@@ -64,7 +53,7 @@ func (r *Repository) FindByID(id uint64) (*models.Vacancy, error) {
 	vacancy := models.Vacancy{}
 	err := r.db.Get(&vacancy, selectVacancyByID, id)
 	if err != nil {
-		return nil, errors.Wrap(err, sqlDbSourceError)
+		return nil, postgresql.WrapPostgreError(err)
 	}
 	return &vacancy, nil
 }

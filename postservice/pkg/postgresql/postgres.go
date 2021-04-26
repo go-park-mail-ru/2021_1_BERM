@@ -5,7 +5,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
-	"post/internal/Error"
+	Error2 "post/pkg/Error"
 )
 
 type Postgres struct {
@@ -35,8 +35,8 @@ func (p *Postgres) Close() error {
 func WrapPostgreError(err error) error{
 	pqErr := &pq.Error{}
 	if errors.As(err, pqErr){
-		if pqErr.Code == PostgreDuplicateErrorCode{
-			return &Error.Error{
+		if pqErr.Code == PostgreDuplicateErrorCode {
+			return &Error2.Error{
 				Err: err,
 				InternalError: false,
 				ErrorDescription: map[string]interface{}{
@@ -46,7 +46,7 @@ func WrapPostgreError(err error) error{
 		}
 	}
 	if errors.Is(err, sql.ErrNoRows){
-		return &Error.Error{
+		return &Error2.Error{
 			Err: err,
 			InternalError: false,
 			ErrorDescription: map[string]interface{}{
@@ -54,9 +54,9 @@ func WrapPostgreError(err error) error{
 			},
 		}
 	}
-	return &Error.Error{
-		Err: err,
-		InternalError: true,
-		ErrorDescription: Error.InternalServerErrorDescription,
+	return &Error2.Error{
+		Err:              err,
+		InternalError:    true,
+		ErrorDescription: Error2.InternalServerErrorDescription,
 	}
 }

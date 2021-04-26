@@ -6,9 +6,9 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
 	"post/api"
-	"post/internal/Error"
 	"post/internal/app/models"
 	orderRepo "post/internal/app/order/repository"
+	Error2 "post/pkg/Error"
 )
 
 const (
@@ -151,10 +151,10 @@ func (u *UseCase) sanitizeOrder(order *models.Order) {
 func (u *UseCase) supplementingTheOrderModel(order *models.Order) error {
 	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: order.CustomerID})
 	if err != nil {
-		return &Error.Error{
+		return &Error2.Error{
 			Err: err,
 			ErrorDescription: map[string]interface{}{
-			"Error": Error.InternalServerErrorDescription},
+			"Error": Error2.InternalServerErrorDescription},
 			InternalError: true,
 		}
 	}

@@ -3,7 +3,7 @@ package repository
 import (
 	"github.com/jmoiron/sqlx"
 	"post/internal/app/models"
-	"post/internal/postgresql"
+	"post/pkg/postgresql"
 )
 
 const (
