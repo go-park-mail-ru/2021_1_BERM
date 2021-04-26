@@ -30,7 +30,7 @@ func (useCase *UseCase) Create(user models.NewUser) (map[string]interface{}, err
 		specID, err := useCase.specializeRepository.FindByName(spec)
 		if err != nil {
 			newErr := &Error.Error{}
-			if errors.As(err, newErr) {
+			if errors.As(err, &newErr) {
 				if !newErr.InternalError {
 					specID, err = useCase.specializeRepository.Create(spec)
 					if err != nil {

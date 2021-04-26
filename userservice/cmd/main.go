@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"flag"
@@ -25,7 +25,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&configPath, "config-path", "config/server.toml", "path to config file")
+	flag.StringVar(&configPath, "config-path", "configs/toml/server.toml", "path to config file")
 }
 
 func main() {
@@ -72,6 +72,7 @@ func main() {
 	}
 
 	go func() {
+		log.Println("GRPC server start")
 		if err := server.ListenAndServe(); err != nil {
 			log.Fatal(err)
 		}
@@ -86,6 +87,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	log.Println("Server start")
 	if err := s.Serve(l); err != nil {
 		log.Fatal(err)
 	}
