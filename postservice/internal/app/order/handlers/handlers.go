@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	"net/http"
-	"post/internal/app/httputils"
 	"post/internal/app/models"
 	orderUseCase "post/internal/app/order/usecase"
+	"post/pkg/Error"
+	"post/pkg/httputils"
 	"strconv"
 )
 
@@ -28,49 +30,76 @@ func NewHandler(useCase orderUseCase.UseCase) *Handlers {
 }
 
 func(h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqID).(uint64)
-	//TODO: не оч понятно как вытащить айдишник
-	id := r.Context().Value(ctxKeySession).(*models.Session).UserID
+	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
+	id, err := strconv.ParseUint(r.Header.Get("X_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
 	o := &models.Order{}
-	if err := json.NewDecoder(r.Body).Decode(o); err != nil {
-		httputils.RespondError(w, reqId, InvalidJSON)
+	if err = json.NewDecoder(r.Body).Decode(o); err != nil {
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	o.CustomerID = id
-	var err error
 	o, err = h.useCase.Create(*o)
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, reqId, New(err))
+		httpErr := &Error.Error{}
+		errors.As(err, &httpErr)
+		if httpErr.InternalError {
+			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		} else {
+			httputils.RespondError(w, reqID, err, http.StatusBadRequest)
+		}
 		return
 	}
-	httputils.Respond(w, reqId, http.StatusCreated, o)
+	httputils.Respond(w, reqID, http.StatusCreated, o)
 }
 
 func(h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
-	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
 	o, err := h.useCase.GetActualOrders()
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, reqID, New(err))
+		httpErr := &Error.Error{}
+		errors.As(err, &httpErr)
+		if httpErr.InternalError {
+			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		} else {
+			httputils.RespondError(w, reqID, err, http.StatusBadRequest)
+		}
 		return
 	}
 	httputils.Respond(w, reqID, http.StatusOK, o)
 }
 
 func(h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
-	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, reqID, New(err))
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	o, err := h.useCase.FindByID(id)
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, reqID, New(err))
+		httpErr := &Error.Error{}
+		errors.As(err, &httpErr)
+		if httpErr.InternalError {
+			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		} else {
+			httputils.RespondError(w, reqID, err, http.StatusBadRequest)
+		}
 		return
 	}
 	httputils.Respond(w, reqID, http.StatusOK, o)
@@ -78,23 +107,30 @@ func(h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
 
 func(h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
 
 	order := models.Order{}
-	if err := json.NewDecoder(r.Body).Decode(&order); err != nil {
-		httputils.RespondError(w, reqID, InvalidJSON)
+	if err = json.NewDecoder(r.Body).Decode(&order); err != nil {
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
-	var err error
 	order.ID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		httputils.RespondError(w, http.StatusBadRequest, InvalidJSON)
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	err = h.useCase.SelectExecutor(order)
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, http.StatusInternalServerError, New(err))
+		httpErr := &Error.Error{}
+		errors.As(err, &httpErr)
+		if httpErr.InternalError {
+			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		} else {
+			httputils.RespondError(w, reqID, err, http.StatusBadRequest)
+		}
 		return
 	}
 	httputils.Respond(w, reqID, http.StatusOK, order)
@@ -102,38 +138,54 @@ func(h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 
 func(h *Handlers) DeleteExecutor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	reqId := r.Context().Value(ctxKeyReqID).(uint64)
+	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
 
 	order := models.Order{}
-	var err error
+
 	order.ID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		httputils.RespondError(w, http.StatusBadRequest, InvalidJSON)
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	err = h.useCase.DeleteExecutor(order)
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, http.StatusInternalServerError, New(err))
+		httpErr := &Error.Error{}
+		errors.As(err, &httpErr)
+		if httpErr.InternalError {
+			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		} else {
+			httputils.RespondError(w, reqID, err, http.StatusBadRequest)
+		}
 		return
 	}
 	var emptyInterface interface{}
-	httputils.Respond(w, reqId, http.StatusOK, emptyInterface)
+	httputils.Respond(w, reqID, http.StatusOK, emptyInterface)
 }
 
 func(h *Handlers) GetAllUserOrders(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
 	userID, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		httputils.RespondError(w, http.StatusBadRequest, InvalidJSON)
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 
 	o, err := h.useCase.FindByUserID(userID)
 	if err != nil {
-		//TODO: ошибка
-		httputils.RespondError(w, http.StatusNotFound, New(err))
+		httpErr := &Error.Error{}
+		errors.As(err, &httpErr)
+		if httpErr.InternalError {
+			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		} else {
+			httputils.RespondError(w, reqID, err, http.StatusBadRequest)
+		}
 		return
 	}
 	httputils.Respond(w, reqID, http.StatusOK, o)

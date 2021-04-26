@@ -2,10 +2,8 @@ package repository
 
 import (
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
-	"github.com/pkg/errors"
-	customErr "post/internal/app/errors"
 	"post/internal/app/models"
+	"post/pkg/postgresql"
 )
 
 const (
@@ -59,15 +57,7 @@ func (r *Repository) Create(response models.Response) (uint64, error) {
 		response.UserImg,
 		response.Time).Scan(&responseID)
 	if err != nil {
-		pqErr := &pq.Error{}
-		if errors.As(err, &pqErr) {
-			if pqErr.Code == duplicateErrorCode {
-				return 0, errors.Wrap(&customErr.DuplicateSourceErr{
-					Err: err,
-				}, sqlDbSourceError)
-			}
-		}
-		return 0, errors.Wrap(err, sqlDbSourceError)
+		return 0, postgresql.WrapPostgreError(err)
 	}
 
 	return responseID, nil
@@ -76,7 +66,7 @@ func (r *Repository) Create(response models.Response) (uint64, error) {
 func (r *Repository) FindByPostID(id uint64) ([]models.Response, error) {
 	var responses []models.Response
 	if err := r.db.Select(&responses, selectResponseByPostID, id); err != nil {
-		return nil, errors.Wrap(err, sqlDbSourceError)
+		return nil,postgresql.WrapPostgreError(err)
 	}
 	return responses, nil
 }
@@ -85,10 +75,10 @@ func (r *Repository) Change(response models.Response) (*models.Response, error) 
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(updateResponse, &response)
 	if err != nil {
-		return nil, errors.Wrap(err, sqlDbSourceError)
+		return nil, postgresql.WrapPostgreError(err)
 	}
 	if err := tx.Commit(); err != nil {
-		return nil, errors.Wrap(err, sqlDbSourceError)
+		return nil, postgresql.WrapPostgreError(err)
 	}
 	return &response, nil
 }
@@ -97,10 +87,10 @@ func (r *Repository) Delete(response models.Response) error {
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(deleteResponse, &response)
 	if err != nil {
-		return errors.Wrap(err, sqlDbSourceError)
+		return postgresql.WrapPostgreError(err)
 	}
 	if err = tx.Commit(); err != nil {
-		return errors.Wrap(err, sqlDbSourceError)
+		return postgresql.WrapPostgreError(err)
 	}
 	return nil
 }

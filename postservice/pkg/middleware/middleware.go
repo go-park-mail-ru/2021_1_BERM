@@ -4,10 +4,10 @@ import (
 	"context"
 	"github.com/gorilla/csrf"
 	"github.com/rs/cors"
-	logger2 "image/internal/app/logger"
+	logger2 "post/pkg/logger"
 	"math/rand"
 	"net/http"
-	"post/internal/app/httputils"
+	httputils2 "post/pkg/httputils"
 )
 
 
@@ -42,6 +42,6 @@ func CSRFMiddleware(https bool) func(http.Handler) http.Handler {
 		csrf.Secure(https),
 		csrf.MaxAge(900),
 		csrf.Path("/"),
-		csrf.ErrorHandler(httputils.RespondCSRF()))
+		csrf.ErrorHandler(httputils2.RespondCSRF()))
 }
 

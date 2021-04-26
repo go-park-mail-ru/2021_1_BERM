@@ -10,8 +10,8 @@ import (
 	"net/http"
 	pb "post/api"
 	"post/configs"
-	"post/internal/app/logger"
-	"post/internal/app/middleware"
+	logger2 "post/pkg/logger"
+	middleware2 "post/pkg/middleware"
 
 	orderHandlers "post/internal/app/order/handlers"
 	orderRepo "post/internal/app/order/repository"
@@ -42,7 +42,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := logger.InitLogger("stdout"); err != nil {
+	if err := logger2.InitLogger("stdout"); err != nil {
 		log.Fatal(err)
 	}
 
@@ -77,9 +77,9 @@ func main() {
 	responseHandler := responseHandlers.NewHandler(*responseUseCase)
 
 	router := mux.NewRouter()
-	router.Use(middleware.LoggingRequest)
+	router.Use(middleware2.LoggingRequest)
 
-	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
+	csrfMiddleware := middleware2.CSRFMiddleware(config.HTTPS)
 
 	order := router.PathPrefix("/order").Subrouter()
 	order.Use(csrfMiddleware)
@@ -103,7 +103,7 @@ func main() {
 	vacancy.HandleFunc("/{id:[0-9]+}/response", responseHandler.CreatePostResponse).Methods(http.MethodPost)
 	vacancy.HandleFunc("/{id:[0-9]+}/response", responseHandler.GetAllPostResponses).Methods(http.MethodGet)
 
-	c := middleware.CorsMiddleware(config.Origin)
+	c := middleware2.CorsMiddleware(config.Origin)
 
 	server := &http.Server{
 		Addr:    config.BindAddr,
