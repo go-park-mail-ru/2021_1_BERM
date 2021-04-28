@@ -20,7 +20,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&configPath, "config-path", "config/server.toml", "path to config file")
+	flag.StringVar(&configPath, "config-path", "configs/toml/server.toml", "path to config file")
 }
 
 func main() {
@@ -34,8 +34,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//TODO: поправить порт коннекта
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:8081", grpc.WithInsecure())
 	if err != nil {
 		log .Fatal(err)
 	}
@@ -46,11 +45,11 @@ func main() {
 
 	imageHandler := imageHandlers.NewHandler(*imageUseCase)
 
-	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
+	//csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
 	router := mux.NewRouter()
 	router.Use(middleware.LoggingRequest)
-	router.Use(csrfMiddleware)
+	//router.Use(csrfMiddleware)
 
 	router.HandleFunc("/profile/avatar", imageHandler.PutAvatar).Methods(http.MethodPut)
 
@@ -62,12 +61,14 @@ func main() {
 	}
 
 	if config.HTTPS {
+		log.Println("TLS server starting at port: ", server.Addr)
 		if err := server.ListenAndServeTLS(
 			"/etc/letsencrypt/live/findfreelancer.ru/cert.pem",
 			"/etc/letsencrypt/live/findfreelancer.ru/privkey.pem"); err != nil {
 			log.Fatal(err)
 		}
 	}
+	log.Println("Server starting at port", server.Addr)
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}

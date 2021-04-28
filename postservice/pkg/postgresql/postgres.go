@@ -34,7 +34,7 @@ func (p *Postgres) Close() error {
 
 func WrapPostgreError(err error) error{
 	pqErr := &pq.Error{}
-	if errors.As(err, pqErr){
+	if errors.As(err, &pqErr){
 		if pqErr.Code == PostgreDuplicateErrorCode {
 			return &Error2.Error{
 				Err: err,

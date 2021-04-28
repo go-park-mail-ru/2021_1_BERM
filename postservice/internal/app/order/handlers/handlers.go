@@ -105,6 +105,50 @@ func(h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
 	httputils.Respond(w, reqID, http.StatusOK, o)
 }
 
+func (h *Handlers) ChangeOrder(w http.ResponseWriter, r *http.Request) {
+	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
+	order := models.Order{}
+	if err = json.NewDecoder(r.Body).Decode(&order); err != nil {
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		return
+	}
+	params := mux.Vars(r)
+	order.ID, err = strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		return
+	}
+	order, err = h.useCase.ChangeOrder(order)
+	if err != nil {
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		return
+	}
+	httputils.Respond(w, reqID, http.StatusOK, order)
+}
+
+func (h *Handlers) DeleteOrder(w http.ResponseWriter, r *http.Request) {
+	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
+	if err != nil{
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
+	params := mux.Vars(r)
+	id, err := strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		return
+	}
+	err = h.useCase.DeleteOrder(id)
+	if err != nil {
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		return
+	}
+	var emptyInterface interface{}
+	httputils.Respond(w, reqID, http.StatusOK, emptyInterface)
+}
+
 func(h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)

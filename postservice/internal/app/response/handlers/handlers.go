@@ -12,7 +12,6 @@ import (
 	"strconv"
 )
 
-
 type Handlers struct {
 	useCase responseUseCase.UseCase
 }
@@ -23,9 +22,9 @@ func NewHandler(useCase responseUseCase.UseCase) *Handlers {
 	}
 }
 
-func(h *Handlers) CreatePostResponse(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) CreatePostResponse(w http.ResponseWriter, r *http.Request) {
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 	response := &models.Response{}
@@ -40,6 +39,8 @@ func(h *Handlers) CreatePostResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.PostID = id
+	response.VacancyResponse = r.URL.String() == "/vacancy/" + strconv.FormatUint(id, 10)+ "/response"
+	response.OrderResponse = r.URL.String() == "/order/" + strconv.FormatUint(id, 10)+ "/response"
 	response, err = h.useCase.Create(*response)
 	if err != nil {
 		httpErr := &Error.Error{}
@@ -54,10 +55,10 @@ func(h *Handlers) CreatePostResponse(w http.ResponseWriter, r *http.Request) {
 	httputils.Respond(w, reqID, http.StatusCreated, response)
 }
 
-func(h *Handlers) GetAllPostResponses(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetAllPostResponses(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 	id, err := strconv.ParseUint(params["id"], 10, 64)
@@ -65,8 +66,9 @@ func(h *Handlers) GetAllPostResponses(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
-	//TODO: откуда-то брать инфу о том ордер это или вакансия
-	responses, err := h.useCase.FindByPostID(id)
+	vacancyResponse := r.URL.String() == "/vacancy/" + strconv.FormatUint(id, 10)+ "/response"
+	orderResponse := r.URL.String() == "/order/" + strconv.FormatUint(id, 10)+ "/response"
+	responses, err := h.useCase.FindByPostID(id, orderResponse, vacancyResponse)
 	if err != nil {
 		httpErr := &Error.Error{}
 		errors.As(err, &httpErr)
@@ -81,10 +83,10 @@ func(h *Handlers) GetAllPostResponses(w http.ResponseWriter, r *http.Request) {
 	httputils.Respond(w, reqID, http.StatusOK, responses)
 }
 
-func(h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 	response := &models.Response{}
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 
@@ -99,10 +101,12 @@ func(h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//TODO: не понятно откуда брать инфу об айдишнике
-	response.UserID, err  = strconv.ParseUint(r.Header.Get("X_Id"), 10, 64)
-	if err != nil{
+	response.UserID, err = strconv.ParseUint(r.Header.Get("X_Id"), 10, 64)
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
+	response.VacancyResponse = r.URL.String() == "/vacancy/" + strconv.FormatUint(response.PostID, 10)+ "/response"
+	response.OrderResponse = r.URL.String() == "/order/" + strconv.FormatUint(response.PostID, 10)+ "/response"
 	responses, err := h.useCase.Change(*response)
 
 	if err != nil {
@@ -119,11 +123,11 @@ func(h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 	httputils.Respond(w, reqID, http.StatusOK, responses)
 }
 
-func(h *Handlers) DelPostResponse(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) DelPostResponse(w http.ResponseWriter, r *http.Request) {
 	response := &models.Response{}
 	params := mux.Vars(r)
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 	response.PostID, err = strconv.ParseUint(params["id"], 10, 64)
@@ -137,6 +141,8 @@ func(h *Handlers) DelPostResponse(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
+	response.VacancyResponse = r.URL.String() == "/vacancy/" + strconv.FormatUint(response.PostID, 10)+ "/response"
+	response.OrderResponse = r.URL.String() == "/order/" + strconv.FormatUint(response.PostID, 10)+ "/response"
 	err = h.useCase.Delete(*response)
 
 	if err != nil {

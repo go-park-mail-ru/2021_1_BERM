@@ -6,7 +6,10 @@ import (
 
 type Repository interface {
 	Create(response models.Response) (uint64, error)
-	FindByPostID(id uint64) ([]models.Response, error)
-	Change(response models.Response) (*models.Response, error)
-	Delete(response models.Response) error
+	FindByOrderPostID(id uint64) ([]models.Response, error)
+	FindByVacancyPostID(id uint64) ([]models.Response, error)
+	ChangeOrderResponse(response models.Response) (*models.Response, error)
+	ChangeVacancyResponse(response models.Response) (*models.Response, error)
+	DeleteOrderResponse(response models.Response) error
+	DeleteVacancyResponse(response models.Response) error
 }

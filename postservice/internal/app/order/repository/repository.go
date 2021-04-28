@@ -1,14 +1,12 @@
 package repository
 
 import (
+	"database/sql"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 	"post/internal/app/models"
+	"post/pkg/Error"
 	"post/pkg/postgresql"
-)
-
-const (
-	duplicateErrorCode = "23505"
-	sqlDbSourceError   = "SQL sb source error"
 )
 
 const (
@@ -42,6 +40,17 @@ const (
 	updateExecutor = `UPDATE post.orders SET 
                  executor_id =:executor_id
 				 WHERE id = :id`
+
+	updateOrder = `UPDATE post.orders SET
+					order_name =:order_name,
+					category =:category,
+					customer_id =:customer_id,
+					executor_id =:executor_id,
+					deadline =:deadline,
+					budget =:budget,
+					description =:description
+					WHERE id =:id`
+	deleteOrder = `DELETE from post.orders WHERE id=$1`
 )
 
 type Repository struct {
@@ -71,6 +80,33 @@ func (r *Repository) Create(order models.Order) (uint64, error) {
 	return orderID, nil
 }
 
+func (r *Repository) Change(order models.Order) error {
+	tx, err:= r.db.Begin()
+	if err != nil {
+		return postgresql.WrapPostgreError(err)
+	}
+	_, err = tx.Exec(updateOrder, order)
+	if err != nil {
+		return &Error.Error{
+			Err:              err,
+			InternalError:    true,
+			ErrorDescription: Error.InternalServerErrorDescription,
+		}
+	}
+	if err = tx.Commit(); err != nil {
+		return postgresql.WrapPostgreError(err)
+	}
+	return nil
+}
+
+func (r *Repository) DeleteOrder(id uint64) error {
+	_, err := r.db.Queryx(deleteOrder, id)
+	if err != nil {
+		return postgresql.WrapPostgreError(err)
+	}
+	return nil
+}
+
 func (r *Repository) FindByID(id uint64) (*models.Order, error) {
 	order := models.Order{}
 	if err := r.db.Get(&order, selectOrderByID, id); err != nil {
@@ -81,7 +117,11 @@ func (r *Repository) FindByID(id uint64) (*models.Order, error) {
 
 func (r *Repository) FindByExecutorID(executorID uint64) ([]models.Order, error) {
 	var orders []models.Order
-	if err := r.db.Select(&orders, selectOrderByExecutorID, executorID); err != nil {
+	err := r.db.Select(&orders, selectOrderByExecutorID, executorID);
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
 		return nil, postgresql.WrapPostgreError(err)
 	}
 	return orders, nil
@@ -89,7 +129,11 @@ func (r *Repository) FindByExecutorID(executorID uint64) ([]models.Order, error)
 
 func (r *Repository) FindByCustomerID(customerID uint64) ([]models.Order, error) {
 	var orders []models.Order
-	if err := r.db.Select(&orders, selectOrderByCustomerID, customerID); err != nil {
+	err := r.db.Select(&orders, selectOrderByCustomerID, customerID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
 		return nil, postgresql.WrapPostgreError(err)
 	}
 	return orders, nil

@@ -6,11 +6,7 @@ import (
 	imgUseCase "image/internal/app/image/usecase"
 	"image/internal/app/models"
 	"net/http"
-)
-
-const (
-	ctxKeySession uint8 = iota
-	ctxKeyReqID   uint8 = 1
+	"strconv"
 )
 
 type Handlers struct {
@@ -24,21 +20,24 @@ func NewHandler(useCase imgUseCase.UseCase) *Handlers {
 }
 
 func (h *Handlers) PutAvatar(w http.ResponseWriter, r *http.Request) {
-	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	defer r.Body.Close()
-	u := models.UserImg{}
-	err := json.NewDecoder(r.Body).Decode(&u)
-	//TODO: вытащить айдишник
-	u.ID = r.Context().Value(ctxKeySession).(*models.Session).UserID
+	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
 	if err != nil {
-		httputils.RespondError(w, reqId, InvalidJSON)
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
+	u := models.UserImg{}
+	if err = json.NewDecoder(r.Body).Decode(&u); err != nil {
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
-
+	u.ID, err = strconv.ParseUint(r.Header.Get("X_Id"), 10, 64)
+	if err != nil {
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+	}
 	u, err = h.useCase.SetImage(u)
 	if err != nil {
-		httputils.RespondError(w, reqId, New(err))
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
-	httputils.Respond(w, reqId, http.StatusOK, u)
+	httputils.Respond(w, reqID, http.StatusOK, u)
 }

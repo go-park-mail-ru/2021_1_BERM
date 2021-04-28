@@ -72,7 +72,7 @@ func main() {
 	}
 
 	go func() {
-		log.Println("GRPC server start")
+		log.Println("Server start")
 		if err := server.ListenAndServe(); err != nil {
 			log.Fatal(err)
 		}
@@ -87,7 +87,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println("Server start")
+	log.Println("GRPC Server start")
 	if err := s.Serve(l); err != nil {
 		log.Fatal(err)
 	}

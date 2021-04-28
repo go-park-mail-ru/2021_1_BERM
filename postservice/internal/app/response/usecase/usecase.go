@@ -25,7 +25,6 @@ func NewUseCase(responseRepo responseRepo.Repository, userRepo api.UserClient) *
 }
 
 func (u *UseCase) Create(response models.Response) (*models.Response, error) {
-	//TODO: grpc запрос за юзером
 	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: response.UserID})
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
@@ -41,8 +40,15 @@ func (u *UseCase) Create(response models.Response) (*models.Response, error) {
 	return &response, nil
 }
 
-func (u *UseCase) FindByPostID(postID uint64) ([]models.Response, error) {
-	responses, err := u.ResponseRepo.FindByPostID(postID)
+func (u *UseCase) FindByPostID(postID uint64, orderResponse bool, vacancyResponse bool) ([]models.Response, error) {
+	var responses []models.Response
+	var err error
+	if orderResponse {
+		responses, err = u.ResponseRepo.FindByOrderPostID(postID)
+	}
+	if vacancyResponse {
+		responses, err = u.ResponseRepo.FindByVacancyPostID(postID)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
 	}
@@ -61,7 +67,14 @@ func (u *UseCase) FindByPostID(postID uint64) ([]models.Response, error) {
 }
 
 func (u *UseCase) Change(response models.Response) (*models.Response, error) {
-	changedResponse, err := u.ResponseRepo.Change(response)
+	changedResponse := &models.Response{}
+	var err error
+	if response.OrderResponse {
+		changedResponse, err = u.ResponseRepo.ChangeOrderResponse(response)
+	}
+	if response.VacancyResponse {
+		changedResponse, err = u.ResponseRepo.ChangeVacancyResponse(response)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
 	}
@@ -73,7 +86,13 @@ func (u *UseCase) Change(response models.Response) (*models.Response, error) {
 }
 
 func (u *UseCase) Delete(response models.Response) error {
-	err := u.ResponseRepo.Delete(response)
+	var err error
+	if response.OrderResponse {
+		err = u.ResponseRepo.DeleteOrderResponse(response)
+	}
+	if response.VacancyResponse {
+		err = u.ResponseRepo.DeleteVacancyResponse(response)
+	}
 	if err != nil {
 		return errors.Wrap(err, responseUseCaseError)
 	}

@@ -16,7 +16,8 @@ CREATE TABLE post.orders
 CREATE TABLE post.vacancy
 (
     id           SERIAL PRIMARY KEY NOT NULL,
-    user_id      INTEGER            NOT NULL,
+    customer_id  INTEGER            NOT NULL,
+    executor_id  INTEGER,
     category     VARCHAR            NOT NULL,
     vacancy_name VARCHAR            NOT NULL,
     description  VARCHAR            NOT NULL,
@@ -25,10 +26,12 @@ CREATE TABLE post.vacancy
 
 CREATE TABLE post.responses
 (
-    id      SERIAL PRIMARY KEY NOT NULL,
-    post_id INTEGER            NOT NULL,
-    user_id INTEGER            NOT NULL,
-    rate    INTEGER            NOT NULL,
-    time    BIGINT             NOT NULL
+    id               SERIAL PRIMARY KEY    NOT NULL,
+    post_id          INTEGER               NOT NULL,
+    user_id          INTEGER               NOT NULL,
+    rate             INTEGER DEFAULT 0,
+    text             VARCHAR DEFAULT '',
+    order_response   BOOLEAN DEFAULT FALSE NOT NULL,
+    vacancy_response BOOLEAN DEFAULT FALSE NOT NULL,
+    time             BIGINT                NOT NULL
 );
-

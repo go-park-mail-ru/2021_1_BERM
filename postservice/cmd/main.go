@@ -1,7 +1,6 @@
 package main
 
 import (
-	database2 "FL_2/database"
 	"flag"
 	"github.com/BurntSushi/toml"
 	"github.com/gorilla/mux"
@@ -10,8 +9,9 @@ import (
 	"net/http"
 	pb "post/api"
 	"post/configs"
-	logger2 "post/pkg/logger"
-	middleware2 "post/pkg/middleware"
+	"post/pkg/logger"
+	"post/pkg/middleware"
+	"post/pkg/postgresql"
 
 	orderHandlers "post/internal/app/order/handlers"
 	orderRepo "post/internal/app/order/repository"
@@ -31,7 +31,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&configPath, "config-path", "config/server.toml", "path to config file")
+	flag.StringVar(&configPath, "config-path", "configs/toml/server.toml", "path to config file")
 }
 
 func main() {
@@ -42,11 +42,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := logger2.InitLogger("stdout"); err != nil {
+	if err := logger.InitLogger("stdout"); err != nil {
 		log.Fatal(err)
 	}
 
-	postgres, err := database2.NewPostgres(config.DSN)
+	postgres, err := postgresql.NewPostgres(config.DSN)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,7 +57,7 @@ func main() {
 	}()
 
 	//TODO: поправить порт коннекта
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:8081", grpc.WithInsecure())
 	if err != nil {
 		log .Fatal(err)
 	}
@@ -77,17 +77,18 @@ func main() {
 	responseHandler := responseHandlers.NewHandler(*responseUseCase)
 
 	router := mux.NewRouter()
-	router.Use(middleware2.LoggingRequest)
+	router.Use(middleware.LoggingRequest)
 
-	csrfMiddleware := middleware2.CSRFMiddleware(config.HTTPS)
+	//csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
 	order := router.PathPrefix("/order").Subrouter()
-	order.Use(csrfMiddleware)
+	//order.Use(csrfMiddleware)
 	order.HandleFunc("", orderHandler.CreateOrder).Methods(http.MethodPost)
 	order.HandleFunc("", orderHandler.GetActualOrder).Methods(http.MethodGet)
 
-	//order.HandleFunc("/{id:[0-9]+}", s.handleChangeOrder).Methods(http.MethodPut)
 	order.HandleFunc("/{id:[0-9]+}", orderHandler.GetOrder).Methods(http.MethodGet)
+	order.HandleFunc("/{id:[0-9]+}", orderHandler.ChangeOrder).Methods(http.MethodPut)
+	order.HandleFunc("/{id:[0-9]+}", orderHandler.DeleteOrder).Methods(http.MethodDelete)
 	order.HandleFunc("/{id:[0-9]+}/response", responseHandler.CreatePostResponse).Methods(http.MethodPost)
 	order.HandleFunc("/{id:[0-9]+}/response", responseHandler.GetAllPostResponses).Methods(http.MethodGet)
 	order.HandleFunc("/{id:[0-9]+}/response", responseHandler.ChangePostResponse).Methods(http.MethodPut)
@@ -97,13 +98,20 @@ func main() {
 	order.HandleFunc("/profile/{id:[0-9]+}", orderHandler.GetAllUserOrders).Methods(http.MethodGet)
 
 	vacancy := router.PathPrefix("/vacancy").Subrouter()
-	vacancy.Use(csrfMiddleware)
+	//vacancy.Use(csrfMiddleware)
 	vacancy.HandleFunc("", vacancyHandler.CreateVacancy).Methods(http.MethodPost)
 	vacancy.HandleFunc("/{id:[0-9]+}", vacancyHandler.GetVacancy).Methods(http.MethodGet)
+	vacancy.HandleFunc("/{id:[0-9]+}", vacancyHandler.ChangeVacancy).Methods(http.MethodPut)
+	vacancy.HandleFunc("/{id:[0-9]+}", vacancyHandler.DeleteVacancy).Methods(http.MethodDelete)
 	vacancy.HandleFunc("/{id:[0-9]+}/response", responseHandler.CreatePostResponse).Methods(http.MethodPost)
 	vacancy.HandleFunc("/{id:[0-9]+}/response", responseHandler.GetAllPostResponses).Methods(http.MethodGet)
+	vacancy.HandleFunc("/{id:[0-9]+}/response", responseHandler.ChangePostResponse).Methods(http.MethodPut)
+	vacancy.HandleFunc("/{id:[0-9]+}/response", responseHandler.DelPostResponse).Methods(http.MethodDelete)
+	vacancy.HandleFunc("/profile/{id:[0-9]+}", vacancyHandler.GetAllUserVacancies).Methods(http.MethodGet)
+	vacancy.HandleFunc("/{id:[0-9]+}/select", vacancyHandler.SelectExecutor).Methods(http.MethodPut)
+	vacancy.HandleFunc("/{id:[0-9]+}/select", vacancyHandler.DeleteExecutor).Methods(http.MethodDelete)
 
-	c := middleware2.CorsMiddleware(config.Origin)
+	c := middleware.CorsMiddleware(config.Origin)
 
 	server := &http.Server{
 		Addr:    config.BindAddr,
@@ -111,6 +119,7 @@ func main() {
 	}
 
 	if config.HTTPS {
+		log.Println("TLS server starting at port: ", server.Addr)
 		if err := server.ListenAndServeTLS(
 			"/etc/letsencrypt/live/findfreelancer.ru/cert.pem",
 			"/etc/letsencrypt/live/findfreelancer.ru/privkey.pem"); err != nil {
@@ -118,6 +127,7 @@ func main() {
 		}
 	}
 
+	log.Println("Server starting at port", server.Addr)
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}

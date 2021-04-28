@@ -9,6 +9,6 @@ type Order struct {
 	Deadline    uint64 `json:"deadline,omitempty" db:"deadline"`
 	Description string `json:"description,omitempty" db:"description"`
 	Category    string `json:"category,omitempty" db:"category"`
-	Login       string `json:"login,omitempty"`
-	Img         string `json:"imgcreator,omitempty"`
+	UserLogin   string `json:"user_login,omitempty"`
+	UserImg     string `json:"user_img,omitempty"`
 }

@@ -8,7 +8,7 @@ import (
 	"post/api"
 	"post/internal/app/models"
 	orderRepo "post/internal/app/order/repository"
-	Error2 "post/pkg/Error"
+	"post/pkg/Error"
 )
 
 const (
@@ -84,6 +84,47 @@ func (u *UseCase) FindByUserID(userID uint64) ([]models.Order, error) {
 	return orders, nil
 }
 
+func (u *UseCase) ChangeOrder(order models.Order) (models.Order, error) {
+	oldOrder, err := u.OrderRepo.FindByID(order.ID)
+	if err != nil {
+		return models.Order{}, errors.Wrap(err, orderUseCaseError)
+	}
+	if order.OrderName == "" {
+		order.OrderName = oldOrder.OrderName
+	}
+	if order.Category == "" {
+		order.Category = oldOrder.Category
+	}
+	if order.Description == "" {
+		order.Description = oldOrder.Description
+	}
+	if order.Budget == 0 {
+		order.Budget = oldOrder.Budget
+	}
+	if order.Deadline == 0 {
+		order.Deadline = oldOrder.Deadline
+	}
+	order.CustomerID = oldOrder.CustomerID
+	order.ExecutorID = oldOrder.ExecutorID
+	err = u.OrderRepo.Change(order)
+	if err != nil {
+		return models.Order{}, errors.Wrap(err, orderUseCaseError)
+	}
+	err = u.supplementingTheOrderModel(&order)
+	if err != nil {
+		return models.Order{}, errors.Wrap(err, orderUseCaseError)
+	}
+	return order, nil
+}
+
+func (u *UseCase) DeleteOrder(id uint64) error {
+	err := u.OrderRepo.DeleteOrder(id)
+	if err != nil {
+		return errors.Wrap(err, orderUseCaseError)
+	}
+	return nil
+}
+
 func (u *UseCase) GetActualOrders() ([]models.Order, error) {
 	orders, err := u.OrderRepo.GetActualOrders()
 	if err != nil {
@@ -107,11 +148,23 @@ func (u *UseCase) SelectExecutor(order models.Order) error {
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
+	//TODO: изменить интернал на экстернал
 	if userR.GetExecutor() == false {
-		return errors.Wrap(err, orderUseCaseError)
+		return &Error.Error{
+			Err: errors.New("Select user not executor"),
+			ErrorDescription: map[string]interface{}{
+				"Error": Error.InternalServerErrorDescription["Error"]},
+			InternalError: true,
+		}
 	}
+	//TODO: изменить интернал на экстернал
 	if order.ExecutorID == order.CustomerID {
-		return errors.Wrap(err, orderUseCaseError)
+		return &Error.Error{
+			Err: errors.New("Executor and customer ID are the same"),
+			ErrorDescription: map[string]interface{}{
+				"Error": Error.InternalServerErrorDescription["Error"]},
+			InternalError: true,
+		}
 	}
 	err = u.OrderRepo.UpdateExecutor(order)
 	if err != nil {
@@ -151,14 +204,14 @@ func (u *UseCase) sanitizeOrder(order *models.Order) {
 func (u *UseCase) supplementingTheOrderModel(order *models.Order) error {
 	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: order.CustomerID})
 	if err != nil {
-		return &Error2.Error{
+		return &Error.Error{
 			Err: err,
 			ErrorDescription: map[string]interface{}{
-			"Error": Error2.InternalServerErrorDescription},
+				"Error": Error.InternalServerErrorDescription},
 			InternalError: true,
 		}
 	}
-	order.Login = userR.GetLogin()
-	order.Img = userR.GetImg()
+	order.UserLogin = userR.GetLogin()
+	order.UserImg = userR.GetImg()
 	return nil
 }

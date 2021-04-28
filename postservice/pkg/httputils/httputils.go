@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"github.com/pkg/errors"
 	"net/http"
-	Error2 "post/pkg/Error"
-	logger2 "post/pkg/logger"
+	"post/pkg/Error"
+	"post/pkg/logger"
 	"strconv"
 )
 
@@ -22,12 +22,12 @@ func Respond(w http.ResponseWriter, requestId uint64, code int, data interface{}
 			return
 		}
 	}
-	logger2.LoggingResponse(requestId, code)
+	logger.LoggingResponse(requestId, code)
 }
 
 func RespondError(w http.ResponseWriter, requestId uint64, err error, errorCode int) {
-	logger2.LoggingError(requestId, err)
-	httpError := Error2.Error{}
+	logger.LoggingError(requestId, err)
+	httpError := &Error.Error{}
 	if errors.As(err, &httpError) {
 		Respond(w, requestId, errorCode, httpError.ErrorDescription)
 		return
@@ -42,7 +42,7 @@ func RespondCSRF() http.Handler {
 			RespondError(w, reqID, err, http.StatusInternalServerError)
 			return
 		}
-		logger2.LoggingError(reqID, errors.New("Invalid CSRF token"))
+		logger.LoggingError(reqID, errors.New("Invalid CSRF token"))
 		Respond(w, reqID, http.StatusForbidden, map[string]interface{}{
 			"error": "Invalid CSRF token",
 		})

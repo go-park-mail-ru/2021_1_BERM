@@ -4,12 +4,17 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"github.com/muesli/smartcrop"
+	"github.com/muesli/smartcrop/nfnt"
 	"image"
 	"image/jpeg"
-	"log"
 	"os"
 	"strings"
 )
+
+type SubImager interface {
+	SubImage(r image.Rectangle) image.Image
+}
 
 func randomFilename16Char() (s string, err error) {
 	b := make([]byte, 8)
@@ -37,7 +42,10 @@ func CreateImg(imgBase64 string) (string, error) {
 	jpegFilename += ".jpeg"
 	f, err := os.Create(jpegFilename)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
+	}
+	err = f.Chmod(0777)
+	if err != nil {
 		return "", err
 	}
 
@@ -46,4 +54,37 @@ func CreateImg(imgBase64 string) (string, error) {
 		return "", err
 	}
 	return jpegFilename, nil
+}
+
+func CropImg(imgURL string) (string, error) {
+	fi, err := os.Open(imgURL)
+	if err != nil {
+		return "", err
+	}
+
+	img, _, err := image.Decode(fi)
+	if err != nil {
+		return "", err
+	}
+
+	analyzer := smartcrop.NewAnalyzer(nfnt.NewDefaultResizer())
+	topCrop, err := analyzer.FindBestCrop(img, 250, 250)
+	if err != nil {
+		return "", err
+	}
+	fi.Close()
+	sub, ok := img.(SubImager)
+	if ok {
+		fi, err := os.Create(imgURL)
+		if err != nil {
+			return "", err
+		}
+		cropImage := sub.SubImage(topCrop)
+		if err := jpeg.Encode(fi, cropImage, nil); err != nil {
+			return "", err
+		}
+		return imgURL, nil
+	} else {
+		return "", err
+	}
 }

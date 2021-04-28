@@ -1,0 +1,889 @@
+swagger: '2.0'
+info:
+  description: Findfreelancer api
+  version: 1.0.0
+  title: Findfreelancer API
+
+consumes:
+  - application/json
+paths:
+  /login:
+    post:
+      tags:
+        - login
+      summary: Авторизация
+      description: Авторизация
+      parameters:
+        - name: login
+          in: body
+          description: Авторизационные данные
+          required: true
+          schema:
+            $ref: '#/definitions/Login'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/User'
+
+  /logout:
+    delete:
+      tags:
+        - logout
+      summary: Выход из профиля
+      description: Выход из профиля
+      responses:
+        200:
+          description: OK
+
+  /profile:
+    post:
+      tags:
+        - profile
+      summary: Создать профиль
+      description: Создание профиля пользователя
+      parameters:
+        - name: user
+          in: body
+          description: Данные о юзере
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/User'
+  /profile/authorized:
+    get:
+      tags:
+        - profile
+      summary: Проверка авторизации
+      description: Информация о том, авторизован ли пользователь
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/UserAuthorized'
+
+  /profile/{id}:
+    get:
+      tags:
+        - profile
+      summary: Информация о пользователе
+      description: Получить всю информация о пользователе
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор пользователя
+          required: true
+          type: number
+          format: uint64
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/User'
+    put:
+      tags:
+        - profile
+      summary: Изменить профиль
+      description: Изменение профиля
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор пользователя
+          required: true
+          type: number
+          format: uint64
+        - name: user
+          in: body
+          description: измененные данные пользователя
+          required: true
+          schema:
+            $ref: '#/definitions/UserChange'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/User'
+  /profile/{id}/specialize:
+    post:
+      tags:
+        - profile
+      summary: Добавить специализацию
+      description: Добавить пользователю новую специализацию
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор пользователя
+          required: true
+          type: number
+          format: uint64
+        - name: specialize
+          in: body
+          description: новая специализация
+          required: true
+          schema:
+            $ref: '#/definitions/Specialize'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/User'
+    delete:
+      tags:
+        - profile
+      summary: Удалить специализацию
+      description: Удалить специализацию у пользователя
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор пользователя
+          required: true
+          type: number
+          format: uint64
+      responses:
+        200:
+          description: Ok
+  /profile/avatar:
+    post:
+      tags:
+        - profile
+      summary: Загрузка фотки
+      description: Загрузка фотографии пользователя
+      parameters:
+        - name: avatar
+          in: body
+          description: аватарка пользователя
+          schema:
+            $ref: '#/definitions/UserImg'
+
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/UserImg'
+
+  /order:
+    post:
+      tags:
+        - order
+      summary: Создать заказ
+      description: Создание заказа
+      parameters:
+        - name: order
+          in: body
+          description: Заказ
+          schema:
+            $ref: '#/definitions/Order'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Order'
+    get:
+      tags:
+        - order
+      summary: Получить все заказы
+      description: Получить все актуальные заказы
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Orders'
+  /order/{id}:
+    get:
+      tags:
+        - order
+      summary: Информация о заказе
+      description: Получить всю информацию о заказе
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор заказа
+          required: true
+          type: number
+          format: uint64
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Order'
+    put:
+      tags:
+        - order
+      summary: Изменить заказ
+      description: Изменить текущий заказ
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор заказа
+          required: true
+          type: number
+          format: uint64
+        - name: order
+          in: body
+          description: новые данные о заказе
+          required: true
+          schema:
+            $ref: '#/definitions/OrderChange'
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Order'
+    delete:
+      tags:
+        - order
+      summary: Удалить заказ
+      description: Удалить заказ
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор заказа
+          required: true
+          type: number
+          format: uint64
+      responses:
+        200:
+          description: Ok
+  /order/{id}/response:
+    post:
+      tags:
+        - order
+      summary: Добавить отклик
+      description: Добавить отклик на заказ
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор заказа
+          required: true
+          type: number
+          format: uint64
+        - name: reponse
+          in: body
+          description: информация об отклике
+          schema:
+            $ref: '#/definitions/Response'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Response'
+    put:
+      tags:
+        - order
+      summary: Изменить отклик
+      description: Изменить отклик на заказ
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор заказа
+          required: true
+          type: number
+          format: uint64
+        - name: reponse
+          in: body
+          description: информация об отклике
+          schema:
+            $ref: '#/definitions/Response'
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Response'
+    delete:
+      tags:
+        - order
+      summary: Удалить отклик
+      description: Удалить отклик текущего пользователя на заказ
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор заказа
+          required: true
+          type: number
+          format: uint64
+      responses:
+        200:
+          description: Ok
+    get:
+      tags:
+        - order
+      summary: Все отклики на заказ
+      description: Получить все отклики на текущий заказ
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор заказа
+          required: true
+          type: number
+          format: uint64
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Responses'
+  /order/profile/{id}:
+    get:
+      tags:
+        - order
+      summary: Все заказы пользователя
+      description: Получить все заказы текущего пользователя
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор пользователя
+          required: true
+          type: number
+          format: uint64
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Orders'
+  /order/{id}/select:
+    post:
+      tags:
+        - order
+      summary: Выбрать исполнителя
+      description: Выбрать исполнителя на заказ
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор заказа
+          required: true
+          type: number
+          format: uint64
+        - name: executor
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/SelectExecutor'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/SelectExecutor'
+    delete:
+      tags:
+        - order
+      summary: Удалить исполнителя
+      description: Удалить выбранного на заказ исполнителя
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор заказа
+          required: true
+          type: number
+          format: uint64
+      responses:
+        200:
+          description: Ok
+  /vacancy:
+    post:
+      tags:
+        - vacancy
+      summary: Создать вакансию
+      description: Создать вакансию
+      parameters:
+        - name: vacancy
+          in: body
+          description: информацию о вакансии
+          required: true
+          schema:
+            $ref: '#/definitions/Vacancy'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Vacancy'
+    get:
+      tags:
+        - vacancy
+      summary: Получить все вакансии
+      description: Получить все актуальные вакансии
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Vacancies'
+  /vacancy/{id}:
+    get:
+      tags:
+        - vacancy
+      summary: Информация о вакансии
+      description: Получить всю информацию о вакансии
+      parameters:
+        - name: id
+          in: path
+          description: айди вакансии
+          type: number
+          required: true
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Vacancy'
+    put:
+      tags:
+        - vacancy
+      summary: Изменить вакансию
+      description: Изменить текущую вакансию
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор вакансии
+          required: true
+          type: number
+          format: uint64
+        - name: order
+          in: body
+          description: новые данные о вакансии
+          required: true
+          schema:
+            $ref: '#/definitions/VacancyChange'
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Vacancy'
+    delete:
+      tags:
+        - vacancy
+      summary: Удалить вакансию
+      description: Удалить вакансию
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор вакансии
+          required: true
+          type: number
+          format: uint64
+      responses:
+        200:
+          description: Ok
+  /vacancy/{id}/response:
+    post:
+      tags:
+        - vacancy
+      summary: Добавить отклик
+      description: Добавить отклик на вакансию
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор вакансии
+          required: true
+          type: number
+          format: uint64
+        - name: response
+          in: body
+          description: информация об отклике
+          schema:
+            $ref: '#/definitions/Response'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Response'
+    put:
+      tags:
+      - vacancy
+      summary: Изменить отклик
+      description: Изменить отклик на вакансию
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор вакансии
+          required: true
+          type: number
+          format: uint64
+        - name: response
+          in: body
+          description: информация об отклике
+          schema:
+            $ref: '#/definitions/Response'
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Response'
+    delete:
+      tags:
+        - vacancy
+      summary: Удалить отклик
+      description: Удалить отклик текущего пользователя на вакансию
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор вакансии
+          required: true
+          type: number
+          format: uint64
+      responses:
+        200:
+          description: Ok
+    get:
+      tags:
+        - vacancy
+      summary: Все отклики на вакансию
+      description: Получить все отклики на текущюю вакансию
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор вакансии
+          required: true
+          type: number
+          format: uint64
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Responses'
+  /vacancy/profile/{id}:
+    get:
+      tags:
+        - vacancy
+      summary: Все вакансии пользователя
+      description: Получить все вакансии текущего пользователя
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор пользователя
+          required: true
+          type: number
+          format: uint64
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Vacancies'
+  /vacancy/{id}/select:
+    post:
+      tags:
+        - vacancy
+      summary: Выбрать исполнителя
+      description: Выбрать исполнителя на вакансию
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор вакансии
+          required: true
+          type: number
+          format: uint64
+        - name: executor
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/SelectExecutor'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/SelectExecutor'
+    delete:
+      tags:
+        - vacancy
+      summary: Удалить исполнителя
+      description: Удалить выбранного на вакансию исполнителя
+      parameters:
+        - name: id
+          in: path
+          description: индентификатор вакансии
+          required: true
+          type: number
+          format: uint64
+      responses:
+        200:
+          description: Ok
+
+definitions:
+  User:
+    type: object
+    required:
+      - email
+      - login
+      - name_surname
+      - about
+      - specializes
+    properties:
+      id:
+        type: number
+        example: 228
+        readOnly: true
+      email:
+        type: string
+        example: "kek@mem.ru"
+      login:
+        type: string
+        example: "AlexDarkStalker98"
+      name_surname:
+        type: string
+        example: "Глад Вакалас"
+      about:
+        type: string
+        example: "Я пожилая няшка"
+      executor:
+        type: boolean
+        example: true
+        readOnly: true
+      specializes:
+        type: array
+        items:
+          type: string
+        example:
+          - "Back"
+          - "Front"
+      img:
+        type: string
+        example: "findreelancer.ru/images/kek.jpg"
+        readOnly: true
+      rating:
+        type: integer
+        example: 322
+        readOnly: true
+  Order:
+    type: object
+    properties:
+      id:
+        type: number
+        example: 228
+        readOnly: true
+      order_name:
+        type: string
+        example: "Сверстать сайт"
+      category:
+        type: string
+        example: "Back"
+      customer_id:
+        type: number
+        example: 322
+      executor_id:
+        type: number
+        example: 42
+        readOnly: true
+      deadline:
+        type: number
+        example: 1617004533
+        format: Unix-Time
+      budget:
+        type: number
+        example: 1488
+      desctiption:
+        type: string
+        example: "Pomogite sdelat API"
+      user_login:
+        type: string
+        example: "AlexDarkStalker98"
+        readOnly: true
+      user_img:
+        type: string
+        example: "findreelancer.ru/images/kek.jpg"
+        readOnly: true
+  OrderChange:
+    type: object
+    properties:
+      order_name:
+        type: string
+        example: "Сверстать сайт"
+      category:
+        type: string
+        example: "Back"
+      desctiption:
+        type: string
+        example: "Pomogite sdelat API"
+      budget:
+        type: number
+        example: 1488
+      deadline:
+        type: number
+        example: 1617004533
+        format: Unix-Time
+  SelectExecutor:
+    type: object
+    properties:
+      id:
+        type: number
+        format: uint64
+        example: 228
+        readOnly: true
+      executor_id:
+        type: number
+        format: uint64
+        example: 322
+  Orders:
+    type: array
+    items:
+      $ref: '#/definitions/Order'
+  Response:
+    type: object
+    properties:
+      id:
+        type: string
+        example: 228
+        readOnly: true
+      post_id:
+        type: string
+        example: 322
+        readOnly: true
+      user_id:
+        type: string
+        example: 24
+      rate:
+        type: number
+        example: 1488
+      text:
+        type: string
+        example: "Самый лучший отклик"
+      user_login:
+        type: string
+        example: "AlexDarkStalker98"
+        readOnly: true
+      user_img:
+        type: string
+        example: "findreelancer.ru/images/kek.jpg"
+        readOnly: true
+      time:
+        type: number
+        format: Unix-time
+        example: 1617952689
+      order_response:
+        type: boolean
+        example: true
+        readOnly: true
+      vacancy_response:
+        type: boolean
+        example: false
+        readOnly: true
+  Responses:
+    type: array
+    items:
+      $ref: '#/definitions/Response'
+  Vacancy:
+    type: object
+    properties:
+      id:
+        type: number
+        example: 228
+        readOnly: true
+      customer_id:
+        type: number
+        format: uint64
+        example: 228
+      category:
+        type: string
+        example: "Back"
+      vacancy_name:
+        type: string
+        example: "Junior фронтенд разработчик"
+      description:
+        type: string
+        example: "В супер компанию требуется джун фронтенд разработчик"
+      salary:
+        type: number
+        example: 1488228
+      user_login:
+        type: string
+        example: "AlexMem228"
+        readOnly: true
+      user_img:
+        type: string
+        example: "findreelancer.ru/images/kek.jpg"
+        readOnly: true
+  Vacancies:
+    type: array
+    items:
+      $ref: '#/definitions/Vacancy'
+  VacancyChange:
+    type: object
+    properties:
+      vacancy_name:
+        type: string
+        example: "Junior фронтенд разработчик"
+      category:
+        type: string
+        example: "Back"
+      desctiption:
+        type: string
+        example: "В супер компанию требуется джун"
+      salary:
+        type: number
+        example: 1488228
+  Login:
+    type: object
+    properties:
+      email:
+        type: string
+        example: "kek@mem.ru"
+      password:
+        type: string
+        example: "123456789"
+  UserChange:
+    type: object
+    required:
+      - old_password
+    properties:
+      old_password:
+        type: string
+        example: 123456789
+      login:
+        type: string
+        example: "AlexdarkStalker98"
+      name_surname:
+        type: string
+        example: "Глад Валакас"
+      about:
+        type: string
+        example: "Я старая няшка, пожилая я стесняшка. Я енотик полоскун, полоскаю свой"
+      new_password:
+        type: string
+        example: "alex1488"
+  Specialize:
+    type: object
+    required:
+      - name
+    properties:
+      id:
+        type: number
+        format: uint64
+        readOnly: true
+        example: 228
+      name:
+        type: string
+        example: "Back"
+  UserImg:
+    type: object
+    required:
+      - img
+    properties:
+      id:
+        type: number
+        format: uint64
+        example: 228
+        readOnly: true
+        description: "user id"
+      img:
+        type: string
+        format: Base64
+        example: "/9j/4AAQSkZJRgABAQEASABIAAD/"
+
+      # Added by API Auto Mocking Plugin
+  UserAuthorized:
+    type: object
+    properties:
+      id:
+        type: number
+        format: uint64
+        example: 228
+        readOnly: true
+        description: "user id"
+      executor:
+        type: boolean
+        example: true
+        readOnly: true
+host: findfreelancer.ru
+basePath: /
+schemes:
+  - https

@@ -24,6 +24,11 @@ func (u *UseCase) SetImage(user models.UserImg) (models.UserImg, error) {
 		return models.UserImg{}, err
 	}
 
+	imgUrl, err = imgcreator.CropImg(imgUrl)
+	//TODO: обработка ошибки
+	if err != nil {
+		return models.UserImg{}, err
+	}
 	_, err = u.UserRepo.SetImgUrl(context.Background(), &api.SetImgUrlRequest{Id: user.ID, ImgIrl: imgUrl})
 	//TODO: обработка ошибки
 	if err != nil {
