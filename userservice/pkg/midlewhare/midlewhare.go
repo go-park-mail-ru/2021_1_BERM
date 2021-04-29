@@ -22,6 +22,7 @@ func LoggingRequest(next http.Handler) http.Handler {
 	})
 }
 
+
 func CorsMiddleware(origin []string) *cors.Cors {
 	return cors.New(cors.Options{
 		AllowedOrigins:   origin,

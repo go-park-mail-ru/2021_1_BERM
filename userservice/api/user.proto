@@ -7,7 +7,7 @@ service User{
   rpc AuthorizationUser(AuthorizationUserRequest) returns(UserResponse){}
   rpc GetUserById(UserRequest) returns (UserInfoResponse){}
   rpc GetSpecializeByUserId(UserRequest) returns(GetUserSpecializeResponse){}
-  rpc SetImgUrl(SetImgUrlRequest) returns (UserInfoResponse){}
+  rpc SetImgUrl(SetImgUrlRequest) returns (SetImgUrlResponse){}
 }
 
 message NewUserRequest{
@@ -23,8 +23,6 @@ message NewUserRequest{
 message UserResponse{
   uint64 id = 1;
   bool executor = 2;
-//  optional uint64 statusCode = 3;
-//  optional string errorDescription = 4;
 }
 
 message AuthorizationUserRequest{
@@ -48,18 +46,18 @@ message UserInfoResponse{
   bool executor = 6;
   string img = 7;
   int32 rating = 8;
-//  optional uint64 statusCode = 9;
-//  optional string errorDescription = 10;
 }
 
 message GetUserSpecializeResponse{
   repeated string specializes = 1;
-//  optional uint64 statusCode = 2;
-//  optional string errorDescription = 3;
 }
 
 message SetImgUrlRequest{
   uint64 id = 1;
   string imgIrl = 2;
   uint64 reqId = 3;
+}
+
+message SetImgUrlResponse{
+  bool successfully = 1;
 }

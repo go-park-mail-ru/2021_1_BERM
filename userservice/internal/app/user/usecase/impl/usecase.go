@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"context"
 	"github.com/pkg/errors"
 	"user/Error"
 	"user/internal/app/models"
@@ -13,33 +14,39 @@ type UseCase struct {
 	userRepository       repository.Repository
 	specializeRepository specialize.Repository
 }
-
-func (useCase *UseCase) Create(user models.NewUser) (map[string]interface{}, error) {
+func (useCase *UseCase) SetImg(ID uint64, img string, ctx context.Context) error{
+	err := useCase.userRepository.SetUserImg(ID, img, ctx)
+	if err != nil{
+		return err
+	}
+	return err
+}
+func (useCase *UseCase) Create(user models.NewUser, ctx context.Context) (map[string]interface{}, error) {
 	if err := tools.ValidationCreateUser(&user); err != nil {
 		return nil, errors.Wrap(err, "Validation error")
 	}
 	if err := tools.BeforeCreate(&user); err != nil {
 		return nil, errors.Wrap(err, "Encrypt password error")
 	}
-	ID, err := useCase.userRepository.Create(&user)
+	ID, err := useCase.userRepository.Create(&user, ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error in user repository.")
 	}
 
 	for _, spec := range user.Specializes {
-		specID, err := useCase.specializeRepository.FindByName(spec)
+		specID, err := useCase.specializeRepository.FindByName(spec, ctx)
 		if err != nil {
 			newErr := &Error.Error{}
 			if errors.As(err, &newErr) {
 				if !newErr.InternalError {
-					specID, err = useCase.specializeRepository.Create(spec)
+					specID, err = useCase.specializeRepository.Create(spec, ctx)
 					if err != nil {
 						return nil, errors.Wrap(err, "Error in data sourse")
 					}
 				}
 			}
 		}
-		err = useCase.specializeRepository.AssociateSpecializationWithUser(specID, ID)
+		err = useCase.specializeRepository.AssociateSpecializationWithUser(specID, ID, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -51,8 +58,8 @@ func (useCase *UseCase) Create(user models.NewUser) (map[string]interface{}, err
 	}, nil
 }
 
-func (useCase *UseCase) Verification(email string, password string) (map[string]interface{}, error) {
-	user, err := useCase.userRepository.FindUserByEmail(email)
+func (useCase *UseCase) Verification(email string, password string, ctx context.Context) (map[string]interface{}, error) {
+	user, err := useCase.userRepository.FindUserByEmail(email, ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error in user repository.")
 	}
@@ -72,13 +79,13 @@ func (useCase *UseCase) Verification(email string, password string) (map[string]
 	}, nil
 }
 
-func (useCase *UseCase) GetById(ID uint64) (*models.UserInfo, error) {
-	user, err := useCase.userRepository.FindUserByID(ID)
+func (useCase *UseCase) GetById(ID uint64, ctx context.Context) (*models.UserInfo, error) {
+	user, err := useCase.userRepository.FindUserByID(ID, ctx)
 	if err != nil {
 		return nil, err
 	}
 	if user.Executor {
-		user.Specializes, err = useCase.specializeRepository.FindByUserID(user.ID)
+		user.Specializes, err = useCase.specializeRepository.FindByUserID(user.ID, ctx)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error in specialize repository.")
 		}
@@ -86,12 +93,12 @@ func (useCase *UseCase) GetById(ID uint64) (*models.UserInfo, error) {
 	return user, nil
 }
 
-func (useCase *UseCase) Change(user models.ChangeUser) (map[string]interface{}, error) {
+func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (map[string]interface{}, error) {
 	err := tools.ValidationChangeUser(&user)
 	if err != nil {
 		return nil, err
 	}
-	oldUser, err := useCase.userRepository.FindUserByID(user.ID)
+	oldUser, err := useCase.userRepository.FindUserByID(user.ID, ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "User db error")
 	}
@@ -140,24 +147,24 @@ func (useCase *UseCase) Change(user models.ChangeUser) (map[string]interface{}, 
 	for _, spec := range oldUser.Specializes {
 		user.Specializes = append(user.Specializes, spec)
 	}
-	err = useCase.userRepository.Change(&user)
+	err = useCase.userRepository.Change(&user, ctx)
 	if err != nil {
 		return nil, err
 	}
 	for _, spec := range user.Specializes {
-		specID, err := useCase.specializeRepository.FindByName(spec)
+		specID, err := useCase.specializeRepository.FindByName(spec, ctx)
 		if err != nil {
 			newErr := &Error.Error{}
 			if errors.As(err, newErr) {
 				if !newErr.InternalError {
-					specID, err = useCase.specializeRepository.Create(spec)
+					specID, err = useCase.specializeRepository.Create(spec, ctx)
 					if err != nil {
 						return nil, errors.Wrap(err, "Error in data sourse")
 					}
 				}
 			}
 		}
-		err = useCase.specializeRepository.AssociateSpecializationWithUser(specID, oldUser.ID)
+		err = useCase.specializeRepository.AssociateSpecializationWithUser(specID, oldUser.ID, ctx)
 		if err != nil {
 			return nil, err
 		}

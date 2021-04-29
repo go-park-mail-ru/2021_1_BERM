@@ -22,7 +22,7 @@ type UserClient interface {
 	AuthorizationUser(ctx context.Context, in *AuthorizationUserRequest, opts ...grpc.CallOption) (*UserResponse, error)
 	GetUserById(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*UserInfoResponse, error)
 	GetSpecializeByUserId(ctx context.Context, in *UserRequest, opts ...grpc.CallOption) (*GetUserSpecializeResponse, error)
-	SetImgUrl(ctx context.Context, in *SetImgUrlRequest, opts ...grpc.CallOption) (*UserInfoResponse, error)
+	SetImgUrl(ctx context.Context, in *SetImgUrlRequest, opts ...grpc.CallOption) (*SetImgUrlResponse, error)
 }
 
 type userClient struct {
@@ -69,8 +69,8 @@ func (c *userClient) GetSpecializeByUserId(ctx context.Context, in *UserRequest,
 	return out, nil
 }
 
-func (c *userClient) SetImgUrl(ctx context.Context, in *SetImgUrlRequest, opts ...grpc.CallOption) (*UserInfoResponse, error) {
-	out := new(UserInfoResponse)
+func (c *userClient) SetImgUrl(ctx context.Context, in *SetImgUrlRequest, opts ...grpc.CallOption) (*SetImgUrlResponse, error) {
+	out := new(SetImgUrlResponse)
 	err := c.cc.Invoke(ctx, "/User/SetImgUrl", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ type UserServer interface {
 	AuthorizationUser(context.Context, *AuthorizationUserRequest) (*UserResponse, error)
 	GetUserById(context.Context, *UserRequest) (*UserInfoResponse, error)
 	GetSpecializeByUserId(context.Context, *UserRequest) (*GetUserSpecializeResponse, error)
-	SetImgUrl(context.Context, *SetImgUrlRequest) (*UserInfoResponse, error)
+	SetImgUrl(context.Context, *SetImgUrlRequest) (*SetImgUrlResponse, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -106,7 +106,7 @@ func (UnimplementedUserServer) GetUserById(context.Context, *UserRequest) (*User
 func (UnimplementedUserServer) GetSpecializeByUserId(context.Context, *UserRequest) (*GetUserSpecializeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSpecializeByUserId not implemented")
 }
-func (UnimplementedUserServer) SetImgUrl(context.Context, *SetImgUrlRequest) (*UserInfoResponse, error) {
+func (UnimplementedUserServer) SetImgUrl(context.Context, *SetImgUrlRequest) (*SetImgUrlResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetImgUrl not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
