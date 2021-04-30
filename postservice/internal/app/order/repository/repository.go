@@ -81,7 +81,7 @@ func (r *Repository) Create(order models.Order) (uint64, error) {
 }
 
 func (r *Repository) Change(order models.Order) error {
-	tx, err:= r.db.Begin()
+	tx, err := r.db.Begin()
 	if err != nil {
 		return postgresql.WrapPostgreError(err)
 	}
@@ -117,7 +117,7 @@ func (r *Repository) FindByID(id uint64) (*models.Order, error) {
 
 func (r *Repository) FindByExecutorID(executorID uint64) ([]models.Order, error) {
 	var orders []models.Order
-	err := r.db.Select(&orders, selectOrderByExecutorID, executorID);
+	err := r.db.Select(&orders, selectOrderByExecutorID, executorID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -154,6 +154,7 @@ func (r *Repository) UpdateExecutor(order models.Order) error {
 		return postgresql.WrapPostgreError(err)
 	}
 	if err := tx.Commit(); err != nil {
-		return postgresql.WrapPostgreError(err)	}
+		return postgresql.WrapPostgreError(err)
+	}
 	return nil
 }

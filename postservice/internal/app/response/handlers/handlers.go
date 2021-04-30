@@ -39,8 +39,8 @@ func (h *Handlers) CreatePostResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.PostID = id
-	response.VacancyResponse = r.URL.String() == "/vacancy/" + strconv.FormatUint(id, 10)+ "/response"
-	response.OrderResponse = r.URL.String() == "/order/" + strconv.FormatUint(id, 10)+ "/response"
+	response.VacancyResponse = r.URL.String() == "/vacancy/"+strconv.FormatUint(id, 10)+"/response"
+	response.OrderResponse = r.URL.String() == "/order/"+strconv.FormatUint(id, 10)+"/response"
 	response, err = h.useCase.Create(*response)
 	if err != nil {
 		httpErr := &Error.Error{}
@@ -66,8 +66,8 @@ func (h *Handlers) GetAllPostResponses(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
-	vacancyResponse := r.URL.String() == "/vacancy/" + strconv.FormatUint(id, 10)+ "/response"
-	orderResponse := r.URL.String() == "/order/" + strconv.FormatUint(id, 10)+ "/response"
+	vacancyResponse := r.URL.String() == "/vacancy/"+strconv.FormatUint(id, 10)+"/response"
+	orderResponse := r.URL.String() == "/order/"+strconv.FormatUint(id, 10)+"/response"
 	responses, err := h.useCase.FindByPostID(id, orderResponse, vacancyResponse)
 	if err != nil {
 		httpErr := &Error.Error{}
@@ -105,8 +105,8 @@ func (h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
-	response.VacancyResponse = r.URL.String() == "/vacancy/" + strconv.FormatUint(response.PostID, 10)+ "/response"
-	response.OrderResponse = r.URL.String() == "/order/" + strconv.FormatUint(response.PostID, 10)+ "/response"
+	response.VacancyResponse = r.URL.String() == "/vacancy/"+strconv.FormatUint(response.PostID, 10)+"/response"
+	response.OrderResponse = r.URL.String() == "/order/"+strconv.FormatUint(response.PostID, 10)+"/response"
 	responses, err := h.useCase.Change(*response)
 
 	if err != nil {
@@ -141,8 +141,8 @@ func (h *Handlers) DelPostResponse(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
-	response.VacancyResponse = r.URL.String() == "/vacancy/" + strconv.FormatUint(response.PostID, 10)+ "/response"
-	response.OrderResponse = r.URL.String() == "/order/" + strconv.FormatUint(response.PostID, 10)+ "/response"
+	response.VacancyResponse = r.URL.String() == "/vacancy/"+strconv.FormatUint(response.PostID, 10)+"/response"
+	response.OrderResponse = r.URL.String() == "/order/"+strconv.FormatUint(response.PostID, 10)+"/response"
 	err = h.useCase.Delete(*response)
 
 	if err != nil {

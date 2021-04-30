@@ -17,13 +17,14 @@ type Handler struct {
 	profileUseCase usecase.UseCase
 }
 
-func New(sessionUseCase session.UseCase, profileUseCase usecase.UseCase) *Handler{
+func New(sessionUseCase session.UseCase, profileUseCase usecase.UseCase) *Handler {
 	return &Handler{
 		sessionUseCase: sessionUseCase,
 		profileUseCase: profileUseCase,
 	}
 }
-func (h* Handler) RegistrationProfile(w http.ResponseWriter, r *http.Request){
+
+func (h *Handler) RegistrationProfile(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 	reqId := rand.Uint64()
 	ctx := context.WithValue(context.Background(), "ReqID", reqId)
@@ -33,12 +34,12 @@ func (h* Handler) RegistrationProfile(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	resp, err := h.profileUseCase.Create(*u, ctx)
-	if err != nil{
+	if err != nil {
 		utils.RespondError(w, reqId, err, http.StatusBadRequest)
 		return
 	}
-	sess, err := h.sessionUseCase.Create(resp.ID, resp.Executor, ctx);
-	if err != nil{
+	sess, err := h.sessionUseCase.Create(resp.ID, resp.Executor, ctx)
+	if err != nil {
 		utils.RespondError(w, reqId, err, http.StatusBadRequest)
 		return
 	}
@@ -46,8 +47,7 @@ func (h* Handler) RegistrationProfile(w http.ResponseWriter, r *http.Request){
 	utils.Respond(w, reqId, http.StatusAccepted, resp)
 }
 
-
-func (h* Handler) AuthorisationProfile(w http.ResponseWriter, r *http.Request){
+func (h *Handler) AuthorisationProfile(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 	reqId := rand.Uint64()
 	ctx := context.WithValue(context.Background(), "ReqID", reqId)
@@ -57,12 +57,12 @@ func (h* Handler) AuthorisationProfile(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	resp, err := h.profileUseCase.Authentication(u.Email, u.Password, ctx)
-	if err != nil{
+	if err != nil {
 		utils.RespondError(w, reqId, err, http.StatusBadRequest)
 		return
 	}
-	sess, err := h.sessionUseCase.Create(resp.ID, resp.Executor, ctx);
-	if err != nil{
+	sess, err := h.sessionUseCase.Create(resp.ID, resp.Executor, ctx)
+	if err != nil {
 		utils.RespondError(w, reqId, err, http.StatusBadRequest)
 		return
 	}

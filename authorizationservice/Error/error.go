@@ -2,7 +2,7 @@ package Error
 
 type Error struct {
 	InternalError    bool
-	Err             error
+	Err              error
 	ErrorDescription map[string]interface{}
 }
 

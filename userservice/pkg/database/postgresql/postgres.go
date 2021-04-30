@@ -31,32 +31,31 @@ func (p *Postgres) Close() error {
 	return err
 }
 
-
-func WrapPostgreError(err error) error{
+func WrapPostgreError(err error) error {
 	pqErr := &pq.Error{}
-	if errors.As(err, &pqErr){
-		if pqErr.Code == PostgreDuplicateErrorCode{
+	if errors.As(err, &pqErr) {
+		if pqErr.Code == PostgreDuplicateErrorCode {
 			return &Error.Error{
-				Err: err,
+				Err:           err,
 				InternalError: false,
 				ErrorDescription: map[string]interface{}{
-					"Err" : err.Error(),
+					"Err": err.Error(),
 				},
 			}
 		}
 	}
-	if errors.Is(err, sql.ErrNoRows){
+	if errors.Is(err, sql.ErrNoRows) {
 		return &Error.Error{
-			Err: err,
+			Err:           err,
 			InternalError: false,
 			ErrorDescription: map[string]interface{}{
-				"Err" : err.Error(),
+				"Err": err.Error(),
 			},
 		}
 	}
 	return &Error.Error{
-		Err: err,
-		InternalError: true,
+		Err:              err,
+		InternalError:    true,
 		ErrorDescription: Error.InternalServerErrorDescription,
 	}
 }

@@ -41,5 +41,3 @@ func LoggingError(reqID uint64, err error) {
 		"error":      err,
 	}).Error()
 }
-
-

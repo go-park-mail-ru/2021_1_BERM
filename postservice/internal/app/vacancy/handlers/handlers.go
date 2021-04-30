@@ -181,7 +181,7 @@ func (h *Handlers) GetAllUserVacancies(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 	defer func(Body io.ReadCloser) {
@@ -217,7 +217,7 @@ func (h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) DeleteExecutor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 

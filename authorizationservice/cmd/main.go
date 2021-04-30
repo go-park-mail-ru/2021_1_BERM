@@ -11,7 +11,7 @@ import (
 	"authorizationservice/internal/session/repository/tarantoolrepository"
 	"authorizationservice/internal/session/usecase/impl"
 	"authorizationservice/pkg/logger"
-	"authorizationservice/pkg/midlewhare"
+	"authorizationservice/pkg/middleware"
 	"flag"
 	"github.com/BurntSushi/toml"
 	"github.com/gorilla/mux"
@@ -46,16 +46,14 @@ func main() {
 		Timeout:       500 * time.Millisecond,
 		Reconnect:     1 * time.Second,
 		MaxReconnects: 3,
-		//FIXME поставить нормального юзера
-		User:          "test",
-		Pass:          "test",
+		User: "guest",
 	}
 	conn, err := tarantool.Connect(config.DatabaseURL, opts)
 	defer conn.Close()
 	sessionRepository := tarantoolrepository.New(conn)
 
-	//FIXME написать адрес
-	grpcConn, err := grpc.Dial("", grpc.WithInsecure(), grpc.WithBlock())
+	// grpc connect to UserService
+	grpcConn, err := grpc.Dial(":8081", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -69,21 +67,26 @@ func main() {
 	sessionHandler := sessHandler.New(sessionUseCase)
 	profileHandler := profHandler.New(sessionUseCase, profileUseCase)
 
-	router := mux.NewRouter()
-	router.Use(midlewhare.LoggingRequest)
-	router.HandleFunc("/profile/authorized", sessionHandler.CheckLogin).Methods(http.MethodGet)
-	router.HandleFunc("/logout", sessionHandler.CheckLogin).Methods(http.MethodPut)
-	router.HandleFunc("/profile", profileHandler.RegistrationProfile).Methods(http.MethodPost)
-	router.HandleFunc("/login", sessionHandler.LogOut).Methods(http.MethodPost)
+	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
-	c := midlewhare.CorsMiddleware(config.Origin)
+	router := mux.NewRouter()
+	router.Use(middleware.LoggingRequest)
+	router.HandleFunc("/logout", sessionHandler.LogOut).Methods(http.MethodDelete)
+	router.HandleFunc("/profile", profileHandler.RegistrationProfile).Methods(http.MethodPost)
+	router.HandleFunc("/login", profileHandler.AuthorisationProfile).Methods(http.MethodPost)
+
+	profile := router.PathPrefix("/profile").Subrouter()
+	profile.Use(csrfMiddleware)
+	profile.HandleFunc("/authorized", sessionHandler.CheckLogin).Methods(http.MethodGet)
+
+	c := middleware.CorsMiddleware(config.Origin)
 	server := &http.Server{
 		Addr:    config.BindAddr,
 		Handler: c.Handler(router),
 	}
 
 	go func() {
-		log.Println("HTTP server start")
+		log.Println("HTTP server start on port", config.BindAddr)
 		if err := server.ListenAndServe(); err != nil {
 			log.Fatal(err)
 		}
@@ -92,12 +95,12 @@ func main() {
 	s := grpc.NewServer()
 	srv := handlers.NewGRPCServer(sessionUseCase)
 	api.RegisterSessionServer(s, srv)
-	l, err := net.Listen("tcp", ":8081")
+	l, err := net.Listen("tcp", ":8085")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("Server start")
+	log.Println("GRPC server start on port :8085")
 	if err := s.Serve(l); err != nil {
 		log.Fatal(err)
 	}

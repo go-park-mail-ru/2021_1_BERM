@@ -5,7 +5,6 @@ import (
 	"context"
 )
 
-
 type Repository interface {
 	Store(session *models.Session, ctx context.Context) error
 	Get(sessionID string, ctx context.Context) (*models.Session, error)

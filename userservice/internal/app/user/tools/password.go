@@ -8,7 +8,7 @@ import (
 	"user/internal/app/models"
 )
 
-const(
+const (
 	saltLength = 8
 )
 
@@ -25,14 +25,14 @@ func BeforeCreate(user *models.NewUser) error {
 	_, err := rand.Read(salt)
 	if err != nil {
 		return &Error.Error{
-			Err: err,
-			InternalError: true,
+			Err:              err,
+			InternalError:    true,
 			ErrorDescription: Error.InternalServerErrorDescription,
 		}
 	}
 
 	user.EncryptPassword = hashPass(salt, user.Password)
-	if user.Specializes != nil{
+	if user.Specializes != nil {
 		user.Executor = true
 	}
 	return nil
@@ -43,24 +43,20 @@ func BeforeChange(user *models.ChangeUser) error {
 	_, err := rand.Read(salt)
 	if err != nil {
 		return &Error.Error{
-			Err: err,
-			InternalError: true,
+			Err:              err,
+			InternalError:    true,
 			ErrorDescription: Error.InternalServerErrorDescription,
 		}
 	}
 
 	user.EncryptPassword = hashPass(salt, user.Password)
-	if user.Specializes != nil{
+	if user.Specializes != nil {
 		user.Executor = true
 	}
 	return nil
 }
 
-
 func hashPass(salt []byte, plainPassword string) []byte {
 	hashedPass := argon2.IDKey([]byte(plainPassword), []byte(salt), 1, 64*1024, 4, 32)
 	return append(salt, hashedPass...)
 }
-
-
-

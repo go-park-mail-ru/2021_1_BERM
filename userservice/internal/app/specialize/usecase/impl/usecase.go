@@ -9,31 +9,31 @@ type UseCase struct {
 	specializeRepository repository.Repository
 }
 
-func New(specializeRepository repository.Repository)  *UseCase{
+func New(specializeRepository repository.Repository) *UseCase {
 	return &UseCase{
 		specializeRepository: specializeRepository,
 	}
 }
 
-func (useCase* UseCase)Create(specialize string, ctx context.Context) (uint64, error){
+func (useCase *UseCase) Create(specialize string, ctx context.Context) (uint64, error) {
 	ID, err := useCase.specializeRepository.Create(specialize, ctx)
-	if err != nil{
+	if err != nil {
 		return 0, err
 	}
 	return ID, err
 }
 
-func (useCase* UseCase)Remove(ID uint64, ctx context.Context) error{
+func (useCase *UseCase) Remove(ID uint64, ctx context.Context) error {
 	err := useCase.Remove(ID, ctx)
-	if err != nil{
-		return  err
+	if err != nil {
+		return err
 	}
 	return err
 }
 
-func(useCase* UseCase)FindByUseID(ID uint64, ctx context.Context) ([]string, error){
+func (useCase *UseCase) FindByUseID(ID uint64, ctx context.Context) ([]string, error) {
 	spec, err := useCase.specializeRepository.FindByUserID(ID, ctx)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	return spec, err

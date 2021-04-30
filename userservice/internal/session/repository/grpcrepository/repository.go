@@ -11,13 +11,13 @@ type Repository struct {
 	client api.SessionClient
 }
 
-func New(client api.SessionClient) *Repository{
+func New(client api.SessionClient) *Repository {
 	return &Repository{
 		client: client,
 	}
 }
 
-func (r * Repository)Check(sessionID string, ctx context.Context) (*models.UserBasicInfo, error){
+func (r *Repository) Check(sessionID string, ctx context.Context) (*models.UserBasicInfo, error) {
 	timeOutCtx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	u, err := r.client.Check(timeOutCtx, &api.SessionCheckRequest{
@@ -31,4 +31,3 @@ func (r * Repository)Check(sessionID string, ctx context.Context) (*models.UserB
 		Executor: u.Executor,
 	}, err
 }
-

@@ -12,7 +12,7 @@ import (
 	handlers2 "user/internal/session/handlers"
 	"user/internal/session/repository/grpcrepository"
 	impl3 "user/internal/session/usecase/impl"
-	"user/pkg/midlewhare"
+	"user/pkg/middleware"
 
 	"log"
 	"net/http"
@@ -62,7 +62,8 @@ func main() {
 		Db: postgres.GetPostgres(),
 	}
 
-	grpcConn, err := grpc.Dial("", grpc.WithInsecure(), grpc.WithBlock())
+	//connect to auth service
+	grpcConn, err := grpc.Dial("8085", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -72,28 +73,30 @@ func main() {
 
 	userUseCase := impl.New(userRepository, specializeRepository)
 	specializeUseCase := impl2.New(specializeRepository)
-	sessuinUseCase := impl3.New(sessionRepository)
+	sessionUseCase := impl3.New(sessionRepository)
 	userHandler := handlers.New(userUseCase)
-	sessionMidleWhare := handlers2.New(sessuinUseCase)
-	specizlizeHandler := specHandler.New(specializeUseCase)
+	sessionMiddleWare := handlers2.New(sessionUseCase)
+	specializeHandler := specHandler.New(specializeUseCase)
+
+	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
 	router := mux.NewRouter()
-	router.Use(midlewhare.LoggingRequest)
-	router.Use(sessionMidleWhare.CheckSession)
-	router.HandleFunc("/profile/{id:[0-9]+}\"", userHandler.GetUserInfo).Methods(http.MethodGet)
-	router.HandleFunc("/profile/{id:[0-9]+}\"", userHandler.ChangeProfile).Methods(http.MethodPut)
-	router.HandleFunc("/profile/{id:[0-9]+}\"/specialize", specizlizeHandler.GetSpecialize).Methods(http.MethodGet)
-	router.HandleFunc("/profile/{id:[0-9]+}\"/specialize", specizlizeHandler.Remove).Methods(http.MethodDelete)
+	router.Use(csrfMiddleware)
+	router.Use(middleware.LoggingRequest)
+	router.Use(sessionMiddleWare.CheckSession)
+	router.HandleFunc("/profile/{id:[0-9]+}", userHandler.GetUserInfo).Methods(http.MethodGet)
+	router.HandleFunc("/profile/{id:[0-9]+}", userHandler.ChangeProfile).Methods(http.MethodPut)
+	router.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.GetSpecialize).Methods(http.MethodGet)
+	router.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Remove).Methods(http.MethodDelete)
 
-
-	c := midlewhare.CorsMiddleware(config.Origin)
+	c := middleware.CorsMiddleware(config.Origin)
 	server := &http.Server{
 		Addr:    config.BindAddr,
 		Handler: c.Handler(router),
 	}
 
 	go func() {
-		log.Println("Server start")
+		log.Println("Server start on port", config.BindAddr)
 		if err := server.ListenAndServe(); err != nil {
 			log.Fatal(err)
 		}
@@ -108,7 +111,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println("GRPC Server start")
+	log.Println("GRPC Server start on port :8081")
 	if err := s.Serve(l); err != nil {
 		log.Fatal(err)
 	}

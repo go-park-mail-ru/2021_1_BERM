@@ -14,13 +14,13 @@ const (
 
 type UseCase struct {
 	ResponseRepo responseRepo.Repository
-	UserRepo api.UserClient
+	UserRepo     api.UserClient
 }
 
 func NewUseCase(responseRepo responseRepo.Repository, userRepo api.UserClient) *UseCase {
 	return &UseCase{
 		ResponseRepo: responseRepo,
-		UserRepo: userRepo,
+		UserRepo:     userRepo,
 	}
 }
 

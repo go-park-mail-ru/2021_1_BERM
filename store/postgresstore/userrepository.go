@@ -170,7 +170,6 @@ func (u *UserRepository) FindSpecializesByUserEmail(email string) (pq.StringArra
 	return user.Specializes, nil
 }
 
-
 func (u *UserRepository) FindUserByID(id uint64) (*model.User, error) {
 	user := model.User{}
 	err := u.store.Db.Get(&user, selectUserByID, id)
@@ -193,7 +192,6 @@ func (u *UserRepository) FindSpecializesByUserID(id uint64) (pq.StringArray, err
 	}
 	return user.Specializes, nil
 }
-
 
 func (u *UserRepository) ChangeUser(user *model.User) (*model.User, error) {
 	tx, _ := u.store.Db.Beginx()

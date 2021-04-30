@@ -14,9 +14,10 @@ type UseCase struct {
 	userRepository       repository.Repository
 	specializeRepository specialize.Repository
 }
-func (useCase *UseCase) SetImg(ID uint64, img string, ctx context.Context) error{
+
+func (useCase *UseCase) SetImg(ID uint64, img string, ctx context.Context) error {
 	err := useCase.userRepository.SetUserImg(ID, img, ctx)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	return err
@@ -170,17 +171,17 @@ func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (map
 		}
 	}
 	return map[string]interface{}{
-		"email" : user.Email,
-		"about" : user.About,
-		"executor" : user.Executor,
-		"login" : user.Login,
-		"name_surname" : user.NameSurname,
+		"email":        user.Email,
+		"about":        user.About,
+		"executor":     user.Executor,
+		"login":        user.Login,
+		"name_surname": user.NameSurname,
 	}, nil
 }
 
-func New(userRep repository.Repository, specRep specialize.Repository) *UseCase{
+func New(userRep repository.Repository, specRep specialize.Repository) *UseCase {
 	return &UseCase{
 		specializeRepository: specRep,
-		userRepository: userRep,
+		userRepository:       userRep,
 	}
 }

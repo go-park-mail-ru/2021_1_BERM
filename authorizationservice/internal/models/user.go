@@ -10,22 +10,16 @@ type NewUser struct {
 	Password        string         `json:"password" db:"-"`
 	EncryptPassword []byte         `json:"-" db:"password"`
 	About           string         `json:"about,omitempty" db:"about"`
-	Specializes     pq.StringArray `json:"specializes" db:"specializes,omitempty"`
+	Specializes     pq.StringArray `json:"specializes,omitempty" db:"specializes,omitempty"`
 	Executor        bool           `db:"executor"`
 }
 
 type LoginUser struct {
-	Email string
+	Email    string
 	Password string
 }
 
 type UserBasicInfo struct {
-	ID uint64  		`json:"id"`
-	Executor bool `json:"executor"`
+	ID       uint64 `json:"id"`
+	Executor bool   `json:"executor"`
 }
-
-
-
-
-
-

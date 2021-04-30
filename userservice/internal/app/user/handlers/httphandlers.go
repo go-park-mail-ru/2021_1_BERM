@@ -77,6 +77,3 @@ func (h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
 	}
 	httputils.Respond(w, reqID, http.StatusOK, u)
 }
-
-
-

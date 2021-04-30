@@ -625,6 +625,10 @@ definitions:
       about:
         type: string
         example: "Я пожилая няшка"
+      # TODO: добавить write only
+      password:
+        type: string
+        example: "2281488322"
       executor:
         type: boolean
         example: true

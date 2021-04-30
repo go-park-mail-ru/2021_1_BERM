@@ -34,9 +34,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// grpc connect to UserService
 	conn, err := grpc.Dial("localhost:8081", grpc.WithInsecure())
 	if err != nil {
-		log .Fatal(err)
+		log.Fatal(err)
 	}
 	defer conn.Close()
 	userRepo := api.NewUserClient(conn)
@@ -45,11 +46,11 @@ func main() {
 
 	imageHandler := imageHandlers.NewHandler(*imageUseCase)
 
-	//csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
+	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
 	router := mux.NewRouter()
 	router.Use(middleware.LoggingRequest)
-	//router.Use(csrfMiddleware)
+	router.Use(csrfMiddleware)
 
 	router.HandleFunc("/profile/avatar", imageHandler.PutAvatar).Methods(http.MethodPut)
 
@@ -72,17 +73,4 @@ func main() {
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
-
-	//s := grpc.NewServer()
-	//srv := &imageserver.ImageServer{}
-	//api.RegisterImageServer(s, srv)
-	//
-	//l, err := net.Listen("tcp", ":8080")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//if err := s.Serve(l); err != nil {
-	//	log.Fatal(err)
-	//}
 }

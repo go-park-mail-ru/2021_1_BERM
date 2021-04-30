@@ -29,16 +29,16 @@ func NewHandler(useCase orderUseCase.UseCase) *Handlers {
 	}
 }
 
-func(h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 	id, err := strconv.ParseUint(r.Header.Get("X_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 	o := &models.Order{}
@@ -61,9 +61,9 @@ func(h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	httputils.Respond(w, reqID, http.StatusCreated, o)
 }
 
-func(h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 	o, err := h.useCase.GetActualOrders()
@@ -80,9 +80,9 @@ func(h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 	httputils.Respond(w, reqID, http.StatusOK, o)
 }
 
-func(h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 	params := mux.Vars(r)
@@ -107,7 +107,7 @@ func(h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) ChangeOrder(w http.ResponseWriter, r *http.Request) {
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 	order := models.Order{}
@@ -131,7 +131,7 @@ func (h *Handlers) ChangeOrder(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 	params := mux.Vars(r)
@@ -149,10 +149,10 @@ func (h *Handlers) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 	httputils.Respond(w, reqID, http.StatusOK, emptyInterface)
 }
 
-func(h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 
@@ -180,10 +180,10 @@ func(h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 	httputils.Respond(w, reqID, http.StatusOK, order)
 }
 
-func(h *Handlers) DeleteExecutor(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) DeleteExecutor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 
@@ -209,10 +209,10 @@ func(h *Handlers) DeleteExecutor(w http.ResponseWriter, r *http.Request) {
 	httputils.Respond(w, reqID, http.StatusOK, emptyInterface)
 }
 
-func(h *Handlers) GetAllUserOrders(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetAllUserOrders(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 	}
 	userID, err := strconv.ParseUint(params["id"], 10, 64)

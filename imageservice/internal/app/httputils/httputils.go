@@ -6,7 +6,6 @@ import (
 	"image/internal/app/Error"
 	"image/internal/app/logger"
 	"net/http"
-	"strconv"
 )
 
 const (
@@ -37,11 +36,8 @@ func RespondError(w http.ResponseWriter, requestId uint64, err error, errorCode 
 
 func RespondCSRF() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-		if err != nil {
-			RespondError(w, reqID, err, http.StatusInternalServerError)
-			return
-		}
+		reqID := r.Context().Value(ctxKeyReqID).(uint64)
+
 		logger.LoggingError(reqID, errors.New("Invalid CSRF token"))
 		Respond(w, reqID, http.StatusForbidden, map[string]interface{}{
 			"error": "Invalid CSRF token",

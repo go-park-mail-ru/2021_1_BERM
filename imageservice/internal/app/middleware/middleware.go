@@ -10,8 +10,6 @@ import (
 	"net/http"
 )
 
-
-
 const (
 	ctxKeyReqID uint8 = 1
 )
@@ -44,4 +42,3 @@ func CSRFMiddleware(https bool) func(http.Handler) http.Handler {
 		csrf.Path("/"),
 		csrf.ErrorHandler(httputils.RespondCSRF()))
 }
-

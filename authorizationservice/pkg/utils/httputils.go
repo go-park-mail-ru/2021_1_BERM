@@ -7,10 +7,12 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 	"time"
 )
 
+const (
+	ctxKeyReqID uint8 = 1
+)
 
 func Respond(w http.ResponseWriter, requestId uint64, code int, data interface{}) {
 	w.WriteHeader(code)
@@ -36,11 +38,8 @@ func RespondError(w http.ResponseWriter, requestId uint64, err error, errorCode 
 
 func RespondCSRF() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-		if err != nil {
-			RespondError(w, reqID, err, http.StatusInternalServerError)
-			return
-		}
+		reqID := r.Context().Value(ctxKeyReqID).(uint64)
+
 		logger.LoggingError(reqID, errors.New("Invalid CSRF token"))
 		Respond(w, reqID, http.StatusForbidden, map[string]interface{}{
 			"error": "Invalid CSRF token",
@@ -48,11 +47,10 @@ func RespondCSRF() http.Handler {
 	})
 }
 
-
-func CreateCookie(session *models.Session) []http.Cookie{
+func CreateCookie(session *models.Session) []http.Cookie {
 	cookies := []http.Cookie{
 		{
-			Name:     "session",
+			Name:     "sessionID",
 			Value:    session.SessionID,
 			Expires:  time.Now().AddDate(0, 1, 0),
 			HttpOnly: true,
@@ -60,7 +58,6 @@ func CreateCookie(session *models.Session) []http.Cookie{
 	}
 	return cookies
 }
-
 
 func RemoveCookies(cookies []*http.Cookie) {
 	for _, cookie := range cookies {

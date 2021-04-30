@@ -1,4 +1,4 @@
-package midlewhare
+package middleware
 
 import (
 	"context"
@@ -22,7 +22,6 @@ func LoggingRequest(next http.Handler) http.Handler {
 	})
 }
 
-
 func CorsMiddleware(origin []string) *cors.Cors {
 	return cors.New(cors.Options{
 		AllowedOrigins:   origin,
@@ -43,5 +42,3 @@ func CSRFMiddleware(https bool) func(http.Handler) http.Handler {
 		csrf.Path("/"),
 		csrf.ErrorHandler(httputils.RespondCSRF()))
 }
-
-

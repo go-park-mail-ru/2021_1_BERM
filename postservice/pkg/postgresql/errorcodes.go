@@ -1,5 +1,5 @@
 package postgresql
 
-const(
+const (
 	PostgreDuplicateErrorCode = "23505"
 )

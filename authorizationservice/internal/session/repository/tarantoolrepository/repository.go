@@ -12,7 +12,7 @@ type Repository struct {
 	conn *tarantool.Connection
 }
 
-func New(conn *tarantool.Connection) *Repository{
+func New(conn *tarantool.Connection) *Repository {
 	return &Repository{
 		conn: conn,
 	}

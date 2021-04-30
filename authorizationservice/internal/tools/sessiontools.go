@@ -7,17 +7,17 @@ import (
 	"math/rand"
 )
 
-const(
+const (
 	saltLength = 8
 )
 
-func BeforeCreate(session* models.Session) error {
+func BeforeCreate(session *models.Session) error {
 	salt := make([]byte, saltLength)
 	_, err := rand.Read(salt)
 	if err != nil {
 		return &Error.Error{
-			Err: err,
-			InternalError: true,
+			Err:              err,
+			InternalError:    true,
 			ErrorDescription: Error.InternalServerErrorDescription,
 		}
 	}
@@ -31,13 +31,11 @@ func hashSessionId(salt []byte, plainPassword string) []byte {
 	return append(salt, hashedPass...)
 }
 
-
-func EncodingSessionToTarantool(sess *models.Session) []interface{}{
+func EncodingSessionToTarantool(sess *models.Session) []interface{} {
 	return []interface{}{sess.SessionID, sess.UserId, sess.Executor}
 }
 
-
-func DecodingTarantoolToSession(data []interface{}) *models.Session{
+func DecodingTarantoolToSession(data []interface{}) *models.Session {
 	s := &models.Session{}
 	s.SessionID, _ = data[0].(string)
 	s.UserId, _ = data[1].(uint64)

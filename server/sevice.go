@@ -248,7 +248,7 @@ func (s *server) handleDeleteOrderResponse(w http.ResponseWriter, r *http.Reques
 	s.respond(w, reqId, http.StatusOK, emptyInterface)
 }
 
-func (s *server) handleSelectExecutor(w http.ResponseWriter,r *http.Request) {
+func (s *server) handleSelectExecutor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 

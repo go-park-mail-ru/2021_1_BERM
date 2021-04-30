@@ -142,7 +142,7 @@ func TestUserVerificationWithCorrectData(t *testing.T) {
 	newCorrectUser.Specializes = nil
 	newCorrectUser.Executor = false
 	userRepMock := mock.NewMockUserRepository(ctrl)
-	resUser := *newCorrectUser;
+	resUser := *newCorrectUser
 	salt := make([]byte, 8)
 	rand.Read(salt)
 	resUser.EncryptPassword = implementation.HashPass(salt, newCorrectUser.Password)
@@ -168,11 +168,11 @@ func TestUserVerificationWithBadDb(t *testing.T) {
 	newCorrectUser := &model.User{}
 	*newCorrectUser = correctUser
 	userRepMock := mock.NewMockUserRepository(ctrl)
-	resUser := *newCorrectUser;
+	resUser := *newCorrectUser
 	salt := make([]byte, 8)
 	rand.Read(salt)
 	resUser.EncryptPassword = implementation.HashPass(salt, newCorrectUser.Password)
-	userRepMock.EXPECT().FindUserByEmail(newCorrectUser.Email).Return(nil,errors.New("err"))
+	userRepMock.EXPECT().FindUserByEmail(newCorrectUser.Email).Return(nil, errors.New("err"))
 	mockStore := mock.NewMockStore(ctrl)
 	mockStore.EXPECT().User().Times(1).Return(userRepMock)
 	mockCache := mock.NewMockCaсhe(ctrl)
@@ -262,7 +262,7 @@ func TestUserAssSpecializeWithCorrectData(t *testing.T) {
 	*newCorrectUser = correctUser
 	userRepMock := mock.NewMockUserRepository(ctrl)
 	userRepMock.EXPECT().FindSpecializeByName(newCorrectUser.Specializes[0]).Return(model.Specialize{
-		ID: 0,
+		ID:   0,
 		Name: "",
 	}, nil)
 	userRepMock.EXPECT().AddSpec(newCorrectUser.Specializes[0]).Return(uint64(1), nil)
@@ -287,8 +287,8 @@ func TestUserpecDelWithCorrectData(t *testing.T) {
 	*newCorrectUser = correctUser
 	userRepMock := mock.NewMockUserRepository(ctrl)
 	userRepMock.EXPECT().FindSpecializeByName(newCorrectUser.Specializes[0]).Return(model.Specialize{
-		ID: 1,
-		Name: newCorrectUser.Specializes[0] ,
+		ID:   1,
+		Name: newCorrectUser.Specializes[0],
 	}, nil)
 	userRepMock.EXPECT().DelSpecialize(uint64(1), uint64(1)).Return(nil)
 

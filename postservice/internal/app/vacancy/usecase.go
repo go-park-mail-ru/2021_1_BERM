@@ -13,4 +13,3 @@ type UseCase interface {
 	SelectExecutor(vacancy models.Vacancy) error
 	DeleteExecutor(vacancy models.Vacancy) error
 }
-

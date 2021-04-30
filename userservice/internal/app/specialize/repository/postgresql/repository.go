@@ -69,7 +69,7 @@ func (r *Repository) AssociateSpecializationWithUser(specId uint64, userId uint6
 	return nil
 }
 
-func (r *Repository)Remove(ID uint64, ctx context.Context) error{
+func (r *Repository) Remove(ID uint64, ctx context.Context) error {
 	err := r.Db.QueryRow(DeleteSpecialize, ID).Err()
 	if err != nil {
 		return postgresql.WrapPostgreError(err)

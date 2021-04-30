@@ -1,4 +1,4 @@
-package midlewhare
+package middleware
 
 import (
 	"authorizationservice/pkg/logger"
@@ -42,5 +42,3 @@ func CSRFMiddleware(https bool) func(http.Handler) http.Handler {
 		csrf.Path("/"),
 		csrf.ErrorHandler(utils.RespondCSRF()))
 }
-
-

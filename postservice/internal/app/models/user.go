@@ -3,7 +3,7 @@ package models
 import "github.com/lib/pq"
 
 type User struct {
-	ID          uint64         `json:"id,omitempty" copier:"-"`
+	ID          uint64         `json:"id,omitempty"`
 	Email       string         `json:"email,omitempty"`
 	Login       string         `json:"login,omitempty"`
 	NameSurname string         `json:"name_surname,omitempty"`
@@ -12,4 +12,9 @@ type User struct {
 	Executor    bool           `json:"executor,omitempty"`
 	Img         string         `json:"img,omitempty"`
 	Rating      uint64         `json:"rating,omitempty"`
+}
+
+type UserBasicInfo struct {
+	ID       uint64
+	Executor bool
 }

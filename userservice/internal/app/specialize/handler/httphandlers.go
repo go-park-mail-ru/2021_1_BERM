@@ -13,13 +13,13 @@ type Handler struct {
 	specializeUseCase usecase.UseCase
 }
 
-func New(specializeUseCase usecase.UseCase) *Handler{
+func New(specializeUseCase usecase.UseCase) *Handler {
 	return &Handler{
 		specializeUseCase: specializeUseCase,
 	}
 }
 
-func (h* Handler)Remove(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value("ReqID").(uint64)
 
 	params := mux.Vars(r)
@@ -30,14 +30,14 @@ func (h* Handler)Remove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = h.specializeUseCase.Remove(id, context.Background())
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	httputils.Respond(w, reqID, 200, nil)
 }
 
-func (h* Handler)GetSpecialize(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetSpecialize(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value("ReqID").(uint64)
 
 	params := mux.Vars(r)
@@ -48,11 +48,11 @@ func (h* Handler)GetSpecialize(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	spec, err := h.specializeUseCase.FindByUseID(id, context.Background())
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	httputils.Respond(w, reqID, 200, map[string][]string{
-		"specializes" : spec,
+		"specializes": spec,
 	})
 }

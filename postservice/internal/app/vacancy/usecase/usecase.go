@@ -14,16 +14,15 @@ const (
 	vacancyUseCaseError = "Vacancy use case error"
 )
 
-
 type UseCase struct {
 	VacancyRepo vacancyRepo.Repository
-	UserRepo api.UserClient
+	UserRepo    api.UserClient
 }
 
 func NewUseCase(vacancyRepo vacancyRepo.Repository, userRepo api.UserClient) *UseCase {
 	return &UseCase{
 		VacancyRepo: vacancyRepo,
-		UserRepo: userRepo,
+		UserRepo:    userRepo,
 	}
 }
 

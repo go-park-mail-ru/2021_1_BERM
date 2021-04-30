@@ -7,8 +7,12 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net/http"
+	"post/api"
 	pb "post/api"
 	"post/configs"
+	"post/internal/app/session/handlers"
+	"post/internal/app/session/repository/grpcrepository"
+	"post/internal/app/session/usecase/impl"
 	"post/pkg/logger"
 	"post/pkg/middleware"
 	"post/pkg/postgresql"
@@ -56,13 +60,24 @@ func main() {
 		}
 	}()
 
-	//TODO: поправить порт коннекта
+	// connect to user service
 	conn, err := grpc.Dial("localhost:8081", grpc.WithInsecure())
 	if err != nil {
-		log .Fatal(err)
+		log.Fatal(err)
 	}
 	defer conn.Close()
 	userRepo := pb.NewUserClient(conn)
+
+	// connect to auth service
+	grpcConn, err := grpc.Dial("8085", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer grpcConn.Close()
+	client := api.NewSessionClient(grpcConn)
+	sessionRepository := grpcrepository.New(client)
+	sessionUseCase := impl.New(sessionRepository)
+	sessionMiddleWare := handlers.New(sessionUseCase)
 
 	orderRepository := orderRepo.NewRepo(postgres.GetPostgres())
 	vacancyRepository := vacancyRepo.NewRepo(postgres.GetPostgres())
@@ -78,11 +93,12 @@ func main() {
 
 	router := mux.NewRouter()
 	router.Use(middleware.LoggingRequest)
+	router.Use(sessionMiddleWare.CheckSession)
 
-	//csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
+	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
 	order := router.PathPrefix("/order").Subrouter()
-	//order.Use(csrfMiddleware)
+	order.Use(csrfMiddleware)
 	order.HandleFunc("", orderHandler.CreateOrder).Methods(http.MethodPost)
 	order.HandleFunc("", orderHandler.GetActualOrder).Methods(http.MethodGet)
 
@@ -98,7 +114,7 @@ func main() {
 	order.HandleFunc("/profile/{id:[0-9]+}", orderHandler.GetAllUserOrders).Methods(http.MethodGet)
 
 	vacancy := router.PathPrefix("/vacancy").Subrouter()
-	//vacancy.Use(csrfMiddleware)
+	vacancy.Use(csrfMiddleware)
 	vacancy.HandleFunc("", vacancyHandler.CreateVacancy).Methods(http.MethodPost)
 	vacancy.HandleFunc("/{id:[0-9]+}", vacancyHandler.GetVacancy).Methods(http.MethodGet)
 	vacancy.HandleFunc("/{id:[0-9]+}", vacancyHandler.ChangeVacancy).Methods(http.MethodPut)

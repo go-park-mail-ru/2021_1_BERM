@@ -4,13 +4,11 @@ import (
 	"context"
 	"github.com/gorilla/csrf"
 	"github.com/rs/cors"
-	logger2 "post/pkg/logger"
 	"math/rand"
 	"net/http"
 	httputils2 "post/pkg/httputils"
+	logger2 "post/pkg/logger"
 )
-
-
 
 const (
 	ctxKeyReqID uint8 = 1
@@ -44,4 +42,3 @@ func CSRFMiddleware(https bool) func(http.Handler) http.Handler {
 		csrf.Path("/"),
 		csrf.ErrorHandler(httputils2.RespondCSRF()))
 }
-

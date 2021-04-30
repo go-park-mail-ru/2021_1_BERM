@@ -104,7 +104,7 @@ func (r *Repository) DeleteVacancy(id uint64) error {
 
 func (r *Repository) FindByExecutorID(executorID uint64) ([]models.Vacancy, error) {
 	var vacancies []models.Vacancy
-	err := r.db.Select(&vacancies, selectVacanciesByExecutorID, executorID);
+	err := r.db.Select(&vacancies, selectVacanciesByExecutorID, executorID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -133,6 +133,7 @@ func (r *Repository) UpdateExecutor(vacancy models.Vacancy) error {
 		return postgresql.WrapPostgreError(err)
 	}
 	if err := tx.Commit(); err != nil {
-		return postgresql.WrapPostgreError(err)	}
+		return postgresql.WrapPostgreError(err)
+	}
 	return nil
 }

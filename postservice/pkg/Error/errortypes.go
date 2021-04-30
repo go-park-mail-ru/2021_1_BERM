@@ -1,7 +1,7 @@
 package Error
 
-var(
+var (
 	InternalServerErrorDescription = map[string]interface{}{
-		"Error" : "Internal server error",
+		"Error": "Internal server error",
 	}
 )
