@@ -29,7 +29,7 @@ func (s *GRPCServer) RegistrationUser(ctx context.Context, in *api.NewUserReques
 		Specializes: in.GetSpecializes(),
 	}
 
-	answer, err := s.userUseCase.Create(u)
+	answer, err := s.userUseCase.Create(u, ctx)
 	if err != nil{
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (s *GRPCServer) RegistrationUser(ctx context.Context, in *api.NewUserReques
 }
 
 func (s *GRPCServer)  AuthorizationUser(ctx context.Context, in *api.AuthorizationUserRequest) (*api.UserResponse, error) {
-	answer, err := s.userUseCase.Verification(in.GetEmail(), in.GetPassword())
+	answer, err := s.userUseCase.Verification(in.GetEmail(), in.GetPassword(), ctx)
 	if err != nil{
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (s *GRPCServer)  AuthorizationUser(ctx context.Context, in *api.Authorizati
 }
 
 func (s *GRPCServer) GetUserById(ctx context.Context, in *api.UserRequest) (*api.UserInfoResponse, error) {
-	userInfo, err := s.userUseCase.GetById(in.GetId())
+	userInfo, err := s.userUseCase.GetById(in.GetId(), ctx)
 	if err != nil{
 		return nil, err
 	}
@@ -69,11 +69,14 @@ func (s *GRPCServer) GetUserById(ctx context.Context, in *api.UserRequest) (*api
 }
 
 func (s *GRPCServer) GetSpecializeByUserId(ctx context.Context, in *api.UserRequest) (*api.GetUserSpecializeResponse, error)  {
-	ctx.Done()
+
 	return nil, nil
 }
 
-func (s *GRPCServer) SetImgUrl(context.Context, *api.SetImgUrlRequest) (*api.UserInfoResponse, error) {
-
-	return nil, nil
+func (s *GRPCServer) SetImgUrl(ctx context.Context, in *api.SetImgUrlRequest) (*api.SetImgUrlResponse, error) {
+	err := s.userUseCase.SetImg(in.GetId(), in.GetImgIrl(), ctx)
+	if err != nil{
+		return &api.SetImgUrlResponse{Successfully: false}, err
+	}
+	return &api.SetImgUrlResponse{Successfully: true}, nil
 }

@@ -10,4 +10,5 @@ const (
 		"WHERE user_id = $1"
 	SelectSpecializesByID = "SELECT * FROM userservice.specializes WHERE id = $1"
 	SelectSpecializesByName = "SELECT * FROM userservice.specializes WHERE specialize_name = $1"
+	DeleteSpecialize = "DELETE FROM userservice.specializes WHERE id = $1"
 )

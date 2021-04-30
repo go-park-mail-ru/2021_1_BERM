@@ -23,7 +23,7 @@ func Respond(w http.ResponseWriter, requestId uint64, code int, data interface{}
 
 func RespondError(w http.ResponseWriter, requestId uint64, err error, errorCode int) {
 	logger.LoggingError(requestId, err)
-	httpError := Error.Error{}
+	httpError := &Error.Error{}
 	if errors.As(err, &httpError) {
 		Respond(w, requestId, errorCode, httpError.ErrorDescription)
 		return

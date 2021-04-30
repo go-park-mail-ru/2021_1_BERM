@@ -1,11 +1,15 @@
 package repository
 
-import "user/internal/app/models"
+import (
+	"context"
+	"user/internal/app/models"
+)
 
 type Repository interface {
-	Create(user *models.NewUser) (uint64, error)
-	Change(user *models.ChangeUser) error
-	FindUserByID(ID uint64) (*models.UserInfo, error)
-	FindUserByEmail(email string) (*models.UserInfo, error)
+	Create(user *models.NewUser, ctx context.Context) (uint64, error)
+	Change(user *models.ChangeUser, ctx context.Context) error
+	FindUserByID(ID uint64, ctx context.Context) (*models.UserInfo, error)
+	FindUserByEmail(email string, ctx context.Context) (*models.UserInfo, error)
+	SetUserImg(ID uint64, img string, ctx context.Context) error
 }
 

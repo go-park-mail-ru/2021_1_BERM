@@ -1,6 +1,7 @@
 package postgresql
 
 import (
+	"context"
 	"github.com/jmoiron/sqlx"
 	"user/Error"
 	"user/internal/app/models"
@@ -12,7 +13,7 @@ type Repository struct {
 }
 
 
-func (r *Repository) Create(user *models.NewUser) (uint64, error) {
+func (r *Repository) Create(user *models.NewUser, ctx context.Context) (uint64, error) {
 	var ID uint64
 	err := r.Db.QueryRow(
 		CreateUserRequest,
@@ -29,7 +30,7 @@ func (r *Repository) Create(user *models.NewUser) (uint64, error) {
 	return ID, nil
 }
 
-func (r* Repository) Change(user *models.ChangeUser) error{
+func (r* Repository) Change(user *models.ChangeUser, ctx context.Context) error{
 		tx := r.Db.MustBegin()
 		_, err := tx.NamedExec(UpdateUser, user)
 		if err != nil {
@@ -45,7 +46,7 @@ func (r* Repository) Change(user *models.ChangeUser) error{
 		return nil
 }
 
-func (r* Repository) FindUserByID(ID uint64) (*models.UserInfo, error){
+func (r* Repository) FindUserByID(ID uint64, ctx context.Context) (*models.UserInfo, error){
 	user := models.UserInfo{}
 	err := r.Db.Get(&user, SelectUserByID, ID)
 	if err != nil {
@@ -55,13 +56,21 @@ func (r* Repository) FindUserByID(ID uint64) (*models.UserInfo, error){
 }
 
 
-func (r* Repository) FindUserByEmail(email string) (*models.UserInfo, error){
+func (r* Repository) FindUserByEmail(email string, ctx context.Context) (*models.UserInfo, error){
 	user := models.UserInfo{}
 	err := r.Db.Get(&user, SelectUserByEmail, email)
 	if err != nil {
 		return nil, postgresql.WrapPostgreError(err)
 	}
 	return &user, nil
+}
+
+func(r* Repository)SetUserImg(ID uint64, img string, ctx context.Context) error{
+	err := r.Db.QueryRow(UpdateUserImg, img, ID).Err()
+	if err != nil {
+		return postgresql.WrapPostgreError(err)
+	}
+	return err
 }
 
 //

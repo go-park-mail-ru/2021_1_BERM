@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	"golang.org/x/net/context"
 	"net/http"
 	"strconv"
 	"user/Error"
@@ -23,35 +24,32 @@ func New(userUseCase usecase.UseCase) *Handlers {
 }
 
 func (h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
-	reqId, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqId, err, http.StatusInternalServerError)
-		return
-	}
+	reqID := r.Context().Value("ReqID").(uint64)
+
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		httputils.RespondError(w, reqId, err, http.StatusInternalServerError)
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	u := &models.ChangeUser{}
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
-		httputils.RespondError(w, reqId, err, http.StatusInternalServerError)
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	u.ID = id
-	response, err := h.userUseCase.Change(*u)
+	response, err := h.userUseCase.Change(*u, context.Background())
 	if err != nil {
 		httpErr := &Error.Error{}
 		errors.As(err, httpErr)
 		if httpErr.InternalError {
-			httputils.RespondError(w, reqId, err, http.StatusInternalServerError)
+			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		} else {
-			httputils.RespondError(w, reqId, err, http.StatusBadRequest)
+			httputils.RespondError(w, reqID, err, http.StatusBadRequest)
 		}
 		return
 	}
-	httputils.Respond(w, reqId, http.StatusOK, response)
+	httputils.Respond(w, reqID, http.StatusOK, response)
 }
 
 func (h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +64,7 @@ func (h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
-	u, err := h.userUseCase.GetById(ID)
+	u, err := h.userUseCase.GetById(ID, context.Background())
 	if err != nil {
 		httpErr := &Error.Error{}
 		errors.As(err, httpErr)
@@ -79,3 +77,6 @@ func (h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
 	}
 	httputils.Respond(w, reqID, http.StatusOK, u)
 }
+
+
+
