@@ -63,8 +63,7 @@ func (r *Repository) AssociateSpecializationWithUser(specId uint64, userId uint6
 			"specID": strconv.FormatUint(specId, 10),
 		})
 	if err != nil {
-
-		return postgresql.WrapPostgreError(err)
+		return err
 	}
 	return nil
 }

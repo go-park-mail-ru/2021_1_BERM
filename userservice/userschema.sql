@@ -27,7 +27,8 @@ CREATE TABLE userservice.user_specializes
     FOREIGN KEY (user_id)
         REFERENCES userservice.users (id),
     FOREIGN KEY (specialize_id)
-        REFERENCES userservice.specializes (id)
+        REFERENCES userservice.specializes (id),
+    PRIMARY KEY (user_id, specialize_id)
 );
 
 CREATE TABLE userservice.user_reviews

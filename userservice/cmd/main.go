@@ -72,21 +72,23 @@ func main() {
 	sessionRepository := grpcrepository.New(client)
 
 	userUseCase := impl.New(userRepository, specializeRepository)
-	specializeUseCase := impl2.New(specializeRepository)
-	sessionUseCase := impl3.New(sessionRepository)
 	userHandler := handlers.New(userUseCase)
+
+	specializeUseCase := impl2.New(specializeRepository)
+	specializeHandler := specHandler.New(specializeUseCase, userUseCase)
+
+	sessionUseCase := impl3.New(sessionRepository)
 	sessionMiddleWare := handlers2.New(sessionUseCase)
-	specializeHandler := specHandler.New(specializeUseCase)
 
 	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
 	router := mux.NewRouter()
-	router.Use(csrfMiddleware)
-	router.Use(middleware.LoggingRequest)
 	router.Use(sessionMiddleWare.CheckSession)
+	router.Use(middleware.LoggingRequest)
+	router.Use(csrfMiddleware)
 	router.HandleFunc("/profile/{id:[0-9]+}", userHandler.GetUserInfo).Methods(http.MethodGet)
 	router.HandleFunc("/profile/{id:[0-9]+}", userHandler.ChangeProfile).Methods(http.MethodPut)
-	router.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Create).Methods(http.MethodGet)
+	router.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Create).Methods(http.MethodPost)
 	router.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Remove).Methods(http.MethodDelete)
 
 	c := middleware.CorsMiddleware(config.Origin)

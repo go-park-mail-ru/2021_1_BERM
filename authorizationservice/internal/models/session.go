@@ -1,7 +1,7 @@
 package models
 
 type Session struct {
-	SessionID string
-	UserId    uint64 `json:"user_id"`
+	SessionID string `json:"-"`
+	UserId    uint64 `json:"id"`
 	Executor  bool   `json:"executor"`
 }

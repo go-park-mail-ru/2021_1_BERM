@@ -21,9 +21,10 @@ type Handler struct {
 	userUseCase usecase2.UseCase
 }
 
-func New(specializeUseCase usecase.UseCase) *Handler {
+func New(specializeUseCase usecase.UseCase, userUseCase usecase2.UseCase) *Handler {
 	return &Handler{
 		specializeUseCase: specializeUseCase,
+		userUseCase: userUseCase,
 	}
 }
 

@@ -2,6 +2,8 @@ package impl
 
 import (
 	"context"
+	"github.com/lib/pq"
+	"github.com/pkg/errors"
 	"user/internal/app/specialize/repository"
 )
 
@@ -31,17 +33,23 @@ func (useCase *UseCase) Remove(ID uint64, ctx context.Context) error {
 	return err
 }
 
-func (useCase *UseCase)AssociateWithUser(ID uint64, spec string, ctx context.Context)  error{
+func (useCase *UseCase) AssociateWithUser(ID uint64, spec string, ctx context.Context) error {
 	specID, err := useCase.specializeRepository.FindByName(spec, ctx)
-	if err != nil{
+	if err != nil {
 		specID, err = useCase.specializeRepository.Create(spec, ctx)
-		if err != nil{
-			return  err
+		if err != nil {
+			return err
 		}
 	}
 	err = useCase.specializeRepository.AssociateSpecializationWithUser(specID, ID, ctx)
-	if err != nil{
-		return  err
+	pqErr := &pq.Error{}
+	if errors.As(err, &pqErr) {
+		if pqErr.Code == "23505" {
+			return errors.New("Duplicate spec")
+		}
+	}
+	if err != nil {
+		return err
 	}
 	return nil
 }
