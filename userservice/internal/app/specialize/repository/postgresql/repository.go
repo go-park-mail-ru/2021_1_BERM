@@ -46,7 +46,7 @@ func (r *Repository) FindById(ID uint64, ctx context.Context) (string, error) {
 	return spec.Name, nil
 }
 
-func (r *Repository) FindByName(spec string) (uint64, error) {
+func (r *Repository) FindByName(spec string, ctx context.Context) (uint64, error) {
 	specialize := models.Specialize{}
 	err := r.Db.Get(&specialize, SelectSpecializesByName, spec)
 	if err != nil {

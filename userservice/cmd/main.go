@@ -7,12 +7,17 @@ import (
 	"google.golang.org/grpc"
 	"net"
 	"user/api"
+	impl2 "user/internal/app/specialize/usecase/impl"
 	"user/internal/app/user/handlers"
+	handlers2 "user/internal/session/handlers"
+	"user/internal/session/repository/grpcrepository"
+	impl3 "user/internal/session/usecase/impl"
 	"user/pkg/midlewhare"
 
 	"log"
 	"net/http"
 	"user/configs"
+	specHandler "user/internal/app/specialize/handler"
 	specializeRepo "user/internal/app/specialize/repository/postgresql"
 	userRepo "user/internal/app/user/repository/postgresql"
 	"user/internal/app/user/usecase/impl"
@@ -57,13 +62,29 @@ func main() {
 		Db: postgres.GetPostgres(),
 	}
 
-	userUseCase := impl.New(userRepository, specializeRepository)
+	grpcConn, err := grpc.Dial("", grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer grpcConn.Close()
+	client := api.NewSessionClient(grpcConn)
+	sessionRepository := grpcrepository.New(client)
 
+	userUseCase := impl.New(userRepository, specializeRepository)
+	specializeUseCase := impl2.New(specializeRepository)
+	sessuinUseCase := impl3.New(sessionRepository)
 	userHandler := handlers.New(userUseCase)
+	sessionMidleWhare := handlers2.New(sessuinUseCase)
+	specizlizeHandler := specHandler.New(specializeUseCase)
+
 	router := mux.NewRouter()
 	router.Use(midlewhare.LoggingRequest)
-	router.HandleFunc("profile/{id:[0-9]+}\"", userHandler.GetUserInfo).Methods(http.MethodGet)
-	router.HandleFunc("profile/{id:[0-9]+}\"", userHandler.ChangeProfile).Methods(http.MethodPut)
+	router.Use(sessionMidleWhare.CheckSession)
+	router.HandleFunc("/profile/{id:[0-9]+}\"", userHandler.GetUserInfo).Methods(http.MethodGet)
+	router.HandleFunc("/profile/{id:[0-9]+}\"", userHandler.ChangeProfile).Methods(http.MethodPut)
+	router.HandleFunc("/profile/{id:[0-9]+}\"/specialize", specizlizeHandler.GetSpecialize).Methods(http.MethodGet)
+	router.HandleFunc("/profile/{id:[0-9]+}\"/specialize", specizlizeHandler.Remove).Methods(http.MethodDelete)
+
 
 	c := midlewhare.CorsMiddleware(config.Origin)
 	server := &http.Server{

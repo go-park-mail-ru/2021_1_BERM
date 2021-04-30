@@ -9,6 +9,12 @@ type UseCase struct {
 	specializeRepository repository.Repository
 }
 
+func New(specializeRepository repository.Repository)  *UseCase{
+	return &UseCase{
+		specializeRepository: specializeRepository,
+	}
+}
+
 func (useCase* UseCase)Create(specialize string, ctx context.Context) (uint64, error){
 	ID, err := useCase.specializeRepository.Create(specialize, ctx)
 	if err != nil{

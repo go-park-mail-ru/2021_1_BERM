@@ -13,6 +13,12 @@ type Handler struct {
 	specializeUseCase usecase.UseCase
 }
 
+func New(specializeUseCase usecase.UseCase) *Handler{
+	return &Handler{
+		specializeUseCase: specializeUseCase,
+	}
+}
+
 func (h* Handler)Remove(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value("ReqID").(uint64)
 
