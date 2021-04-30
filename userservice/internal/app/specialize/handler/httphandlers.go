@@ -38,7 +38,12 @@ func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
-	err = h.specializeUseCase.Remove(id, context.Background())
+	s := &models.Specialize{}
+	if err := json.NewDecoder(r.Body).Decode(s); err != nil {
+		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		return
+	}
+	err = h.specializeUseCase.Remove(id, s.Name, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return

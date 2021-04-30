@@ -25,8 +25,12 @@ func (useCase *UseCase) Create(specialize string, ctx context.Context) (uint64, 
 	return ID, err
 }
 
-func (useCase *UseCase) Remove(ID uint64, ctx context.Context) error {
-	err := useCase.Remove(ID, ctx)
+func (useCase *UseCase) Remove(ID uint64, spec string, ctx context.Context) error {
+	specID, err := useCase.specializeRepository.FindByName(spec, ctx)
+	if err != nil {
+		return err
+	}
+	err = useCase.specializeRepository.RemoveAssociateSpecializationWithUser(specID, ID, ctx)
 	if err != nil {
 		return err
 	}
