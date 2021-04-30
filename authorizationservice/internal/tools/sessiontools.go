@@ -3,7 +3,7 @@ package tools
 import (
 	"authorizationservice/internal/models"
 	"authorizationservice/pkg/Error"
-	"golang.org/x/crypto/argon2"
+	"golang.org/x/crypto/bcrypt"
 	"math/rand"
 )
 
@@ -27,8 +27,9 @@ func BeforeCreate(session *models.Session) error {
 }
 
 func hashSessionId(salt []byte, plainPassword string) []byte {
-	hashedPass := argon2.IDKey([]byte(plainPassword), []byte(salt), 1, 64*1024, 4, 32)
-	return append(salt, hashedPass...)
+	//TODO: обрабатывать ошибку
+	hashedPass, _ := bcrypt.GenerateFromPassword([]byte(plainPassword+string(salt)), bcrypt.MinCost)
+	return hashedPass
 }
 
 func EncodingSessionToTarantool(sess *models.Session) []interface{} {

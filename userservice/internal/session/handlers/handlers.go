@@ -25,14 +25,16 @@ func (m *MidleWhare) CheckSession(next http.Handler) http.Handler {
 			httputils.Respond(w, 0, http.StatusUnauthorized, map[string]string{
 				"message": "Bad cookies",
 			})
+			return
 		}
 
-		u, err := m.sessionUseCase.Check(sessionID.Value, nil)
+		u, err := m.sessionUseCase.Check(sessionID.Value, context.Background())
 		if err != nil {
 			//FIXME поправить ошибки
 			httputils.Respond(w, 0, http.StatusUnauthorized, map[string]string{
 				"message": "Bad cookies",
 			})
+			return
 		}
 		ctx := context.WithValue(r.Context(), "UserInfo", u)
 		next.ServeHTTP(w, r.WithContext(ctx))

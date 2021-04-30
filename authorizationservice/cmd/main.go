@@ -20,7 +20,6 @@ import (
 	"google.golang.org/grpc"
 	"net"
 	"net/http"
-	"time"
 )
 
 var (
@@ -43,9 +42,6 @@ func main() {
 	}
 
 	opts := tarantool.Opts{
-		Timeout:       500 * time.Millisecond,
-		Reconnect:     1 * time.Second,
-		MaxReconnects: 3,
 		User: "guest",
 	}
 	conn, err := tarantool.Connect(config.DatabaseURL, opts)

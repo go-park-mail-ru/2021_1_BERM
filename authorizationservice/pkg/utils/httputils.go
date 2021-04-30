@@ -47,7 +47,7 @@ func RespondCSRF() http.Handler {
 	})
 }
 
-func CreateCookie(session *models.Session) []http.Cookie {
+func CreateCookie(session *models.Session, w http.ResponseWriter) {
 	cookies := []http.Cookie{
 		{
 			Name:     "sessionID",
@@ -56,7 +56,9 @@ func CreateCookie(session *models.Session) []http.Cookie {
 			HttpOnly: true,
 		},
 	}
-	return cookies
+	for _, cookie := range cookies {
+		http.SetCookie(w, &cookie)
+	}
 }
 
 func RemoveCookies(cookies []*http.Cookie) {

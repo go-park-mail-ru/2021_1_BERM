@@ -63,7 +63,7 @@ func main() {
 	}
 
 	//connect to auth service
-	grpcConn, err := grpc.Dial("8085", grpc.WithInsecure())
+	grpcConn, err := grpc.Dial(":8085", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

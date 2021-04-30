@@ -13,6 +13,10 @@ import (
 	"user/pkg/httputils"
 )
 
+const (
+	ctxKeyReqID uint8 = 1
+)
+
 type Handlers struct {
 	userUseCase usecase.UseCase
 }
@@ -24,7 +28,7 @@ func New(userUseCase usecase.UseCase) *Handlers {
 }
 
 func (h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
-	reqID := r.Context().Value("ReqID").(uint64)
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
@@ -53,13 +57,10 @@ func (h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
-	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-		return
-	}
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+
 	params := mux.Vars(r)
-	ID, err := strconv.ParseUint(params["ID"], 10, 64)
+	ID, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return

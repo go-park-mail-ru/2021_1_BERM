@@ -43,7 +43,7 @@ func (h *Handler) RegistrationProfile(w http.ResponseWriter, r *http.Request) {
 		utils.RespondError(w, reqId, err, http.StatusBadRequest)
 		return
 	}
-	utils.CreateCookie(sess)
+	utils.CreateCookie(sess, w)
 	utils.Respond(w, reqId, http.StatusAccepted, resp)
 }
 
@@ -66,6 +66,6 @@ func (h *Handler) AuthorisationProfile(w http.ResponseWriter, r *http.Request) {
 		utils.RespondError(w, reqId, err, http.StatusBadRequest)
 		return
 	}
-	utils.CreateCookie(sess)
+	utils.CreateCookie(sess, w)
 	utils.Respond(w, reqId, http.StatusAccepted, resp)
 }

@@ -23,7 +23,7 @@ func (h *Handler) CheckLogin(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 	reqId := rand.Uint64()
 	ctx := context.WithValue(context.Background(), "ReqID", reqId)
-	cookie, err := r.Cookie("SessionID")
+	cookie, err := r.Cookie("sessionID")
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return

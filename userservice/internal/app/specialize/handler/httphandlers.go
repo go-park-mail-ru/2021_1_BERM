@@ -9,6 +9,10 @@ import (
 	"user/pkg/httputils"
 )
 
+const (
+	ctxKeyReqID uint8 = 1
+)
+
 type Handler struct {
 	specializeUseCase usecase.UseCase
 }
@@ -20,7 +24,7 @@ func New(specializeUseCase usecase.UseCase) *Handler {
 }
 
 func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
-	reqID := r.Context().Value("ReqID").(uint64)
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
@@ -38,7 +42,7 @@ func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetSpecialize(w http.ResponseWriter, r *http.Request) {
-	reqID := r.Context().Value("ReqID").(uint64)
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
