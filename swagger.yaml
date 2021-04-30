@@ -829,7 +829,7 @@ definitions:
     required:
       - old_password
     properties:
-      old_password:
+      password:
         type: string
         example: 123456789
       login:

@@ -45,7 +45,7 @@ func (h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	response, err := h.userUseCase.Change(*u, context.Background())
 	if err != nil {
 		httpErr := &Error.Error{}
-		errors.As(err, httpErr)
+		errors.As(err, &httpErr)
 		if httpErr.InternalError {
 			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		} else {

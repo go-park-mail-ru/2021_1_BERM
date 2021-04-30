@@ -9,7 +9,7 @@ const (
                 password =:password,
                 login =:login,
                 name_surname =:name_surname,
-                about=:about,
+                about=:about
 				 WHERE id = :id`
 	UpdateUserImg = "UPDATE userservice.users SET img = $1 WHERE id=$2"
 )

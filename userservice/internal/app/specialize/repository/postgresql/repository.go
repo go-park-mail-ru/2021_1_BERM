@@ -77,7 +77,7 @@ func (r *Repository) Remove(ID uint64, ctx context.Context) error {
 }
 
 func (r *Repository)RemoveAssociateSpecializationWithUser(specId uint64, userId uint64, ctx context.Context) error{
-	err := r.Db.QueryRow(DeleteSpecialize, userId, specId).Err()
+	err := r.Db.QueryRow(DeleteAssociateSpecializeWithUser, userId, specId).Err()
 	if err != nil {
 		return err
 	}
