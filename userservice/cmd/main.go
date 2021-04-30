@@ -86,7 +86,7 @@ func main() {
 	router.Use(sessionMiddleWare.CheckSession)
 	router.HandleFunc("/profile/{id:[0-9]+}", userHandler.GetUserInfo).Methods(http.MethodGet)
 	router.HandleFunc("/profile/{id:[0-9]+}", userHandler.ChangeProfile).Methods(http.MethodPut)
-	router.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.GetSpecialize).Methods(http.MethodGet)
+	router.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Create).Methods(http.MethodGet)
 	router.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Remove).Methods(http.MethodDelete)
 
 	c := middleware.CorsMiddleware(config.Origin)
