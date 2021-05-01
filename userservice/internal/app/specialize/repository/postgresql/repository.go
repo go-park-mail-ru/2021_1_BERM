@@ -4,10 +4,10 @@ import (
 	"context"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
+	"github.com/pkg/errors"
 	"strconv"
-	"user/Error"
 	"user/internal/app/models"
-	"user/pkg/database/postgresql"
+	"user/pkg/error/errortools"
 )
 
 type Repository struct {
@@ -18,11 +18,8 @@ func (r *Repository) FindByUserID(userID uint64, ctx context.Context) (pq.String
 	rows := r.Db.QueryRow(SelectSpecializesByUserID, userID)
 	var specializes pq.StringArray
 	if err := rows.Scan(&specializes); err != nil {
-		return nil, &Error.Error{
-			Err:              err,
-			InternalError:    true,
-			ErrorDescription: Error.InternalServerErrorDescription,
-		}
+		customErr := errortools.SqlErrorHandle(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return specializes, nil
 }
@@ -32,7 +29,8 @@ func (r *Repository) Create(specialize string, ctx context.Context) (uint64, err
 	err := r.Db.QueryRow(
 		CreateSpecializeRequest, specialize).Scan(&ID)
 	if err != nil {
-		return 0, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorHandle(err)
+		return 0, errors.Wrap(customErr, err.Error())
 	}
 	return ID, nil
 }
@@ -41,7 +39,8 @@ func (r *Repository) FindById(ID uint64, ctx context.Context) (string, error) {
 	spec := models.Specialize{}
 	err := r.Db.Get(&spec, SelectSpecializesByID, ID)
 	if err != nil {
-		return "", postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorHandle(err)
+		return "", errors.Wrap(customErr, err.Error())
 	}
 	return spec.Name, nil
 }
@@ -50,7 +49,8 @@ func (r *Repository) FindByName(spec string, ctx context.Context) (uint64, error
 	specialize := models.Specialize{}
 	err := r.Db.Get(&specialize, SelectSpecializesByName, spec)
 	if err != nil {
-		return 0, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorHandle(err)
+		return 0, errors.Wrap(customErr, err.Error())
 	}
 	return specialize.ID, nil
 }
@@ -63,7 +63,8 @@ func (r *Repository) AssociateSpecializationWithUser(specId uint64, userId uint6
 			"specID": strconv.FormatUint(specId, 10),
 		})
 	if err != nil {
-		return err
+		customErr := errortools.SqlErrorHandle(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	return nil
 }
@@ -71,7 +72,8 @@ func (r *Repository) AssociateSpecializationWithUser(specId uint64, userId uint6
 func (r *Repository) Remove(ID uint64, ctx context.Context) error {
 	err := r.Db.QueryRow(DeleteSpecialize, ID).Err()
 	if err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorHandle(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	return nil
 }
@@ -79,7 +81,8 @@ func (r *Repository) Remove(ID uint64, ctx context.Context) error {
 func (r *Repository)RemoveAssociateSpecializationWithUser(specId uint64, userId uint64, ctx context.Context) error{
 	err := r.Db.QueryRow(DeleteAssociateSpecializeWithUser, userId, specId).Err()
 	if err != nil {
-		return err
+		customErr := errortools.SqlErrorHandle(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	return nil
 }
