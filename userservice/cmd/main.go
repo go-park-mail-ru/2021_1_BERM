@@ -86,10 +86,12 @@ func main() {
 	router.Use(sessionMiddleWare.CheckSession)
 	router.Use(middleware.LoggingRequest)
 	router.Use(csrfMiddleware)
-	router.HandleFunc("/profile/{id:[0-9]+}", userHandler.GetUserInfo).Methods(http.MethodGet)
-	router.HandleFunc("/profile/{id:[0-9]+}", userHandler.ChangeProfile).Methods(http.MethodPut)
-	router.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Create).Methods(http.MethodPost)
-	router.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Remove).Methods(http.MethodDelete)
+
+	apiRoute := router.PathPrefix("/api").Subrouter()
+	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.GetUserInfo).Methods(http.MethodGet)
+	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.ChangeProfile).Methods(http.MethodPut)
+	apiRoute.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Create).Methods(http.MethodPost)
+	apiRoute.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Remove).Methods(http.MethodDelete)
 
 	c := middleware.CorsMiddleware(config.Origin)
 	server := &http.Server{

@@ -52,6 +52,24 @@ func (u *UseCase) FindByID(id uint64) (*models.Vacancy, error) {
 	return vacancy, nil
 }
 
+func (u *UseCase) GetActualVacancies() ([]models.Vacancy, error) {
+	vacancies, err := u.VacancyRepo.GetActualVacancies()
+	if err != nil {
+		return nil, errors.Wrap(err, vacancyUseCaseError)
+	}
+	for i, vacancy := range vacancies {
+		err = u.supplementingTheVacancyModel(&vacancy)
+		if err != nil {
+			return nil, errors.Wrap(err, vacancyUseCaseError)
+		}
+		vacancies[i] = vacancy
+	}
+	if vacancies == nil {
+		return []models.Vacancy{}, nil
+	}
+	return vacancies, err
+}
+
 func (u *UseCase) ChangeVacancy(vacancy models.Vacancy) (models.Vacancy, error) {
 	oldVacancy, err := u.VacancyRepo.FindByID(vacancy.ID)
 	if err != nil {

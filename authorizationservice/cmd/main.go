@@ -67,11 +67,12 @@ func main() {
 
 	router := mux.NewRouter()
 	router.Use(middleware.LoggingRequest)
-	router.HandleFunc("/logout", sessionHandler.LogOut).Methods(http.MethodDelete)
-	router.HandleFunc("/profile", profileHandler.RegistrationProfile).Methods(http.MethodPost)
-	router.HandleFunc("/login", profileHandler.AuthorisationProfile).Methods(http.MethodPost)
+	apiRout := router.PathPrefix("/api").Subrouter()
+	apiRout.HandleFunc("/logout", sessionHandler.LogOut).Methods(http.MethodDelete)
+	apiRout.HandleFunc("/profile", profileHandler.RegistrationProfile).Methods(http.MethodPost)
+	apiRout.HandleFunc("/login", profileHandler.AuthorisationProfile).Methods(http.MethodPost)
 
-	profile := router.PathPrefix("/profile").Subrouter()
+	profile := apiRout.PathPrefix("/profile").Subrouter()
 	profile.Use(csrfMiddleware)
 	profile.HandleFunc("/authorized", sessionHandler.CheckLogin).Methods(http.MethodGet)
 

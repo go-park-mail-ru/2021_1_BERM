@@ -39,6 +39,8 @@ const (
 	updateExecutor = `UPDATE post.vacancy SET 
                  executor_id =:executor_id
 				 WHERE id = :id`
+
+	selectVacancies = "SELECT * from post.vacancy"
 )
 
 type Repository struct {
@@ -73,6 +75,14 @@ func (r *Repository) FindByID(id uint64) (*models.Vacancy, error) {
 		return nil, postgresql.WrapPostgreError(err)
 	}
 	return &vacancy, nil
+}
+
+func (r *Repository) GetActualVacancies() ([]models.Vacancy, error) {
+	var vacancies []models.Vacancy
+	if err := r.db.Select(&vacancies, selectVacancies); err != nil {
+		return nil, postgresql.WrapPostgreError(err)
+	}
+	return vacancies, nil
 }
 
 func (r *Repository) Change(vacancy models.Vacancy) error {

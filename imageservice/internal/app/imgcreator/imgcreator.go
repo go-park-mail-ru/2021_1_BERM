@@ -40,7 +40,7 @@ func CreateImg(imgBase64 string) (string, error) {
 	}
 	jpegFilename, err := randomFilename16Char()
 	jpegFilename += ".jpeg"
-	f, err := os.Create(jpegFilename)
+	f, err := os.Create("image/" + jpegFilename)
 	if err != nil {
 		return "", err
 	}

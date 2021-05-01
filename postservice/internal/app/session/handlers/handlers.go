@@ -7,6 +7,11 @@ import (
 	"post/pkg/httputils"
 )
 
+const (
+	ctxUserInfo uint8 = 2
+	ctxKeyReqID uint8 = 1
+)
+
 type MiddleWare struct {
 	sessionUseCase usecase.UseCase
 }
@@ -25,16 +30,18 @@ func (m *MiddleWare) CheckSession(next http.Handler) http.Handler {
 			httputils.Respond(w, 0, http.StatusUnauthorized, map[string]string{
 				"message": "Bad cookies",
 			})
+			return
 		}
 
-		u, err := m.sessionUseCase.Check(sessionID.Value, nil)
+		u, err := m.sessionUseCase.Check(sessionID.Value, context.Background())
 		if err != nil {
 			//FIXME поправить ошибки
 			httputils.Respond(w, 0, http.StatusUnauthorized, map[string]string{
 				"message": "Bad cookies",
 			})
+			return
 		}
-		ctx := context.WithValue(r.Context(), "UserInfo", u)
+		ctx := context.WithValue(r.Context(), ctxUserInfo, u.ID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
