@@ -61,9 +61,10 @@ func CreateCookie(session *models.Session, w http.ResponseWriter) {
 	}
 }
 
-func RemoveCookies(cookies []*http.Cookie) {
+func RemoveCookies(cookies []*http.Cookie, w http.ResponseWriter) {
 	for i, _ := range cookies {
 		cookies[i].Expires = time.Now().AddDate(0, 0, -1)
 		cookies[i].HttpOnly = true
+		http.SetCookie(w, cookies[i])
 	}
 }

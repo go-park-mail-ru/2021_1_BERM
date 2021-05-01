@@ -12,6 +12,13 @@ import (
 	"strconv"
 )
 
+
+const (
+	ctxKeySession uint8 = 3
+	ctxKeyReqID   uint8 = 1
+	ctxUserInfo   uint8 = 2
+)
+
 type Handlers struct {
 	useCase responseUseCase.UseCase
 }
@@ -23,10 +30,7 @@ func NewHandler(useCase responseUseCase.UseCase) *Handlers {
 }
 
 func (h *Handlers) CreatePostResponse(w http.ResponseWriter, r *http.Request) {
-	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	response := &models.Response{}
 	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
@@ -39,8 +43,8 @@ func (h *Handlers) CreatePostResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.PostID = id
-	response.VacancyResponse = r.URL.String() == "/vacancy/"+strconv.FormatUint(id, 10)+"/response"
-	response.OrderResponse = r.URL.String() == "/order/"+strconv.FormatUint(id, 10)+"/response"
+	response.VacancyResponse = r.URL.String() == "/api/vacancy/"+strconv.FormatUint(id, 10)+"/response"
+	response.OrderResponse = r.URL.String() == "/api/order/"+strconv.FormatUint(id, 10)+"/response"
 	response, err = h.useCase.Create(*response)
 	if err != nil {
 		httpErr := &Error.Error{}
@@ -57,17 +61,14 @@ func (h *Handlers) CreatePostResponse(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) GetAllPostResponses(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
-	vacancyResponse := r.URL.String() == "/vacancy/"+strconv.FormatUint(id, 10)+"/response"
-	orderResponse := r.URL.String() == "/order/"+strconv.FormatUint(id, 10)+"/response"
+	vacancyResponse := r.URL.String() == "/api/vacancy/"+strconv.FormatUint(id, 10)+"/response"
+	orderResponse := r.URL.String() == "/api/order/"+strconv.FormatUint(id, 10)+"/response"
 	responses, err := h.useCase.FindByPostID(id, orderResponse, vacancyResponse)
 	if err != nil {
 		httpErr := &Error.Error{}
@@ -85,28 +86,22 @@ func (h *Handlers) GetAllPostResponses(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 	response := &models.Response{}
-	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 
 	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	params := mux.Vars(r)
+	var err error
 	response.PostID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
-	//TODO: не понятно откуда брать инфу об айдишнике
-	response.UserID, err = strconv.ParseUint(r.Header.Get("X_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
-	response.VacancyResponse = r.URL.String() == "/vacancy/"+strconv.FormatUint(response.PostID, 10)+"/response"
-	response.OrderResponse = r.URL.String() == "/order/"+strconv.FormatUint(response.PostID, 10)+"/response"
+	response.UserID = r.Context().Value(ctxUserInfo).(uint64)
+	response.VacancyResponse = r.URL.String() == "/api/vacancy/"+strconv.FormatUint(response.PostID, 10)+"/response"
+	response.OrderResponse = r.URL.String() == "/api/order/"+strconv.FormatUint(response.PostID, 10)+"/response"
 	responses, err := h.useCase.Change(*response)
 
 	if err != nil {
@@ -126,23 +121,18 @@ func (h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) DelPostResponse(w http.ResponseWriter, r *http.Request) {
 	response := &models.Response{}
 	params := mux.Vars(r)
-	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+
+	var err error
 	response.PostID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 
-	response.UserID, err = strconv.ParseUint(r.Header.Get("X_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-		return
-	}
-	response.VacancyResponse = r.URL.String() == "/vacancy/"+strconv.FormatUint(response.PostID, 10)+"/response"
-	response.OrderResponse = r.URL.String() == "/order/"+strconv.FormatUint(response.PostID, 10)+"/response"
+	response.UserID = r.Context().Value(ctxUserInfo).(uint64)
+	response.VacancyResponse = r.URL.String() == "/api/vacancy/"+strconv.FormatUint(response.PostID, 10)+"/response"
+	response.OrderResponse = r.URL.String() == "/api/order/"+strconv.FormatUint(response.PostID, 10)+"/response"
 	err = h.useCase.Delete(*response)
 
 	if err != nil {

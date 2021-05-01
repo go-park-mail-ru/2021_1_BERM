@@ -69,7 +69,7 @@ func main() {
 	userRepo := pb.NewUserClient(conn)
 
 	// connect to auth service
-	grpcConn, err := grpc.Dial("8085", grpc.WithInsecure())
+	grpcConn, err := grpc.Dial(":8085", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -97,7 +97,9 @@ func main() {
 
 	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
-	order := router.PathPrefix("/order").Subrouter()
+	apiRoute := router.PathPrefix("/api").Subrouter()
+
+	order := apiRoute.PathPrefix("/order").Subrouter()
 	order.Use(csrfMiddleware)
 	order.HandleFunc("", orderHandler.CreateOrder).Methods(http.MethodPost)
 	order.HandleFunc("", orderHandler.GetActualOrder).Methods(http.MethodGet)
@@ -113,7 +115,7 @@ func main() {
 	order.HandleFunc("/{id:[0-9]+}/select", orderHandler.DeleteExecutor).Methods(http.MethodDelete)
 	order.HandleFunc("/profile/{id:[0-9]+}", orderHandler.GetAllUserOrders).Methods(http.MethodGet)
 
-	vacancy := router.PathPrefix("/vacancy").Subrouter()
+	vacancy := apiRoute.PathPrefix("/vacancy").Subrouter()
 	vacancy.Use(csrfMiddleware)
 	vacancy.HandleFunc("", vacancyHandler.CreateVacancy).Methods(http.MethodPost)
 	vacancy.HandleFunc("/{id:[0-9]+}", vacancyHandler.GetVacancy).Methods(http.MethodGet)

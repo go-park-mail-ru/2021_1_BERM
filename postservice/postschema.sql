@@ -17,7 +17,7 @@ CREATE TABLE post.vacancy
 (
     id           SERIAL PRIMARY KEY NOT NULL,
     customer_id  INTEGER            NOT NULL,
-    executor_id  INTEGER,
+    executor_id  INTEGER DEFAULT 0,
     category     VARCHAR            NOT NULL,
     vacancy_name VARCHAR            NOT NULL,
     description  VARCHAR            NOT NULL,

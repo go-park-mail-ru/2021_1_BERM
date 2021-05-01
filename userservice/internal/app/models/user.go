@@ -24,7 +24,7 @@ type ChangeUser struct {
 	EncryptPassword []byte         `json:"-" db:"password"`
 	About           string         `json:"about,omitempty" db:"about"`
 	Specializes     pq.StringArray `json:"specializes,omitempty" db:"specializes,omitempty"`
-	Executor        bool           `db:"executor"`
+	Executor        bool           `json:"executor,omitempty" db:"executor"`
 }
 
 type UserInfo struct {
@@ -35,7 +35,7 @@ type UserInfo struct {
 	Password    []byte         `json:"-" db:"password"`
 	About       string         `json:"about,omitempty" db:"about"`
 	Specializes pq.StringArray `json:"specializes" db:"specializes,omitempty"`
-	Executor    bool           `db:"executor"`
+	Executor    bool           `json:"executor,omitempty" db:"executor"`
 	Img         string         `json:"img,omitempty" db:"img"`
 	Rating      int32          `json:"rating,omitempty" db:"rating"`
 }

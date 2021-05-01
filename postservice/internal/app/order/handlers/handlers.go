@@ -12,11 +12,11 @@ import (
 	"strconv"
 )
 
-type ctxKey uint8
 
 const (
-	ctxKeySession ctxKey = iota
-	ctxKeyReqID   ctxKey = 1
+	ctxKeySession uint8 = 3
+	ctxKeyReqID   uint8 = 1
+	ctxUserInfo   uint8  = 2
 )
 
 type Handlers struct {
@@ -30,24 +30,15 @@ func NewHandler(useCase orderUseCase.UseCase) *Handlers {
 }
 
 func (h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
-	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
-	id, err := strconv.ParseUint(r.Header.Get("X_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	id := r.Context().Value(ctxUserInfo).(uint64)
 	o := &models.Order{}
-	if err = json.NewDecoder(r.Body).Decode(o); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(o); err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	o.CustomerID = id
-	o, err = h.useCase.Create(*o)
+	o, err := h.useCase.Create(*o)
 	if err != nil {
 		httpErr := &Error.Error{}
 		errors.As(err, &httpErr)
@@ -62,10 +53,7 @@ func (h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
-	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	o, err := h.useCase.GetActualOrders()
 	if err != nil {
 		httpErr := &Error.Error{}
@@ -81,10 +69,7 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
-	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
@@ -106,16 +91,14 @@ func (h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) ChangeOrder(w http.ResponseWriter, r *http.Request) {
-	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	order := models.Order{}
-	if err = json.NewDecoder(r.Body).Decode(&order); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&order); err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
 	params := mux.Vars(r)
+	var err error
 	order.ID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
@@ -130,10 +113,7 @@ func (h *Handlers) ChangeOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) DeleteOrder(w http.ResponseWriter, r *http.Request) {
-	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
@@ -151,16 +131,13 @@ func (h *Handlers) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
-
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	order := models.Order{}
-	if err = json.NewDecoder(r.Body).Decode(&order); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&order); err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
 		return
 	}
+	var err error
 	order.ID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
@@ -182,13 +159,11 @@ func (h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) DeleteExecutor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 
 	order := models.Order{}
 
+	var err error
 	order.ID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
@@ -210,11 +185,9 @@ func (h *Handlers) DeleteExecutor(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetAllUserOrders(w http.ResponseWriter, r *http.Request) {
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+
 	params := mux.Vars(r)
-	reqID, err := strconv.ParseUint(r.Header.Get("X_Request_Id"), 10, 64)
-	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
-	}
 	userID, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)

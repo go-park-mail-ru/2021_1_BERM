@@ -38,6 +38,6 @@ func (h *Handler) LogOut(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 	reqId := rand.Uint64()
 	cookies := r.Cookies()
-	utils.RemoveCookies(cookies)
+	utils.RemoveCookies(cookies, w)
 	utils.Respond(w, reqId, http.StatusAccepted, nil)
 }

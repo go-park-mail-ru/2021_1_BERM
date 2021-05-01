@@ -4,7 +4,6 @@ import (
 	"context"
 	"post/api"
 	"post/internal/app/models"
-	"time"
 )
 
 type Repository struct {
@@ -18,9 +17,7 @@ func New(client api.SessionClient) *Repository {
 }
 
 func (r *Repository) Check(sessionID string, ctx context.Context) (*models.UserBasicInfo, error) {
-	timeOutCtx, cancel := context.WithTimeout(ctx, time.Second)
-	defer cancel()
-	u, err := r.client.Check(timeOutCtx, &api.SessionCheckRequest{
+	u, err := r.client.Check(ctx, &api.SessionCheckRequest{
 		SessionId: sessionID,
 	})
 	if err != nil {
