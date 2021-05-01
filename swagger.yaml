@@ -144,6 +144,10 @@ paths:
           required: true
           type: number
           format: uint64
+        - name: spec name
+          in: body
+          schema:
+            $ref: '#/definitions/Specialize'
       responses:
         200:
           description: Ok
