@@ -24,24 +24,20 @@ func New(sessionUseCase usecase.UseCase) *MiddleWare {
 
 func (m *MiddleWare) CheckSession(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqID := r.Context().Value(ctxKeyReqID).(uint64)
+
 		sessionID, err := r.Cookie("sessionID")
 		if err != nil {
-			//FIXME поправить ошибки
-			httputils.Respond(w, 0, http.StatusUnauthorized, map[string]string{
-				"message": "Bad cookies",
-			})
+			httputils.RespondError(w, reqID, err,)
 			return
 		}
 
 		u, err := m.sessionUseCase.Check(sessionID.Value, context.Background())
 		if err != nil {
-			//FIXME поправить ошибки
-			httputils.Respond(w, 0, http.StatusUnauthorized, map[string]string{
-				"message": "Bad cookies",
-			})
+			httputils.RespondError(w, reqID, err,)
 			return
 		}
-		ctx := context.WithValue(r.Context(), ctxUserInfo, u.ID)
+		ctx := context.WithValue(r.Context(), ctxUserInfo, u)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

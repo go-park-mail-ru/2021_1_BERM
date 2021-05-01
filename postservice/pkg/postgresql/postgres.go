@@ -1,11 +1,7 @@
 package postgresql
 
 import (
-	"database/sql"
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
-	"github.com/pkg/errors"
-	Error2 "post/pkg/Error"
 )
 
 type Postgres struct {
@@ -29,33 +25,4 @@ func (p *Postgres) GetPostgres() *sqlx.DB {
 func (p *Postgres) Close() error {
 	err := p.db.Close()
 	return err
-}
-
-func WrapPostgreError(err error) error {
-	pqErr := &pq.Error{}
-	if errors.As(err, &pqErr) {
-		if pqErr.Code == PostgreDuplicateErrorCode {
-			return &Error2.Error{
-				Err:           err,
-				InternalError: false,
-				ErrorDescription: map[string]interface{}{
-					"Err": err.Error(),
-				},
-			}
-		}
-	}
-	if errors.Is(err, sql.ErrNoRows) {
-		return &Error2.Error{
-			Err:           err,
-			InternalError: false,
-			ErrorDescription: map[string]interface{}{
-				"Err": err.Error(),
-			},
-		}
-	}
-	return &Error2.Error{
-		Err:              err,
-		InternalError:    true,
-		ErrorDescription: Error2.InternalServerErrorDescription,
-	}
 }
