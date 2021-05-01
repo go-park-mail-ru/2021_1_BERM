@@ -5,8 +5,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	"post/internal/app/models"
-	"post/pkg/Error"
-	"post/pkg/postgresql"
+	"post/pkg/error/errortools"
 )
 
 const (
@@ -63,7 +62,8 @@ func (r *Repository) Create(vacancy models.Vacancy) (uint64, error) {
 		vacancy.Salary,
 		vacancy.CustomerID).Scan(&vacancyID)
 	if err != nil {
-		return 0, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return 0, errors.Wrap(customErr, err.Error())
 	}
 	return vacancyID, nil
 }
@@ -72,7 +72,8 @@ func (r *Repository) FindByID(id uint64) (*models.Vacancy, error) {
 	vacancy := models.Vacancy{}
 	err := r.db.Get(&vacancy, selectVacancyByID, id)
 	if err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return &vacancy, nil
 }
@@ -80,7 +81,8 @@ func (r *Repository) FindByID(id uint64) (*models.Vacancy, error) {
 func (r *Repository) GetActualVacancies() ([]models.Vacancy, error) {
 	var vacancies []models.Vacancy
 	if err := r.db.Select(&vacancies, selectVacancies); err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return vacancies, nil
 }
@@ -88,18 +90,17 @@ func (r *Repository) GetActualVacancies() ([]models.Vacancy, error) {
 func (r *Repository) Change(vacancy models.Vacancy) error {
 	tx, err := r.db.Begin()
 	if err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	_, err = tx.Exec(updateVacancy, vacancy)
 	if err != nil {
-		return &Error.Error{
-			Err:              err,
-			InternalError:    true,
-			ErrorDescription: Error.InternalServerErrorDescription,
-		}
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	if err = tx.Commit(); err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	return nil
 }
@@ -107,7 +108,8 @@ func (r *Repository) Change(vacancy models.Vacancy) error {
 func (r *Repository) DeleteVacancy(id uint64) error {
 	_, err := r.db.Queryx(deleteVacancy, id)
 	if err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	return nil
 }
@@ -119,7 +121,8 @@ func (r *Repository) FindByExecutorID(executorID uint64) ([]models.Vacancy, erro
 		return nil, nil
 	}
 	if err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return vacancies, nil
 }
@@ -131,7 +134,8 @@ func (r *Repository) FindByCustomerID(customerID uint64) ([]models.Vacancy, erro
 		return nil, nil
 	}
 	if err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return vacancies, nil
 }
@@ -140,10 +144,12 @@ func (r *Repository) UpdateExecutor(vacancy models.Vacancy) error {
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(updateExecutor, &vacancy)
 	if err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	if err := tx.Commit(); err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	return nil
 }

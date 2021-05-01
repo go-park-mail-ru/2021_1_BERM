@@ -2,8 +2,9 @@ package repository
 
 import (
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 	"post/internal/app/models"
-	"post/pkg/postgresql"
+	"post/pkg/error/errortools"
 )
 
 const (
@@ -76,7 +77,8 @@ func (r *Repository) Create(response models.Response) (uint64, error) {
 		response.VacancyResponse,
 		response.Text).Scan(&responseID)
 	if err != nil {
-		return 0, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return 0, errors.Wrap(customErr, err.Error())
 	}
 
 	return responseID, nil
@@ -85,7 +87,8 @@ func (r *Repository) Create(response models.Response) (uint64, error) {
 func (r *Repository) FindByOrderPostID(id uint64) ([]models.Response, error) {
 	var responses []models.Response
 	if err := r.db.Select(&responses, selectOrderResponseByPostID, id); err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return responses, nil
 }
@@ -93,7 +96,8 @@ func (r *Repository) FindByOrderPostID(id uint64) ([]models.Response, error) {
 func (r *Repository) FindByVacancyPostID(id uint64) ([]models.Response, error) {
 	var responses []models.Response
 	if err := r.db.Select(&responses, selectVacancyResponseByPostID, id); err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return responses, nil
 }
@@ -102,10 +106,12 @@ func (r *Repository) ChangeOrderResponse(response models.Response) (*models.Resp
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(updateOrderResponse, &response)
 	if err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	if err := tx.Commit(); err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return &response, nil
 }
@@ -114,10 +120,12 @@ func (r *Repository) ChangeVacancyResponse(response models.Response) (*models.Re
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(updateVacancyResponse, &response)
 	if err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	if err := tx.Commit(); err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return &response, nil
 }
@@ -126,10 +134,12 @@ func (r *Repository) DeleteOrderResponse(response models.Response) error {
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(deleteOrderResponse, &response)
 	if err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	if err = tx.Commit(); err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	return nil
 }
@@ -138,10 +148,12 @@ func (r *Repository) DeleteVacancyResponse(response models.Response) error {
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(deleteVacancyResponse, &response)
 	if err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	if err = tx.Commit(); err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	return nil
 }

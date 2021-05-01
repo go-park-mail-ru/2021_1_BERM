@@ -5,8 +5,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	"post/internal/app/models"
-	"post/pkg/Error"
-	"post/pkg/postgresql"
+	"post/pkg/error/errortools"
 )
 
 const (
@@ -75,7 +74,8 @@ func (r *Repository) Create(order models.Order) (uint64, error) {
 		order.Deadline,
 		order.Description).Scan(&orderID)
 	if err != nil {
-		return 0, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return 0, errors.Wrap(customErr, err.Error())
 	}
 	return orderID, nil
 }
@@ -83,18 +83,17 @@ func (r *Repository) Create(order models.Order) (uint64, error) {
 func (r *Repository) Change(order models.Order) error {
 	tx, err := r.db.Begin()
 	if err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	_, err = tx.Exec(updateOrder, order)
 	if err != nil {
-		return &Error.Error{
-			Err:              err,
-			InternalError:    true,
-			ErrorDescription: Error.InternalServerErrorDescription,
-		}
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	if err = tx.Commit(); err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	return nil
 }
@@ -102,7 +101,8 @@ func (r *Repository) Change(order models.Order) error {
 func (r *Repository) DeleteOrder(id uint64) error {
 	_, err := r.db.Queryx(deleteOrder, id)
 	if err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	return nil
 }
@@ -110,7 +110,8 @@ func (r *Repository) DeleteOrder(id uint64) error {
 func (r *Repository) FindByID(id uint64) (*models.Order, error) {
 	order := models.Order{}
 	if err := r.db.Get(&order, selectOrderByID, id); err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return &order, nil
 }
@@ -122,7 +123,8 @@ func (r *Repository) FindByExecutorID(executorID uint64) ([]models.Order, error)
 		return nil, nil
 	}
 	if err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return orders, nil
 }
@@ -134,7 +136,8 @@ func (r *Repository) FindByCustomerID(customerID uint64) ([]models.Order, error)
 		return nil, nil
 	}
 	if err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return orders, nil
 }
@@ -142,7 +145,8 @@ func (r *Repository) FindByCustomerID(customerID uint64) ([]models.Order, error)
 func (r *Repository) GetActualOrders() ([]models.Order, error) {
 	var orders []models.Order
 	if err := r.db.Select(&orders, selectOrders); err != nil {
-		return nil, postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return orders, nil
 }
@@ -151,10 +155,12 @@ func (r *Repository) UpdateExecutor(order models.Order) error {
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(updateExecutor, &order)
 	if err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	if err := tx.Commit(); err != nil {
-		return postgresql.WrapPostgreError(err)
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
 	}
 	return nil
 }
