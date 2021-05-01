@@ -7,6 +7,7 @@ import (
 type UseCase interface {
 	Create(vacancy models.Vacancy) (*models.Vacancy, error)
 	FindByID(id uint64) (*models.Vacancy, error)
+	GetActualVacancies() ([]models.Vacancy, error)
 	ChangeVacancy(vacancy models.Vacancy) (models.Vacancy, error)
 	DeleteVacancy(id uint64) error
 	FindByUserID(userID uint64) ([]models.Vacancy, error)

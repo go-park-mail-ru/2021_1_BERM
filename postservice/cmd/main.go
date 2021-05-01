@@ -118,6 +118,7 @@ func main() {
 	vacancy := apiRoute.PathPrefix("/vacancy").Subrouter()
 	vacancy.Use(csrfMiddleware)
 	vacancy.HandleFunc("", vacancyHandler.CreateVacancy).Methods(http.MethodPost)
+	vacancy.HandleFunc("", vacancyHandler.GetActualVacancies).Methods(http.MethodGet)
 	vacancy.HandleFunc("/{id:[0-9]+}", vacancyHandler.GetVacancy).Methods(http.MethodGet)
 	vacancy.HandleFunc("/{id:[0-9]+}", vacancyHandler.ChangeVacancy).Methods(http.MethodPut)
 	vacancy.HandleFunc("/{id:[0-9]+}", vacancyHandler.DeleteVacancy).Methods(http.MethodDelete)

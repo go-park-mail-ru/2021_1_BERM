@@ -89,6 +89,22 @@ func (h *Handlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 	httputils.Respond(w, reqID, http.StatusOK, v)
 }
 
+func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	v, err := h.useCase.GetActualVacancies()
+	if err != nil {
+		httpErr := &Error.Error{}
+		errors.As(err, &httpErr)
+		if httpErr.InternalError {
+			httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		} else {
+			httputils.RespondError(w, reqID, err, http.StatusBadRequest)
+		}
+		return
+	}
+	httputils.Respond(w, reqID, http.StatusOK, v)
+}
+
 func (h *Handlers) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	defer func(Body io.ReadCloser) {
