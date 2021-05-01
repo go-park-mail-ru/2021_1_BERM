@@ -3,14 +3,14 @@ package impl
 import (
 	"context"
 	"user/internal/app/models"
-	"user/internal/session/repository"
+	repository2 "user/internal/app/session/repository"
 )
 
 type UseCase struct {
-	sessionRepository repository.Repository
+	sessionRepository repository2.Repository
 }
 
-func New(sessionRepository repository.Repository) *UseCase {
+func New(sessionRepository repository2.Repository) *UseCase {
 	return &UseCase{
 		sessionRepository: sessionRepository,
 	}

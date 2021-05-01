@@ -2,9 +2,13 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"user/api"
 	"user/internal/app/models"
 	"user/internal/app/user/usecase"
+	"user/pkg/error/errortools"
 )
 
 type GRPCServer struct {
@@ -30,7 +34,16 @@ func (s *GRPCServer) RegistrationUser(ctx context.Context, in *api.NewUserReques
 
 	answer, err := s.userUseCase.Create(u, ctx)
 	if err != nil {
-		return nil, err
+		errData, codeUint32 := errortools.ErrorHandle(err)
+		code := codes.Code(codeUint32)
+		b, jsonErr := json.Marshal(errData)
+		if jsonErr != nil{
+			return nil, jsonErr
+		}
+		return &api.UserResponse{
+			Id:      0,
+			Executor: false,
+		}, status.Error(code, string(b))
 	}
 
 	return &api.UserResponse{
@@ -42,7 +55,16 @@ func (s *GRPCServer) RegistrationUser(ctx context.Context, in *api.NewUserReques
 func (s *GRPCServer) AuthorizationUser(ctx context.Context, in *api.AuthorizationUserRequest) (*api.UserResponse, error) {
 	answer, err := s.userUseCase.Verification(in.GetEmail(), in.GetPassword(), ctx)
 	if err != nil {
-		return nil, err
+		errData, codeUint32 := errortools.ErrorHandle(err)
+		code := codes.Code(codeUint32)
+		serializeErrData, jsonErr := json.Marshal(errData)
+		if jsonErr != nil{
+			return nil, jsonErr
+		}
+		return &api.UserResponse{
+			Id:      0,
+			Executor: false,
+		}, status.Error(code, string(serializeErrData))
 	}
 	return &api.UserResponse{
 		Id:       answer["id"].(uint64),
@@ -53,7 +75,22 @@ func (s *GRPCServer) AuthorizationUser(ctx context.Context, in *api.Authorizatio
 func (s *GRPCServer) GetUserById(ctx context.Context, in *api.UserRequest) (*api.UserInfoResponse, error) {
 	userInfo, err := s.userUseCase.GetById(in.GetId(), ctx)
 	if err != nil {
-		return nil, err
+		errData, codeUint32 := errortools.ErrorHandle(err)
+		code := codes.Code(codeUint32)
+		serializeErrData, jsonErr := json.Marshal(errData)
+		if jsonErr != nil{
+			return nil, jsonErr
+		}
+		return &api.UserInfoResponse{
+			Email:       "",
+			Login:       "",
+			NameSurname: "",
+			About:       "",
+			Specializes: nil,
+			Executor:    false,
+			Img:         "",
+			Rating:      0,
+		}, status.Error(code, string(serializeErrData))
 	}
 	return &api.UserInfoResponse{
 		Email:       userInfo.Email,
@@ -75,7 +112,13 @@ func (s *GRPCServer) GetSpecializeByUserId(ctx context.Context, in *api.UserRequ
 func (s *GRPCServer) SetImgUrl(ctx context.Context, in *api.SetImgUrlRequest) (*api.SetImgUrlResponse, error) {
 	err := s.userUseCase.SetImg(in.GetId(), in.GetImgIrl(), ctx)
 	if err != nil {
-		return &api.SetImgUrlResponse{Successfully: false}, err
+		errData, codeUint32 := errortools.ErrorHandle(err)
+		code := codes.Code(codeUint32)
+		serializeErrData, jsonErr := json.Marshal(errData)
+		if jsonErr != nil{
+			return nil, jsonErr
+		}
+		return &api.SetImgUrlResponse{Successfully: false}, status.Error(code, string(serializeErrData))
 	}
 	return &api.SetImgUrlResponse{Successfully: true}, nil
 }

@@ -7,11 +7,11 @@ import (
 	"google.golang.org/grpc"
 	"net"
 	"user/api"
+	handlers3 "user/internal/app/session/handlers"
+	grpcrepository2 "user/internal/app/session/repository/grpcrepository"
+	impl4 "user/internal/app/session/usecase/impl"
 	impl2 "user/internal/app/specialize/usecase/impl"
 	"user/internal/app/user/handlers"
-	handlers2 "user/internal/session/handlers"
-	"user/internal/session/repository/grpcrepository"
-	impl3 "user/internal/session/usecase/impl"
 	"user/pkg/middleware"
 
 	"log"
@@ -69,7 +69,7 @@ func main() {
 	}
 	defer grpcConn.Close()
 	client := api.NewSessionClient(grpcConn)
-	sessionRepository := grpcrepository.New(client)
+	sessionRepository := grpcrepository2.New(client)
 
 	userUseCase := impl.New(userRepository, specializeRepository)
 	userHandler := handlers.New(userUseCase)
@@ -77,8 +77,8 @@ func main() {
 	specializeUseCase := impl2.New(specializeRepository)
 	specializeHandler := specHandler.New(specializeUseCase, userUseCase)
 
-	sessionUseCase := impl3.New(sessionRepository)
-	sessionMiddleWare := handlers2.New(sessionUseCase)
+	sessionUseCase := impl4.New(sessionRepository)
+	sessionMiddleWare := handlers3.New(sessionUseCase)
 
 	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 

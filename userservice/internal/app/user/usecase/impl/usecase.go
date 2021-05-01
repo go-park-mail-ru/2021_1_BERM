@@ -22,6 +22,7 @@ func (useCase *UseCase) SetImg(ID uint64, img string, ctx context.Context) error
 	}
 	return err
 }
+
 func (useCase *UseCase) Create(user models.NewUser, ctx context.Context) (map[string]interface{}, error) {
 	if err := tools.ValidationCreateUser(&user); err != nil {
 		return nil, errors.Wrap(err, "Validation error")

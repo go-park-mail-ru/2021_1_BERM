@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"golang.org/x/crypto/argon2"
 	"math/rand"
-	"user/Error"
 	"user/internal/app/models"
 )
 
@@ -24,11 +23,7 @@ func BeforeCreate(user *models.NewUser) error {
 	salt := make([]byte, saltLength)
 	_, err := rand.Read(salt)
 	if err != nil {
-		return &Error.Error{
-			Err:              err,
-			InternalError:    true,
-			ErrorDescription: Error.InternalServerErrorDescription,
-		}
+		return err
 	}
 
 	user.EncryptPassword = hashPass(salt, user.Password)
@@ -42,11 +37,7 @@ func BeforeChange(user *models.ChangeUser) error {
 	salt := make([]byte, saltLength)
 	_, err := rand.Read(salt)
 	if err != nil {
-		return &Error.Error{
-			Err:              err,
-			InternalError:    true,
-			ErrorDescription: Error.InternalServerErrorDescription,
-		}
+		return err
 	}
 
 	user.EncryptPassword = hashPass(salt, user.Password)

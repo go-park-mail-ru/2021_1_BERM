@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/pkg/errors"
 	"net/http"
-	"user/Error"
+	"user/pkg/error/errortools"
 	"user/pkg/logger"
 )
 
@@ -17,21 +17,17 @@ func Respond(w http.ResponseWriter, requestId uint64, code int, data interface{}
 	if data != nil {
 		err := json.NewEncoder(w).Encode(data)
 		if err != nil {
-			RespondError(w, requestId, err, 500)
+			RespondError(w, requestId, err)
 			return
 		}
 	}
 	logger.LoggingResponse(requestId, code)
 }
 
-func RespondError(w http.ResponseWriter, requestId uint64, err error, errorCode int) {
+func RespondError(w http.ResponseWriter, requestId uint64, err error) {
 	logger.LoggingError(requestId, err)
-	httpError := &Error.Error{}
-	if errors.As(err, &httpError) {
-		Respond(w, requestId, errorCode, httpError.ErrorDescription)
-		return
-	}
-	Respond(w, requestId, http.StatusInternalServerError, map[string]string{"error": "Internal server error"})
+	responseBody, code := errortools.ErrorHandle(err)
+	Respond(w, requestId, code, responseBody)
 }
 
 func RespondCSRF() http.Handler {
