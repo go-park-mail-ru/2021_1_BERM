@@ -3,8 +3,8 @@ package tarantoolrepository
 import (
 	"authorizationservice/internal/models"
 	"authorizationservice/internal/tools"
+	customError "authorizationservice/pkg/error"
 	"context"
-	"github.com/pkg/errors"
 	"github.com/tarantool/go-tarantool"
 )
 
@@ -32,8 +32,7 @@ func (r *Repository) Get(sessionID string, ctx context.Context) (*models.Session
 		return nil, err
 	}
 	if len(resp.Tuples()) == 0 {
-		//FIXME сделать нормальную ошибку
-		return nil, errors.New("No data")
+		return nil, customError.ErrorNoRows
 	}
 	session := tools.DecodingTarantoolToSession(resp.Tuples()[0])
 	return session, nil

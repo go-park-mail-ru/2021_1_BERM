@@ -20,6 +20,7 @@ func NewGRPCServer(sessionUseCase usecase.UseCase) *GRPCServer {
 func (s *GRPCServer) Check(ctx context.Context, in *api.SessionCheckRequest) (*api.SessionCheckResponse, error) {
 	session, err := s.sessionUseCase.Get(in.GetSessionId(), ctx)
 	if err != nil {
+
 		return nil, err
 	}
 
