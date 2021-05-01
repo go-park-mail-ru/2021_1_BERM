@@ -8,15 +8,16 @@ import (
 	"github.com/stretchr/testify/require"
 	"testing"
 )
-var(
+
+var (
 	correctVacancyModel = model.Vacancy{
-		UserID: 1,
-		Category: "develop",
+		UserID:      1,
+		Category:    "develop",
 		VacancyName: ":ALALASDLASDDA:KM",
 		Description: "SADJSAHJA:S",
-		Salary: 5,
-		Login: correctLogin,
-		Img: "",
+		Salary:      5,
+		Login:       correctLogin,
+		Img:         "",
 	}
 )
 
@@ -28,7 +29,7 @@ func TestVacancyCreate(t *testing.T) {
 
 	mockStore := mock.NewMockStore(ctrl)
 	vacancyRepMock := mock.NewMockVacancyRepository(ctrl)
-	vacancyRepMock .EXPECT().Create(correctVacancyModel).Return(uint64(1), nil)
+	vacancyRepMock.EXPECT().Create(correctVacancyModel).Return(uint64(1), nil)
 
 	userRepMock := mock.NewMockUserRepository(ctrl)
 	userRepMock.EXPECT().FindUserByID(uint64(1)).Return(newCorrectUser, nil)
@@ -51,14 +52,14 @@ func TestVacancyCreate(t *testing.T) {
 func TestVacancyFindByID(t *testing.T) {
 	newCorrectUser := &model.User{}
 	*newCorrectUser = correctUser
-	newCorrectVacancy:= &model.Vacancy{}
+	newCorrectVacancy := &model.Vacancy{}
 	*newCorrectVacancy = correctVacancyModel
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockStore := mock.NewMockStore(ctrl)
 	vacancyRepMock := mock.NewMockVacancyRepository(ctrl)
-	vacancyRepMock .EXPECT().FindByID(uint64(1)).Return(newCorrectVacancy, nil)
+	vacancyRepMock.EXPECT().FindByID(uint64(1)).Return(newCorrectVacancy, nil)
 
 	userRepMock := mock.NewMockUserRepository(ctrl)
 	userRepMock.EXPECT().FindUserByID(uint64(1)).Return(newCorrectUser, nil)
@@ -77,4 +78,3 @@ func TestVacancyFindByID(t *testing.T) {
 	_, err := useCase.Vacancy().FindByID(1)
 	require.NoError(t, err)
 }
-

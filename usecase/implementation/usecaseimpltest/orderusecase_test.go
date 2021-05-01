@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"testing"
 )
+
 const (
 	correctEmail    = "Email@gmail.com"
 	correctPassword = "Zxcv1234"
@@ -30,18 +31,17 @@ var (
 	}
 
 	correctOrderModel = model.Order{
-		ID: 0,
-		OrderName: "123sdadssadqw",
-		CustomerID: 1,
-		ExecutorID: 2,
-		Budget: 10,
-		Deadline: 2002234,
+		ID:          0,
+		OrderName:   "123sdadssadqw",
+		CustomerID:  1,
+		ExecutorID:  2,
+		Budget:      10,
+		Deadline:    2002234,
 		Description: "sdsdaDsDASADsADDD",
-		Category: "develop",
-		Login: "Valia",
-		Img: "",
+		Category:    "develop",
+		Login:       "Valia",
+		Img:         "",
 	}
-
 )
 
 func TestOrderCreate(t *testing.T) {
@@ -212,7 +212,7 @@ func TestOrderSelectExecutor(t *testing.T) {
 func TestOrderDelExecutor(t *testing.T) {
 	newCorrectOrder := &model.Order{}
 	*newCorrectOrder = correctOrderModel
-	newCorrectOrder.ExecutorID = 0;
+	newCorrectOrder.ExecutorID = 0
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

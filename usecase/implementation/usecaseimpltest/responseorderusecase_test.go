@@ -8,14 +8,15 @@ import (
 	"github.com/stretchr/testify/require"
 	"testing"
 )
-var(
+
+var (
 	correctResponseOrderModel = model.ResponseOrder{
-		OrderID: 1,
-		UserID: 1,
-		Time: 123,
-		Rate: 1,
+		OrderID:   1,
+		UserID:    1,
+		Time:      123,
+		Rate:      1,
 		UserLogin: correctLogin,
-		UserImg: "",
+		UserImg:   "",
 	}
 )
 

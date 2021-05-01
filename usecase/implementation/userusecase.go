@@ -137,7 +137,7 @@ func (u *UserUseCase) FindByID(id uint64) (*model.User, error) {
 	return user, err
 }
 
-func (u *UserUseCase) ChangeUser(user* model.User) (*model.User, error) {
+func (u *UserUseCase) ChangeUser(user *model.User) (*model.User, error) {
 	oldUser, err := u.store.User().FindUserByID(user.ID)
 	if err != nil {
 		return nil, errors.Wrap(err, userUseCaseError)

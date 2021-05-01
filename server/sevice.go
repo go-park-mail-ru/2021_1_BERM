@@ -604,6 +604,7 @@ func (s *server) error(w http.ResponseWriter, requestId uint64, err error) {
 	s.respond(w, requestId, http.StatusInternalServerError, map[string]string{"error": "Internal server error"})
 
 }
+
 func (s *server) handleCreateVacancyResponse(w http.ResponseWriter, r *http.Request) {
 	reqId := r.Context().Value(ctxKeyReqID).(uint64)
 	response := &model.ResponseVacancy{}

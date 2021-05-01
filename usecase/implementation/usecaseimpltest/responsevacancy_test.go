@@ -8,14 +8,15 @@ import (
 	"github.com/stretchr/testify/require"
 	"testing"
 )
-var(
+
+var (
 	correctResponseVacancyModel = model.ResponseVacancy{
 		VacancyID: 1,
-		UserID: 1,
-		Time: 12131,
+		UserID:    1,
+		Time:      12131,
 		UserLogin: correctLogin,
-		Rate: 1,
-		UserImg: "",
+		Rate:      1,
+		UserImg:   "",
 	}
 )
 
@@ -53,8 +54,6 @@ func TestResponseFindByVacancyID(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockStore := mock.NewMockStore(ctrl)
-
-
 
 	responseVacancyRepMock := mock.NewMockResponseVacancyRepository(ctrl)
 	responseVacancyRepMock.EXPECT().FindByVacancyID(uint64(1)).Return([]model.ResponseVacancy{correctResponseVacancyModel}, nil)
@@ -115,4 +114,3 @@ func TestResponseVacancyDelete(t *testing.T) {
 	err := useCase.ResponseVacancy().Delete(correctResponseVacancyModel)
 	require.NoError(t, err)
 }
-

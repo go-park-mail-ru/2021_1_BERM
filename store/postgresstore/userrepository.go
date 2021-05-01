@@ -65,7 +65,7 @@ const (
                  name_surname =:name_surname,
                  about=:about,
                  executor=:executor,
-                 img=:img,
+                 imgcreator=:imgcreator,
                  rating=:rating
 				 WHERE id = :id`
 
@@ -193,9 +193,8 @@ func (u *UserRepository) FindSpecializesByUserID(id uint64) (pq.StringArray, err
 	return user.Specializes, nil
 }
 
-
 func (u *UserRepository) ChangeUser(user *model.User) (*model.User, error) {
-	tx := u.store.Db.MustBegin()
+	tx, _ := u.store.Db.Beginx()
 	_, err := tx.NamedExec(updateUser, user)
 
 	if err != nil {

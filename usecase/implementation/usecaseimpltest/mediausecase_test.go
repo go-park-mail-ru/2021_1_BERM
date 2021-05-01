@@ -28,6 +28,6 @@ func TestMediaUseCaseSetImage(t *testing.T) {
 	mockMediaStore.EXPECT().Image().Return(imageRepMock)
 
 	useCase := implementation.New(mockStore, mockCache, mockMediaStore)
-	_, err := useCase.Media().SetImage(newCorrectUser,[]byte{})
+	_, err := useCase.Media().SetImage(newCorrectUser, []byte{})
 	require.NoError(t, err)
 }
