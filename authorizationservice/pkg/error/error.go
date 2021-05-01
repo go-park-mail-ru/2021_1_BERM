@@ -13,11 +13,3 @@ const (
 	InternalServerErrorMsg = "Ooops. Something went wrong!!! :("
 )
 
-const (
-	GRPCInternalErrorCode = 1
-	GRPCValidationErrorCode = 2;
-	GRPCDuplicateErrorCode = 3;
-	GRPCNoDataErrorCode = 4;
-)
-
-
