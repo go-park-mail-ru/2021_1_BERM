@@ -1,29 +1,22 @@
 package errortools
 
 import (
-	"database/sql"
-	"github.com/lib/pq"
-	"github.com/pkg/errors"
+	"net/http"
 	customError "user/pkg/error"
 )
 
-func SqlErrorHandle(err error) error {
-	if err == nil {
-		return nil
+func ErrorHandle(err error) (interface{}, int) {
+	if respBody, code, ok := sqlErrorHandle(err); ok{
+		return respBody, code
 	}
-
-	pqErr := &pq.Error{}
-	if errors.As(err, &pqErr) {
-		if pqErr.Code == customError.PostgreDuplicateErrorCode {
-			return customError.ErrorSqlDuplicate
-		}
+	if respBody, code, ok := validationErrorHandle(err); ok{
+		return respBody, code
 	}
-	if errors.Is(err, sql.ErrNoRows) {
-		return customError.ErrorSqlNoRows
+	if respBody, code, ok := grpcErrorHandle(err); ok{
+		return respBody, code
 	}
-	return customError.ErrorDataSource
+	return map[string]interface{}{
+		"message" : customError.InternalServerErrorMsg,
+	}, http.StatusInternalServerError
 }
 
-
-func GrpcErrorHandle(err error ) error{
-}
