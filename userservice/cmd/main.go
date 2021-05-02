@@ -8,7 +8,7 @@ import (
 	"net"
 	"user/api"
 	handlers3 "user/internal/app/session/handlers"
-	grpcrepository2 "user/internal/app/session/repository/grpcrepository"
+	"user/internal/app/session/repository/grpcrepository"
 	impl4 "user/internal/app/session/usecase/impl"
 	impl2 "user/internal/app/specialize/usecase/impl"
 	"user/internal/app/user/handlers"
@@ -69,7 +69,7 @@ func main() {
 	}
 	defer grpcConn.Close()
 	client := api.NewSessionClient(grpcConn)
-	sessionRepository := grpcrepository2.New(client)
+	sessionRepository := grpcrepository.New(client)
 
 	userUseCase := impl.New(userRepository, specializeRepository)
 	userHandler := handlers.New(userUseCase)

@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
 	"log"
+	"net"
 	"net/http"
 	"post/api"
 	pb "post/api"
@@ -114,6 +115,8 @@ func main() {
 	order.HandleFunc("/{id:[0-9]+}/select", orderHandler.SelectExecutor).Methods(http.MethodPut)
 	order.HandleFunc("/{id:[0-9]+}/select", orderHandler.DeleteExecutor).Methods(http.MethodDelete)
 	order.HandleFunc("/profile/{id:[0-9]+}", orderHandler.GetAllUserOrders).Methods(http.MethodGet)
+	order.HandleFunc("/{id}/close", orderHandler.CloseOrder).Methods(http.MethodDelete)
+	order.HandleFunc("/profile/{id:[0-9]+}/archive", orderHandler.GetAllArchiveUserOrders).Methods(http.MethodGet)
 
 	vacancy := apiRoute.PathPrefix("/vacancy").Subrouter()
 	vacancy.Use(csrfMiddleware)
@@ -129,6 +132,8 @@ func main() {
 	vacancy.HandleFunc("/profile/{id:[0-9]+}", vacancyHandler.GetAllUserVacancies).Methods(http.MethodGet)
 	vacancy.HandleFunc("/{id:[0-9]+}/select", vacancyHandler.SelectExecutor).Methods(http.MethodPut)
 	vacancy.HandleFunc("/{id:[0-9]+}/select", vacancyHandler.DeleteExecutor).Methods(http.MethodDelete)
+	vacancy.HandleFunc("/{id}/close", vacancyHandler.CloseVacancy).Methods(http.MethodDelete)
+	vacancy.HandleFunc("/profile/{id:[0-9]+}/archive", vacancyHandler.GetAllArchiveUserVacancies).Methods(http.MethodGet)
 
 	c := middleware.CorsMiddleware(config.Origin)
 
@@ -146,8 +151,24 @@ func main() {
 		}
 	}
 
-	log.Println("Server starting at port", server.Addr)
-	if err := server.ListenAndServe(); err != nil {
+	go func() {
+		log.Println("Server starting at port", server.Addr)
+		if err := server.ListenAndServe(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	s := grpc.NewServer()
+	srv := orderHandlers.NewGRPCServer(orderUseCase)
+	api.RegisterOrderServer(s, srv)
+
+	l, err := net.Listen("tcp", ":8086")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("GRPC Server start on port :8086")
+	if err := s.Serve(l); err != nil {
 		log.Fatal(err)
 	}
 }

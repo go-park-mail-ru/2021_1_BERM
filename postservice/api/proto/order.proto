@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option go_package = "./api";
+
+service Order {
+  rpc GetOrderById(OrderRequest) returns (OrderInfoResponse) {}
+}
+
+message OrderRequest {
+  uint64 id = 1;
+}
+
+message OrderInfoResponse {
+  string orderName = 1;
+  uint64 customerID = 2;
+  uint64 executorID = 3;
+  uint64 budget = 4;
+  uint64 deadline = 5;
+  string description = 6;
+  string category = 7;
+}

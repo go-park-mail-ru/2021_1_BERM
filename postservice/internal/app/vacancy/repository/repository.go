@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -40,6 +41,17 @@ const (
 				 WHERE id = :id`
 
 	selectVacancies = "SELECT * from post.vacancy"
+
+	selectArchiveVacancies = "SELECT * FROM post.archive_vacancy"
+
+	insertArchiveVacancy = `INSERT INTO post.archive_vacancy (
+						  category, 
+						  vacancy_name,
+						  description, 
+						  salary,
+						  customer_id
+	                  )
+	       VALUES ($1, $2, $3,$4, $5) RETURNING id`
 )
 
 type Repository struct {
@@ -52,7 +64,7 @@ func NewRepo(db *sqlx.DB) *Repository {
 	}
 }
 
-func (r *Repository) Create(vacancy models.Vacancy) (uint64, error) {
+func (r *Repository) Create(vacancy models.Vacancy, ctx context.Context) (uint64, error) {
 	var vacancyID uint64
 	err := r.db.QueryRow(
 		insertVacancy,
@@ -68,7 +80,7 @@ func (r *Repository) Create(vacancy models.Vacancy) (uint64, error) {
 	return vacancyID, nil
 }
 
-func (r *Repository) FindByID(id uint64) (*models.Vacancy, error) {
+func (r *Repository) FindByID(id uint64, ctx context.Context) (*models.Vacancy, error) {
 	vacancy := models.Vacancy{}
 	err := r.db.Get(&vacancy, selectVacancyByID, id)
 	if err != nil {
@@ -78,7 +90,7 @@ func (r *Repository) FindByID(id uint64) (*models.Vacancy, error) {
 	return &vacancy, nil
 }
 
-func (r *Repository) GetActualVacancies() ([]models.Vacancy, error) {
+func (r *Repository) GetActualVacancies(ctx context.Context) ([]models.Vacancy, error) {
 	var vacancies []models.Vacancy
 	if err := r.db.Select(&vacancies, selectVacancies); err != nil {
 		customErr := errortools.SqlErrorChoice(err)
@@ -87,7 +99,7 @@ func (r *Repository) GetActualVacancies() ([]models.Vacancy, error) {
 	return vacancies, nil
 }
 
-func (r *Repository) Change(vacancy models.Vacancy) error {
+func (r *Repository) Change(vacancy models.Vacancy, ctx context.Context) error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)
@@ -105,7 +117,7 @@ func (r *Repository) Change(vacancy models.Vacancy) error {
 	return nil
 }
 
-func (r *Repository) DeleteVacancy(id uint64) error {
+func (r *Repository) DeleteVacancy(id uint64, ctx context.Context) error {
 	_, err := r.db.Queryx(deleteVacancy, id)
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)
@@ -114,7 +126,7 @@ func (r *Repository) DeleteVacancy(id uint64) error {
 	return nil
 }
 
-func (r *Repository) FindByExecutorID(executorID uint64) ([]models.Vacancy, error) {
+func (r *Repository) FindByExecutorID(executorID uint64, ctx context.Context) ([]models.Vacancy, error) {
 	var vacancies []models.Vacancy
 	err := r.db.Select(&vacancies, selectVacanciesByExecutorID, executorID)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -127,7 +139,7 @@ func (r *Repository) FindByExecutorID(executorID uint64) ([]models.Vacancy, erro
 	return vacancies, nil
 }
 
-func (r *Repository) FindByCustomerID(customerID uint64) ([]models.Vacancy, error) {
+func (r *Repository) FindByCustomerID(customerID uint64, ctx context.Context) ([]models.Vacancy, error) {
 	var vacancies []models.Vacancy
 	err := r.db.Select(&vacancies, selectVacanciesByCustomerID, customerID)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -140,7 +152,7 @@ func (r *Repository) FindByCustomerID(customerID uint64) ([]models.Vacancy, erro
 	return vacancies, nil
 }
 
-func (r *Repository) UpdateExecutor(vacancy models.Vacancy) error {
+func (r *Repository) UpdateExecutor(vacancy models.Vacancy, ctx context.Context) error {
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(updateExecutor, &vacancy)
 	if err != nil {
@@ -153,3 +165,29 @@ func (r *Repository) UpdateExecutor(vacancy models.Vacancy) error {
 	}
 	return nil
 }
+
+func (r *Repository) CreateArchive(vacancy models.Vacancy, ctx context.Context) (uint64, error) {
+	var vacancyID uint64
+	err := r.db.QueryRow(
+		insertArchiveVacancy,
+		vacancy.Category,
+		vacancy.VacancyName,
+		vacancy.Description,
+		vacancy.Salary,
+		vacancy.CustomerID).Scan(&vacancyID)
+	if err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return 0, errors.Wrap(customErr, err.Error())
+	}
+	return vacancyID, nil
+}
+
+func (r *Repository) GetArchiveVacancies(ctx context.Context) ([]models.Vacancy, error) {
+	var vacancies []models.Vacancy
+	if err := r.db.Select(&vacancies, selectArchiveVacancies); err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
+	}
+	return vacancies, nil
+}
+

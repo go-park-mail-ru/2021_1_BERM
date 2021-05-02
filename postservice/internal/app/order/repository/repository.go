@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -36,6 +37,8 @@ const (
 
 	selectOrders = "SELECT * FROM post.orders"
 
+	selectArchiveOrders = "SELECT * FROM post.archive_orders"
+
 	updateExecutor = `UPDATE post.orders SET 
                  executor_id =:executor_id
 				 WHERE id = :id`
@@ -49,7 +52,27 @@ const (
 					budget =:budget,
 					description =:description
 					WHERE id =:id`
+
 	deleteOrder = `DELETE from post.orders WHERE id=$1`
+
+	insertArchiveOrder = `INSERT INTO post.archive_orders (
+                   customer_id, 
+                   executor_id, 
+                   order_name, 
+                   category, 
+                   budget, 
+                   deadline,
+                   description
+		)
+        VALUES (
+            $1, 
+            $2, 
+            $3,
+            $4,
+            $5,
+			$6,
+            $7
+                ) RETURNING id`
 )
 
 type Repository struct {
@@ -62,7 +85,7 @@ func NewRepo(db *sqlx.DB) *Repository {
 	}
 }
 
-func (r *Repository) Create(order models.Order) (uint64, error) {
+func (r *Repository) Create(order models.Order, ctx context.Context) (uint64, error) {
 	var orderID uint64
 	err := r.db.QueryRow(
 		insertOrder,
@@ -80,7 +103,7 @@ func (r *Repository) Create(order models.Order) (uint64, error) {
 	return orderID, nil
 }
 
-func (r *Repository) Change(order models.Order) error {
+func (r *Repository) Change(order models.Order, ctx context.Context) error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)
@@ -98,7 +121,7 @@ func (r *Repository) Change(order models.Order) error {
 	return nil
 }
 
-func (r *Repository) DeleteOrder(id uint64) error {
+func (r *Repository) DeleteOrder(id uint64, ctx context.Context) error {
 	_, err := r.db.Queryx(deleteOrder, id)
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)
@@ -107,7 +130,7 @@ func (r *Repository) DeleteOrder(id uint64) error {
 	return nil
 }
 
-func (r *Repository) FindByID(id uint64) (*models.Order, error) {
+func (r *Repository) FindByID(id uint64, ctx context.Context) (*models.Order, error) {
 	order := models.Order{}
 	if err := r.db.Get(&order, selectOrderByID, id); err != nil {
 		customErr := errortools.SqlErrorChoice(err)
@@ -116,7 +139,7 @@ func (r *Repository) FindByID(id uint64) (*models.Order, error) {
 	return &order, nil
 }
 
-func (r *Repository) FindByExecutorID(executorID uint64) ([]models.Order, error) {
+func (r *Repository) FindByExecutorID(executorID uint64, ctx context.Context) ([]models.Order, error) {
 	var orders []models.Order
 	err := r.db.Select(&orders, selectOrderByExecutorID, executorID)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -129,7 +152,7 @@ func (r *Repository) FindByExecutorID(executorID uint64) ([]models.Order, error)
 	return orders, nil
 }
 
-func (r *Repository) FindByCustomerID(customerID uint64) ([]models.Order, error) {
+func (r *Repository) FindByCustomerID(customerID uint64, ctx context.Context) ([]models.Order, error) {
 	var orders []models.Order
 	err := r.db.Select(&orders, selectOrderByCustomerID, customerID)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -142,7 +165,7 @@ func (r *Repository) FindByCustomerID(customerID uint64) ([]models.Order, error)
 	return orders, nil
 }
 
-func (r *Repository) GetActualOrders() ([]models.Order, error) {
+func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error) {
 	var orders []models.Order
 	if err := r.db.Select(&orders, selectOrders); err != nil {
 		customErr := errortools.SqlErrorChoice(err)
@@ -151,7 +174,7 @@ func (r *Repository) GetActualOrders() ([]models.Order, error) {
 	return orders, nil
 }
 
-func (r *Repository) UpdateExecutor(order models.Order) error {
+func (r *Repository) UpdateExecutor(order models.Order, ctx context.Context) error {
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(updateExecutor, &order)
 	if err != nil {
@@ -163,4 +186,31 @@ func (r *Repository) UpdateExecutor(order models.Order) error {
 		return errors.Wrap(customErr, err.Error())
 	}
 	return nil
+}
+
+func (r *Repository) CreateArchive(order models.Order, ctx context.Context) (uint64, error) {
+	var orderID uint64
+	err := r.db.QueryRow(
+		insertArchiveOrder,
+		order.CustomerID,
+		order.ExecutorID,
+		order.OrderName,
+		order.Category,
+		order.Budget,
+		order.Deadline,
+		order.Description).Scan(&orderID)
+	if err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return 0, errors.Wrap(customErr, err.Error())
+	}
+	return orderID, nil
+}
+
+func (r *Repository) GetArchiveOrders(ctx context.Context) ([]models.Order, error) {
+	var orders []models.Order
+	if err := r.db.Select(&orders, selectArchiveOrders); err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
+	}
+	return orders, nil
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -10,11 +11,10 @@ import (
 	"strconv"
 )
 
-
 const (
 	ctxKeySession uint8 = 3
 	ctxKeyReqID   uint8 = 1
-	ctxUserInfo   uint8  = 2
+	ctxUserInfo   uint8 = 2
 )
 
 type Handlers struct {
@@ -36,7 +36,7 @@ func (h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	o.CustomerID = id
-	o, err := h.useCase.Create(*o)
+	o, err := h.useCase.Create(*o, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -46,7 +46,7 @@ func (h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	o, err := h.useCase.GetActualOrders()
+	o, err := h.useCase.GetActualOrders(context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -62,7 +62,7 @@ func (h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
-	o, err := h.useCase.FindByID(id)
+	o, err := h.useCase.FindByID(id, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -84,7 +84,7 @@ func (h *Handlers) ChangeOrder(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
-	order, err = h.useCase.ChangeOrder(order)
+	order, err = h.useCase.ChangeOrder(order, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -100,7 +100,7 @@ func (h *Handlers) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
-	err = h.useCase.DeleteOrder(id)
+	err = h.useCase.DeleteOrder(id, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -123,7 +123,7 @@ func (h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
-	err = h.useCase.SelectExecutor(order)
+	err = h.useCase.SelectExecutor(order, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -143,7 +143,7 @@ func (h *Handlers) DeleteExecutor(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
-	err = h.useCase.DeleteExecutor(order)
+	err = h.useCase.DeleteExecutor(order, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -162,7 +162,35 @@ func (h *Handlers) GetAllUserOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	o, err := h.useCase.FindByUserID(userID)
+	o, err := h.useCase.FindByUserID(userID, context.Background())
+	if err != nil {
+		httputils.RespondError(w, reqID, err)
+		return
+	}
+	httputils.Respond(w, reqID, http.StatusOK, o)
+}
+
+func (h *Handlers) CloseOrder(w http.ResponseWriter, r *http.Request) {
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	params := mux.Vars(r)
+	orderID, err := strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		httputils.RespondError(w, reqID, err)
+		return
+	}
+
+	err = h.useCase.CloseOrder(orderID, context.Background())
+	if err != nil {
+		httputils.RespondError(w, reqID, err)
+		return
+	}
+	var emptyInterface interface{}
+	httputils.Respond(w, reqID, http.StatusOK, emptyInterface)
+}
+
+func (h *Handlers) GetAllArchiveUserOrders(w http.ResponseWriter, r *http.Request) {
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	o, err := h.useCase.GetArchiveOrders(context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return

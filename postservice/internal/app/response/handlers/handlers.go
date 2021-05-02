@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -43,7 +44,7 @@ func (h *Handlers) CreatePostResponse(w http.ResponseWriter, r *http.Request) {
 	response.PostID = id
 	response.VacancyResponse = r.URL.String() == "/api/vacancy/"+strconv.FormatUint(id, 10)+"/response"
 	response.OrderResponse = r.URL.String() == "/api/order/"+strconv.FormatUint(id, 10)+"/response"
-	response, err = h.useCase.Create(*response)
+	response, err = h.useCase.Create(*response, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -61,7 +62,7 @@ func (h *Handlers) GetAllPostResponses(w http.ResponseWriter, r *http.Request) {
 	}
 	vacancyResponse := r.URL.String() == "/api/vacancy/"+strconv.FormatUint(id, 10)+"/response"
 	orderResponse := r.URL.String() == "/api/order/"+strconv.FormatUint(id, 10)+"/response"
-	responses, err := h.useCase.FindByPostID(id, orderResponse, vacancyResponse)
+	responses, err := h.useCase.FindByPostID(id, orderResponse, vacancyResponse, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -88,7 +89,7 @@ func (h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 	response.UserID = r.Context().Value(ctxUserInfo).(uint64)
 	response.VacancyResponse = r.URL.String() == "/api/vacancy/"+strconv.FormatUint(response.PostID, 10)+"/response"
 	response.OrderResponse = r.URL.String() == "/api/order/"+strconv.FormatUint(response.PostID, 10)+"/response"
-	responses, err := h.useCase.Change(*response)
+	responses, err := h.useCase.Change(*response, context.Background())
 
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
@@ -113,7 +114,7 @@ func (h *Handlers) DelPostResponse(w http.ResponseWriter, r *http.Request) {
 	response.UserID = r.Context().Value(ctxUserInfo).(uint64)
 	response.VacancyResponse = r.URL.String() == "/api/vacancy/"+strconv.FormatUint(response.PostID, 10)+"/response"
 	response.OrderResponse = r.URL.String() == "/api/order/"+strconv.FormatUint(response.PostID, 10)+"/response"
-	err = h.useCase.Delete(*response)
+	err = h.useCase.Delete(*response, context.Background())
 
 	if err != nil {
 		httputils.RespondError(w, reqID, err)

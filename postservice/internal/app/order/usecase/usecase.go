@@ -8,7 +8,7 @@ import (
 	"post/api"
 	"post/internal/app/models"
 	orderRepo "post/internal/app/order/repository"
-	"post/pkg/Error"
+	customErr "post/pkg/error"
 )
 
 const (
@@ -27,13 +27,13 @@ func NewUseCase(orderRepo orderRepo.Repository, userRepo api.UserClient) *UseCas
 	}
 }
 
-func (u *UseCase) Create(order models.Order) (*models.Order, error) {
+func (u *UseCase) Create(order models.Order, ctx context.Context) (*models.Order, error) {
 	if err := u.validateOrder(&order); err != nil {
 		return nil, err
 	}
 	u.sanitizeOrder(&order)
 	var err error
-	id, err := u.OrderRepo.Create(order)
+	id, err := u.OrderRepo.Create(order, ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
@@ -45,8 +45,8 @@ func (u *UseCase) Create(order models.Order) (*models.Order, error) {
 	return &order, err
 }
 
-func (u *UseCase) FindByID(id uint64) (*models.Order, error) {
-	order, err := u.OrderRepo.FindByID(id)
+func (u *UseCase) FindByID(id uint64, ctx context.Context) (*models.Order, error) {
+	order, err := u.OrderRepo.FindByID(id, ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
@@ -57,17 +57,17 @@ func (u *UseCase) FindByID(id uint64) (*models.Order, error) {
 	return order, err
 }
 
-func (u *UseCase) FindByUserID(userID uint64) ([]models.Order, error) {
-	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: userID})
+func (u *UseCase) FindByUserID(userID uint64, ctx context.Context) ([]models.Order, error) {
+	userR, err := u.UserRepo.GetUserById(ctx, &api.UserRequest{Id: userID})
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
 	isExecutor := userR.GetExecutor()
 	var orders []models.Order
 	if isExecutor {
-		orders, err = u.OrderRepo.FindByExecutorID(userID)
+		orders, err = u.OrderRepo.FindByExecutorID(userID, ctx)
 	} else {
-		orders, err = u.OrderRepo.FindByCustomerID(userID)
+		orders, err = u.OrderRepo.FindByCustomerID(userID, ctx)
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
@@ -84,8 +84,8 @@ func (u *UseCase) FindByUserID(userID uint64) ([]models.Order, error) {
 	return orders, nil
 }
 
-func (u *UseCase) ChangeOrder(order models.Order) (models.Order, error) {
-	oldOrder, err := u.OrderRepo.FindByID(order.ID)
+func (u *UseCase) ChangeOrder(order models.Order, ctx context.Context) (models.Order, error) {
+	oldOrder, err := u.OrderRepo.FindByID(order.ID, context.Background())
 	if err != nil {
 		return models.Order{}, errors.Wrap(err, orderUseCaseError)
 	}
@@ -106,7 +106,7 @@ func (u *UseCase) ChangeOrder(order models.Order) (models.Order, error) {
 	}
 	order.CustomerID = oldOrder.CustomerID
 	order.ExecutorID = oldOrder.ExecutorID
-	err = u.OrderRepo.Change(order)
+	err = u.OrderRepo.Change(order, ctx)
 	if err != nil {
 		return models.Order{}, errors.Wrap(err, orderUseCaseError)
 	}
@@ -117,16 +117,16 @@ func (u *UseCase) ChangeOrder(order models.Order) (models.Order, error) {
 	return order, nil
 }
 
-func (u *UseCase) DeleteOrder(id uint64) error {
-	err := u.OrderRepo.DeleteOrder(id)
+func (u *UseCase) DeleteOrder(id uint64, ctx context.Context) error {
+	err := u.OrderRepo.DeleteOrder(id, ctx)
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
 	return nil
 }
 
-func (u *UseCase) GetActualOrders() ([]models.Order, error) {
-	orders, err := u.OrderRepo.GetActualOrders()
+func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, error) {
+	orders, err := u.OrderRepo.GetActualOrders(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
@@ -143,50 +143,72 @@ func (u *UseCase) GetActualOrders() ([]models.Order, error) {
 	return orders, err
 }
 
-func (u *UseCase) SelectExecutor(order models.Order) error {
+func (u *UseCase) SelectExecutor(order models.Order, ctx context.Context) error {
 	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: order.ExecutorID})
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
-	//TODO: изменить интернал на экстернал
 	if userR.GetExecutor() == false {
-		return &Error.Error{
-			Err: errors.New("Select user not executor"),
-			ErrorDescription: map[string]interface{}{
-				"Error": Error.InternalServerErrorDescription["Error"]},
-			InternalError: true,
-		}
+		return customErr.ErrorUserNotExecutor
 	}
-	//TODO: изменить интернал на экстернал
 	if order.ExecutorID == order.CustomerID {
-		return &Error.Error{
-			Err: errors.New("Executor and customer ID are the same"),
-			ErrorDescription: map[string]interface{}{
-				"Error": Error.InternalServerErrorDescription["Error"]},
-			InternalError: true,
-		}
+		return customErr.ErrorSameID
 	}
-	err = u.OrderRepo.UpdateExecutor(order)
+	err = u.OrderRepo.UpdateExecutor(order, ctx)
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
 	return nil
 }
 
-func (u *UseCase) DeleteExecutor(order models.Order) error {
+func (u *UseCase) DeleteExecutor(order models.Order, ctx context.Context) error {
 	order.ExecutorID = 0
-	err := u.OrderRepo.UpdateExecutor(order)
+	err := u.OrderRepo.UpdateExecutor(order, ctx)
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
 	return nil
+}
+
+func (u *UseCase) CloseOrder(orderID uint64, ctx context.Context) error {
+	order, err := u.OrderRepo.FindByID(orderID, ctx)
+	if err != nil {
+		return errors.Wrap(err, orderUseCaseError)
+	}
+	err = u.OrderRepo.DeleteOrder(orderID, ctx)
+	if err != nil {
+		return errors.Wrap(err, orderUseCaseError)
+	}
+	_, err = u.OrderRepo.CreateArchive(*order, ctx)
+	if err != nil {
+		return errors.Wrap(err, orderUseCaseError)
+	}
+	return nil
+}
+
+func (u *UseCase) GetArchiveOrders(ctx context.Context) ([]models.Order, error) {
+	orders, err := u.OrderRepo.GetArchiveOrders(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, orderUseCaseError)
+	}
+	for i, order := range orders {
+		err = u.supplementingTheOrderModel(&order)
+		if err != nil {
+			return nil, errors.Wrap(err, orderUseCaseError)
+		}
+		orders[i] = order
+	}
+	if orders == nil {
+		return []models.Order{}, nil
+	}
+	return orders, err
 }
 
 //TODO: вынести в отдеьлный модуль
 func (u *UseCase) validateOrder(order *models.Order) error {
 	err := validation.ValidateStruct(
 		order,
-		validation.Field(&order.OrderName, validation.Required, validation.Length(5, 300)),
+		validation.Field(&order.OrderName, validation.Required, validation.Length(1, 300)),
 		validation.Field(&order.Description, validation.Required),
 		validation.Field(&order.Category, validation.Required),
 	)
@@ -204,12 +226,7 @@ func (u *UseCase) sanitizeOrder(order *models.Order) {
 func (u *UseCase) supplementingTheOrderModel(order *models.Order) error {
 	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: order.CustomerID})
 	if err != nil {
-		return &Error.Error{
-			Err: err,
-			ErrorDescription: map[string]interface{}{
-				"Error": Error.InternalServerErrorDescription},
-			InternalError: true,
-		}
+		return errors.Wrap(err, orderUseCaseError)
 	}
 	order.UserLogin = userR.GetLogin()
 	order.UserImg = userR.GetImg()

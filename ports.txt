@@ -3,6 +3,7 @@ user service:
     grpc: 8081
 post service:
     http: 8082
+    grpc: 8086
 image service:
     http: 8083
 auth service:

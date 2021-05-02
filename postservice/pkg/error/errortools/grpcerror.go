@@ -5,7 +5,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"net/http"
-	customError "user/pkg/error"
+	customError "post/pkg/error"
 )
 
 type grpcErrorInfo struct {

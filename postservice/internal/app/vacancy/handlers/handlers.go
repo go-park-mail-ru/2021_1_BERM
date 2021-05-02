@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"io"
@@ -46,7 +47,7 @@ func (h *Handlers) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var err error
-	if v, err = h.useCase.Create(*v); err != nil {
+	if v, err = h.useCase.Create(*v, context.Background()); err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
@@ -68,7 +69,7 @@ func (h *Handlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
-	v, err := h.useCase.FindByID(id)
+	v, err := h.useCase.FindByID(id, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -78,7 +79,7 @@ func (h *Handlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	v, err := h.useCase.GetActualVacancies()
+	v, err := h.useCase.GetActualVacancies(context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -107,7 +108,7 @@ func (h *Handlers) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
-	vacancy, err = h.useCase.ChangeVacancy(vacancy)
+	vacancy, err = h.useCase.ChangeVacancy(vacancy, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -130,7 +131,7 @@ func (h *Handlers) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
-	err = h.useCase.DeleteVacancy(id)
+	err = h.useCase.DeleteVacancy(id, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -154,7 +155,7 @@ func (h *Handlers) GetAllUserVacancies(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
-	vacancies, err := h.useCase.FindByUserID(userID)
+	vacancies, err := h.useCase.FindByUserID(userID, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -183,7 +184,7 @@ func (h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
-	err = h.useCase.SelectExecutor(vacancy)
+	err = h.useCase.SelectExecutor(vacancy, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
@@ -203,11 +204,39 @@ func (h *Handlers) DeleteExecutor(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
-	err = h.useCase.DeleteExecutor(vacancy)
+	err = h.useCase.DeleteExecutor(vacancy, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
 	var emptyInterface interface{}
 	httputils.Respond(w, reqID, http.StatusOK, emptyInterface)
+}
+
+func (h *Handlers) CloseVacancy(w http.ResponseWriter, r *http.Request) {
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	params := mux.Vars(r)
+	vacancyID, err := strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		httputils.RespondError(w, reqID, err)
+		return
+	}
+
+	err = h.useCase.CloseVacancy(vacancyID, context.Background())
+	if err != nil {
+		httputils.RespondError(w, reqID, err)
+		return
+	}
+	var emptyInterface interface{}
+	httputils.Respond(w, reqID, http.StatusOK, emptyInterface)
+}
+
+func (h *Handlers) GetAllArchiveUserVacancies(w http.ResponseWriter, r *http.Request) {
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	v, err := h.useCase.GetArchiveVacancies(context.Background())
+	if err != nil {
+		httputils.RespondError(w, reqID, err)
+		return
+	}
+	httputils.Respond(w, reqID, http.StatusOK, v)
 }

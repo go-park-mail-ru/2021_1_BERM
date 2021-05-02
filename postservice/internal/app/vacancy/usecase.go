@@ -1,16 +1,19 @@
 package vacancy
 
 import (
+	"context"
 	"post/internal/app/models"
 )
 
 type UseCase interface {
-	Create(vacancy models.Vacancy) (*models.Vacancy, error)
-	FindByID(id uint64) (*models.Vacancy, error)
-	GetActualVacancies() ([]models.Vacancy, error)
-	ChangeVacancy(vacancy models.Vacancy) (models.Vacancy, error)
-	DeleteVacancy(id uint64) error
-	FindByUserID(userID uint64) ([]models.Vacancy, error)
-	SelectExecutor(vacancy models.Vacancy) error
-	DeleteExecutor(vacancy models.Vacancy) error
+	Create(vacancy models.Vacancy, ctx context.Context) (*models.Vacancy, error)
+	FindByID(userID uint64, ctx context.Context) (*models.Vacancy, error)
+	GetActualVacancies(ctx context.Context) ([]models.Vacancy, error)
+	ChangeVacancy(vacancy models.Vacancy, ctx context.Context) (models.Vacancy, error)
+	DeleteVacancy(id uint64, ctx context.Context) error
+	FindByUserID(userID uint64, ctx context.Context) ([]models.Vacancy, error)
+	SelectExecutor(vacancy models.Vacancy, ctx context.Context) error
+	DeleteExecutor(vacancy models.Vacancy, ctx context.Context) error
+	CloseVacancy(vacancyID uint64, ctx context.Context) error
+	GetArchiveVacancies(ctx context.Context) ([]models.Vacancy, error)
 }

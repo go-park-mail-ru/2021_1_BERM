@@ -1,16 +1,19 @@
 package order
 
 import (
+	"context"
 	"post/internal/app/models"
 )
 
 type Repository interface {
-	Create(order models.Order) (uint64, error)
-	Change(order models.Order) error
-	DeleteOrder(id uint64) error
-	FindByID(id uint64) (*models.Order, error)
-	FindByExecutorID(executorID uint64) ([]models.Order, error)
-	FindByCustomerID(customerID uint64) ([]models.Order, error)
-	GetActualOrders() ([]models.Order, error)
-	UpdateExecutor(order models.Order) error
+	Create(order models.Order, ctx context.Context) (uint64, error)
+	Change(order models.Order, ctx context.Context) error
+	DeleteOrder(id uint64, ctx context.Context) error
+	FindByID(id uint64, ctx context.Context) (*models.Order, error)
+	FindByExecutorID(executorID uint64, ctx context.Context) ([]models.Order, error)
+	FindByCustomerID(customerID uint64, ctx context.Context) ([]models.Order, error)
+	GetActualOrders(ctx context.Context) ([]models.Order, error)
+	UpdateExecutor(order models.Order, ctx context.Context) error
+	CreateArchive(order models.Order, ctx context.Context) (uint64, error)
+	GetArchiveOrders(ctx context.Context) ([]models.Order, error)
 }

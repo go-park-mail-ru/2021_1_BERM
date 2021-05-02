@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 
 	"net/http"
-	customError "user/pkg/error"
+	customError "post/pkg/error"
 )
 
 func SqlErrorChoice(err error) error {

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	"post/internal/app/models"
@@ -65,7 +66,7 @@ func NewRepo(db *sqlx.DB) *Repository {
 	}
 }
 
-func (r *Repository) Create(response models.Response) (uint64, error) {
+func (r *Repository) Create(response models.Response, ctx context.Context) (uint64, error) {
 	var responseID uint64
 	err := r.db.QueryRow(
 		insertResponse,
@@ -84,7 +85,7 @@ func (r *Repository) Create(response models.Response) (uint64, error) {
 	return responseID, nil
 }
 
-func (r *Repository) FindByOrderPostID(id uint64) ([]models.Response, error) {
+func (r *Repository) FindByOrderPostID(id uint64, ctx context.Context) ([]models.Response, error) {
 	var responses []models.Response
 	if err := r.db.Select(&responses, selectOrderResponseByPostID, id); err != nil {
 		customErr := errortools.SqlErrorChoice(err)
@@ -93,7 +94,7 @@ func (r *Repository) FindByOrderPostID(id uint64) ([]models.Response, error) {
 	return responses, nil
 }
 
-func (r *Repository) FindByVacancyPostID(id uint64) ([]models.Response, error) {
+func (r *Repository) FindByVacancyPostID(id uint64, ctx context.Context) ([]models.Response, error) {
 	var responses []models.Response
 	if err := r.db.Select(&responses, selectVacancyResponseByPostID, id); err != nil {
 		customErr := errortools.SqlErrorChoice(err)
@@ -102,7 +103,7 @@ func (r *Repository) FindByVacancyPostID(id uint64) ([]models.Response, error) {
 	return responses, nil
 }
 
-func (r *Repository) ChangeOrderResponse(response models.Response) (*models.Response, error) {
+func (r *Repository) ChangeOrderResponse(response models.Response, ctx context.Context) (*models.Response, error) {
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(updateOrderResponse, &response)
 	if err != nil {
@@ -116,7 +117,7 @@ func (r *Repository) ChangeOrderResponse(response models.Response) (*models.Resp
 	return &response, nil
 }
 
-func (r *Repository) ChangeVacancyResponse(response models.Response) (*models.Response, error) {
+func (r *Repository) ChangeVacancyResponse(response models.Response, ctx context.Context) (*models.Response, error) {
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(updateVacancyResponse, &response)
 	if err != nil {
@@ -130,7 +131,7 @@ func (r *Repository) ChangeVacancyResponse(response models.Response) (*models.Re
 	return &response, nil
 }
 
-func (r *Repository) DeleteOrderResponse(response models.Response) error {
+func (r *Repository) DeleteOrderResponse(response models.Response, ctx context.Context) error {
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(deleteOrderResponse, &response)
 	if err != nil {
@@ -144,7 +145,7 @@ func (r *Repository) DeleteOrderResponse(response models.Response) error {
 	return nil
 }
 
-func (r *Repository) DeleteVacancyResponse(response models.Response) error {
+func (r *Repository) DeleteVacancyResponse(response models.Response, ctx context.Context) error {
 	tx := r.db.MustBegin()
 	_, err := tx.NamedExec(deleteVacancyResponse, &response)
 	if err != nil {

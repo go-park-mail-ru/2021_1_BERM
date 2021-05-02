@@ -24,7 +24,7 @@ func NewUseCase(responseRepo responseRepo.Repository, userRepo api.UserClient) *
 	}
 }
 
-func (u *UseCase) Create(response models.Response) (*models.Response, error) {
+func (u *UseCase) Create(response models.Response, ctx context.Context) (*models.Response, error) {
 	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: response.UserID})
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
@@ -32,7 +32,7 @@ func (u *UseCase) Create(response models.Response) (*models.Response, error) {
 
 	response.UserLogin = userR.GetLogin()
 	response.UserImg = userR.GetImg()
-	id, err := u.ResponseRepo.Create(response)
+	id, err := u.ResponseRepo.Create(response, ctx)
 	response.ID = id
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
@@ -40,14 +40,14 @@ func (u *UseCase) Create(response models.Response) (*models.Response, error) {
 	return &response, nil
 }
 
-func (u *UseCase) FindByPostID(postID uint64, orderResponse bool, vacancyResponse bool) ([]models.Response, error) {
+func (u *UseCase) FindByPostID(postID uint64, orderResponse bool, vacancyResponse bool, ctx context.Context) ([]models.Response, error) {
 	var responses []models.Response
 	var err error
 	if orderResponse {
-		responses, err = u.ResponseRepo.FindByOrderPostID(postID)
+		responses, err = u.ResponseRepo.FindByOrderPostID(postID, ctx)
 	}
 	if vacancyResponse {
-		responses, err = u.ResponseRepo.FindByVacancyPostID(postID)
+		responses, err = u.ResponseRepo.FindByVacancyPostID(postID, ctx)
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
@@ -66,14 +66,14 @@ func (u *UseCase) FindByPostID(postID uint64, orderResponse bool, vacancyRespons
 	return responses, nil
 }
 
-func (u *UseCase) Change(response models.Response) (*models.Response, error) {
+func (u *UseCase) Change(response models.Response, ctx context.Context) (*models.Response, error) {
 	changedResponse := &models.Response{}
 	var err error
 	if response.OrderResponse {
-		changedResponse, err = u.ResponseRepo.ChangeOrderResponse(response)
+		changedResponse, err = u.ResponseRepo.ChangeOrderResponse(response, ctx)
 	}
 	if response.VacancyResponse {
-		changedResponse, err = u.ResponseRepo.ChangeVacancyResponse(response)
+		changedResponse, err = u.ResponseRepo.ChangeVacancyResponse(response, ctx)
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
@@ -85,13 +85,13 @@ func (u *UseCase) Change(response models.Response) (*models.Response, error) {
 	return changedResponse, nil
 }
 
-func (u *UseCase) Delete(response models.Response) error {
+func (u *UseCase) Delete(response models.Response, ctx context.Context) error {
 	var err error
 	if response.OrderResponse {
-		err = u.ResponseRepo.DeleteOrderResponse(response)
+		err = u.ResponseRepo.DeleteOrderResponse(response, ctx)
 	}
 	if response.VacancyResponse {
-		err = u.ResponseRepo.DeleteVacancyResponse(response)
+		err = u.ResponseRepo.DeleteVacancyResponse(response, ctx)
 	}
 	if err != nil {
 		return errors.Wrap(err, responseUseCaseError)
