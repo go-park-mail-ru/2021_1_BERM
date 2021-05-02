@@ -7,7 +7,7 @@ info:
 consumes:
   - application/json
 paths:
-  /login:
+  /api/login:
     post:
       tags:
         - login
@@ -26,7 +26,7 @@ paths:
           schema:
             $ref: '#/definitions/User'
 
-  /logout:
+  /api/logout:
     delete:
       tags:
         - logout
@@ -36,7 +36,7 @@ paths:
         200:
           description: OK
 
-  /profile:
+  /api/profile:
     post:
       tags:
         - profile
@@ -48,14 +48,14 @@ paths:
           description: Данные о юзере
           required: true
           schema:
-            $ref: '#/definitions/User'
+            $ref: '#/definitions/UserCreate'
 
       responses:
         201:
           description: Created
           schema:
             $ref: '#/definitions/User'
-  /profile/authorized:
+  /api/profile/authorized:
     get:
       tags:
         - profile
@@ -67,7 +67,7 @@ paths:
           schema:
             $ref: '#/definitions/UserAuthorized'
 
-  /profile/{id}:
+  /api/profile/{id}:
     get:
       tags:
         - profile
@@ -108,7 +108,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/User'
-  /profile/{id}/specialize:
+  /api/profile/{id}/specialize:
     post:
       tags:
         - profile
@@ -151,7 +151,7 @@ paths:
       responses:
         200:
           description: Ok
-  /profile/avatar:
+  /api/profile/avatar:
     post:
       tags:
         - profile
@@ -169,8 +169,34 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/UserImg'
+  /api/profile/review:
+    post:
+      tags:
+        - profile
+      summary: Добавить отзыв
+      description: Оставить отзыв о пользователе
+      parameters:
+        - name: review
+          in: body
+          schema:
+            $ref: '#/definitions/Review'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Review'
+    get:
+      tags:
+        - profile
+      summary: Получить все отзывы
+      description: Получить все отзывы о пользователе
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Reviews'
 
-  /order:
+  /api/order:
     post:
       tags:
         - order
@@ -197,7 +223,7 @@ paths:
           description: Ok
           schema:
             $ref: '#/definitions/Orders'
-  /order/{id}:
+  /api/order/{id}:
     get:
       tags:
         - order
@@ -253,7 +279,7 @@ paths:
       responses:
         200:
           description: Ok
-  /order/{id}/response:
+  /api/order/{id}/response:
     post:
       tags:
         - order
@@ -330,7 +356,7 @@ paths:
           description: Ok
           schema:
             $ref: '#/definitions/Responses'
-  /order/profile/{id}:
+  /api/order/profile/{id}:
     get:
       tags:
         - order
@@ -348,7 +374,7 @@ paths:
           description: Ok
           schema:
             $ref: '#/definitions/Orders'
-  /order/{id}/select:
+  /api/order/{id}/select:
     post:
       tags:
         - order
@@ -386,7 +412,12 @@ paths:
       responses:
         200:
           description: Ok
-  /vacancy:
+  /api/order/search:
+    get:
+      tags:
+        - order
+      summary: Поиск заказов
+  /api/vacancy:
     post:
       tags:
         - vacancy
@@ -414,7 +445,7 @@ paths:
           description: Ok
           schema:
             $ref: '#/definitions/Vacancies'
-  /vacancy/{id}:
+  /api/vacancy/{id}:
     get:
       tags:
         - vacancy
@@ -469,7 +500,7 @@ paths:
       responses:
         200:
           description: Ok
-  /vacancy/{id}/response:
+  /api/vacancy/{id}/response:
     post:
       tags:
         - vacancy
@@ -546,7 +577,7 @@ paths:
           description: Ok
           schema:
             $ref: '#/definitions/Responses'
-  /vacancy/profile/{id}:
+  /api/vacancy/profile/{id}:
     get:
       tags:
         - vacancy
@@ -564,7 +595,7 @@ paths:
           description: Ok
           schema:
             $ref: '#/definitions/Vacancies'
-  /vacancy/{id}/select:
+  /api/vacancy/{id}/select:
     post:
       tags:
         - vacancy
@@ -604,7 +635,7 @@ paths:
           description: Ok
 
 definitions:
-  User:
+  UserCreate:
     type: object
     required:
       - email
@@ -633,6 +664,50 @@ definitions:
       password:
         type: string
         example: "2281488322"
+      executor:
+        type: boolean
+        example: true
+        readOnly: true
+      specializes:
+        type: array
+        items:
+          type: string
+        example:
+          - "Back"
+          - "Front"
+      img:
+        type: string
+        example: "findreelancer.ru/images/kek.jpg"
+        readOnly: true
+      rating:
+        type: integer
+        example: 322
+        readOnly: true
+  User:
+    type: object
+    required:
+      - email
+      - login
+      - name_surname
+      - about
+      - specializes
+    properties:
+      id:
+        type: number
+        example: 228
+        readOnly: true
+      email:
+        type: string
+        example: "kek@mem.ru"
+      login:
+        type: string
+        example: "AlexDarkStalker98"
+      name_surname:
+        type: string
+        example: "Глад Вакалас"
+      about:
+        type: string
+        example: "Я пожилая няшка"
       executor:
         type: boolean
         example: true
@@ -891,6 +966,37 @@ definitions:
         type: boolean
         example: true
         readOnly: true
+  Review:
+    type: object
+    properties:
+      id:
+        type: number
+        example: 42
+        format: uint64
+        readOnly: true
+      user:
+        type: number
+        example: 228
+        format: uint64
+      to_user:
+        type: number
+        format: uint64
+        example: 322
+      text:
+        type: string
+        example: "Мой самый лучший исполнитель, все сделал идеально, зовут его Олег и делает он Бек"
+      score:
+        type: number
+        example: 5
+        format: от 0 до 5
+      order_id:
+        type: number
+        format: uint64
+        example: 1488
+  Reviews:
+    type: array
+    items:
+      $ref: '#/definitions/Review'
 host: findfreelancer.ru
 basePath: /
 schemes:
