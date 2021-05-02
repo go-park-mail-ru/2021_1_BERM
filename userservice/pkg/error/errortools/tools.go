@@ -1,11 +1,17 @@
 package errortools
 
 import (
+	"github.com/pkg/errors"
 	"net/http"
 	customError "user/pkg/error"
 )
 
 func ErrorHandle(err error) (interface{}, int) {
+	if errors.Is(err, customError.ErrorInvalidPassword){
+		return map[string]string{
+			"message" : "Invalid password.",
+		}, http.StatusBadRequest
+	}
 	if respBody, code, ok := sqlErrorHandle(err); ok{
 		return respBody, code
 	}

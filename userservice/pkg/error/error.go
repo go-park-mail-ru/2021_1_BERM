@@ -6,6 +6,7 @@ var (
 	ErrorNoRows     = errors.New("Error no rows.")
 	ErrorDuplicate  = errors.New("Error duplicate.")
 	ErrorDataSource = errors.New("Error in data source.")
+	ErrorInvalidPassword = errors.New("Invalid password")
 )
 
 const (
