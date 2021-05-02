@@ -31,13 +31,17 @@ CREATE TABLE userservice.user_specializes
     PRIMARY KEY (user_id, specialize_id)
 );
 
-CREATE TABLE userservice.user_reviews
+CREATE TABLE userservice.reviews
 (
     id          SERIAL PRIMARY KEY NOT NULL,
     user_id     INTEGER            NOT NULL,
+    to_user_id  INTEGER            NOT NULL,
     order_id    INTEGER            NOT NULL,
     description VARCHAR            NOT NULL,
-    executor    boolean            NOT NULL,
+    score       INTEGER            NOT NULL,
     FOREIGN KEY (user_id)
         REFERENCES userservice.users (id)
+        FOREIGN KEY (to_user_id)
+        REFERENCES userservice.users (id)
+
 );

@@ -3,16 +3,18 @@ package impl
 import (
 	"context"
 	"github.com/pkg/errors"
-	"user/Error"
 	"user/internal/app/models"
+	review "user/internal/app/review/repository"
 	specialize "user/internal/app/specialize/repository"
 	"user/internal/app/user/repository"
 	"user/internal/app/user/tools"
+	customErrors "user/pkg/error"
 )
 
 type UseCase struct {
 	userRepository       repository.Repository
 	specializeRepository specialize.Repository
+	reviewsRepository    review.Repository
 }
 
 func (useCase *UseCase) SetImg(ID uint64, img string, ctx context.Context) error {
@@ -38,13 +40,10 @@ func (useCase *UseCase) Create(user models.NewUser, ctx context.Context) (map[st
 	for _, spec := range user.Specializes {
 		specID, err := useCase.specializeRepository.FindByName(spec, ctx)
 		if err != nil {
-			newErr := &Error.Error{}
-			if errors.As(err, &newErr) {
-				if !newErr.InternalError {
-					specID, err = useCase.specializeRepository.Create(spec, ctx)
-					if err != nil {
-						return nil, errors.Wrap(err, "Error in data sourse")
-					}
+			if err == customErrors.ErrorNoRows {
+				specID, err = useCase.specializeRepository.Create(spec, ctx)
+				if err != nil {
+					return nil, errors.Wrap(err, "Error in data sourse")
 				}
 			}
 		}
@@ -66,13 +65,7 @@ func (useCase *UseCase) Verification(email string, password string, ctx context.
 		return nil, errors.Wrap(err, "Error in user repository.")
 	}
 	if !tools.CompPass(user.Password, password) {
-		return nil, &Error.Error{
-			Err:           err,
-			InternalError: false,
-			ErrorDescription: map[string]interface{}{
-				"Error": "Invalid password",
-			},
-		}
+		return nil, customErrors.ErrorInvalidPassword
 	}
 
 	return map[string]interface{}{
@@ -92,6 +85,11 @@ func (useCase *UseCase) GetById(ID uint64, ctx context.Context) (*models.UserInf
 			return nil, errors.Wrap(err, "Error in specialize repository.")
 		}
 	}
+	rating, err := useCase.reviewsRepository.GetAvgScoreByUserId(ID, ctx)
+	if err != nil {
+		return nil, err
+	}
+	user.Rating = rating
 	return user, nil
 }
 
@@ -106,25 +104,13 @@ func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (map
 	}
 
 	if !tools.CompPass(oldUser.Password, user.Password) {
-		return nil, &Error.Error{
-			Err:           err,
-			InternalError: false,
-			ErrorDescription: map[string]interface{}{
-				"Error": "Bad password",
-			},
-		}
+		return nil, customErrors.ErrorInvalidPassword
 	}
 	if user.NewPassword != "" {
 		user.Password = user.NewPassword
 	}
 	if err := tools.BeforeChange(&user); err != nil {
-		return nil, &Error.Error{
-			Err:           err,
-			InternalError: true,
-			ErrorDescription: map[string]interface{}{
-				"Error": Error.InternalServerErrorDescription,
-			},
-		}
+		return nil, err
 	}
 	if user.Email == "" {
 		user.Email = oldUser.Email
@@ -156,13 +142,10 @@ func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (map
 	for _, spec := range user.Specializes {
 		specID, err := useCase.specializeRepository.FindByName(spec, ctx)
 		if err != nil {
-			newErr := &Error.Error{}
-			if errors.As(err, newErr) {
-				if !newErr.InternalError {
-					specID, err = useCase.specializeRepository.Create(spec, ctx)
-					if err != nil {
-						return nil, errors.Wrap(err, "Error in data sourse")
-					}
+			if err == customErrors.ErrorNoRows{
+				specID, err = useCase.specializeRepository.Create(spec, ctx)
+				if err != nil {
+					return nil, errors.Wrap(err, "Error in data sourse")
 				}
 			}
 		}
@@ -180,9 +163,10 @@ func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (map
 	}, nil
 }
 
-func New(userRep repository.Repository, specRep specialize.Repository) *UseCase {
+func New(userRep repository.Repository, specRep specialize.Repository, reviewsRepository    review.Repository) *UseCase {
 	return &UseCase{
 		specializeRepository: specRep,
 		userRepository:       userRep,
+		reviewsRepository: reviewsRepository,
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"net"
 	"user/api"
+	impl3 "user/internal/app/review/usecase/impl"
 	handlers3 "user/internal/app/session/handlers"
 	"user/internal/app/session/repository/grpcrepository"
 	impl4 "user/internal/app/session/usecase/impl"
@@ -17,6 +18,8 @@ import (
 	"log"
 	"net/http"
 	"user/configs"
+	revHandler "user/internal/app/review/handlers"
+	reviewRepo "user/internal/app/review/repository/postgresql"
 	specHandler "user/internal/app/specialize/handler"
 	specializeRepo "user/internal/app/specialize/repository/postgresql"
 	userRepo "user/internal/app/user/repository/postgresql"
@@ -61,6 +64,9 @@ func main() {
 	specializeRepository := &specializeRepo.Repository{
 		Db: postgres.GetPostgres(),
 	}
+	reviewRepository := &reviewRepo.Repository{
+		Db: postgres.GetPostgres(),
+	}
 
 	//connect to auth service
 	grpcConn, err := grpc.Dial(":8085", grpc.WithInsecure())
@@ -71,7 +77,7 @@ func main() {
 	client := api.NewSessionClient(grpcConn)
 	sessionRepository := grpcrepository.New(client)
 
-	userUseCase := impl.New(userRepository, specializeRepository)
+	userUseCase := impl.New(userRepository, specializeRepository, reviewRepository)
 	userHandler := handlers.New(userUseCase)
 
 	specializeUseCase := impl2.New(specializeRepository)
@@ -80,6 +86,8 @@ func main() {
 	sessionUseCase := impl4.New(sessionRepository)
 	sessionMiddleWare := handlers3.New(sessionUseCase)
 
+	reviewUseCase := impl3.New(reviewRepository)
+	reviewHandler := revHandler.New(reviewUseCase)
 	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
 	router := mux.NewRouter()
@@ -93,6 +101,8 @@ func main() {
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Create).Methods(http.MethodPost)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Remove).Methods(http.MethodDelete)
 
+	apiRoute.HandleFunc("/profile/{id:[0-9]+}/review", reviewHandler.Create).Methods(http.MethodPost)
+	apiRoute.HandleFunc("/profile/{id:[0-9]+}/{id:[0-9]+}/review", reviewHandler.GetAllByUserId).Methods(http.MethodPost)
 	c := middleware.CorsMiddleware(config.Origin)
 	server := &http.Server{
 		Addr:    config.BindAddr,
