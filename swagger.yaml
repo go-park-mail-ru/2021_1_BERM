@@ -185,11 +185,18 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/Review'
+  /api/profile/{id}/review:
     get:
       tags:
         - profile
       summary: Получить все отзывы
       description: Получить все отзывы о пользователе
+      parameters:
+        - name: id
+          in: path
+          type: number
+          description: айди пользователя
+          required: true
       responses:
         200:
           description: Ok
