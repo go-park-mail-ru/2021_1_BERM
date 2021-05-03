@@ -39,15 +39,15 @@ func (r *Repository) GetAll(userId uint64, ctx context.Context) ([]models.Review
 	return reviews, nil
 }
 
-func (r *Repository) GetAvgScoreByUserId(userId uint64, ctx context.Context) (uint8, error) {
-	var rating uint8
-	err := r.Db.Get(&rating, SelectAvgScore, userId)
-	if errors.Unwrap(err).Error() == "converting NULL to uint8 is unsupported" {
-		return 0, nil
-	}
+func (r *Repository) GetAvgScoreByUserId(userId uint64, ctx context.Context) (*models.UserReviewInfo, error) {
+	userReviewInfo := &models.UserReviewInfo{}
+	err := r.Db.Get(userReviewInfo, SelectAvgScore, userId)
 	if err != nil {
+		if errors.Unwrap(err).Error() == "converting NULL to uint8 is unsupported" {
+			return userReviewInfo, nil
+		}
 		customErr := errortools.SqlErrorChoice(err)
-		return 0, errors.Wrap(customErr, err.Error())
+		return nil, errors.Wrap(customErr, err.Error())
 	}
-	return rating, nil
+	return userReviewInfo, nil
 }

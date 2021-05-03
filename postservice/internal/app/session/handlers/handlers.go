@@ -37,7 +37,7 @@ func (m *MiddleWare) CheckSession(next http.Handler) http.Handler {
 			httputils.RespondError(w, reqID, err,)
 			return
 		}
-		ctx := context.WithValue(r.Context(), ctxUserInfo, u)
+		ctx := context.WithValue(r.Context(), ctxUserInfo, u.ID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

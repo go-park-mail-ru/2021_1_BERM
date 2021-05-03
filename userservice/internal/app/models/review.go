@@ -11,3 +11,15 @@ type Review struct {
 	UserLogin       string `json:"user_login,omitempty"`
 	UserNameSurname string `json:"user_name_surname,omitempty"`
 }
+
+type UserReviews struct {
+	Name    string   `json:"name_surname"`
+	Login   string   `json:"login"`
+	Reviews []Review `json:"reviews"`
+}
+
+
+type UserReviewInfo struct {
+	ReviewCount uint64  `db:"reviews_count"`
+	Rating      float64 `db:"rating"`
+}

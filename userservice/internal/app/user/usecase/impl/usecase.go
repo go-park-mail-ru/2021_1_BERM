@@ -85,11 +85,12 @@ func (useCase *UseCase) GetById(ID uint64, ctx context.Context) (*models.UserInf
 			return nil, errors.Wrap(err, "Error in specialize repository.")
 		}
 	}
-	rating, err := useCase.reviewsRepository.GetAvgScoreByUserId(ID, ctx)
+	userReviewInfo, err := useCase.reviewsRepository.GetAvgScoreByUserId(ID, ctx)
 	if err != nil {
 		return nil, err
 	}
-	user.Rating = rating
+	user.Rating = userReviewInfo.Rating
+	user.ReviewCount = userReviewInfo.ReviewCount
 	return user, nil
 }
 

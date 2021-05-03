@@ -787,8 +787,12 @@ definitions:
         example: "findreelancer.ru/images/kek.jpg"
         readOnly: true
       rating:
-        type: integer
+        type: number
         example: 322
+        readOnly: true
+      reviews_count:
+        type: number
+        example: 42
         readOnly: true
   Order:
     type: object
@@ -1075,9 +1079,18 @@ definitions:
         example: "AlexDarkStalker98"
         readOnly: true
   Reviews:
-    type: array
-    items:
-      $ref: '#/definitions/Review'
+    type: object
+    properties:
+      name_surname:
+        type: string
+        example: "Kek Kekovich"
+      login:
+        type: string
+        example: "Alex228"
+      reviews:
+        type: array
+        items:
+          $ref: '#/definitions/Review'
 host: findfreelancer.ru
 basePath: /
 schemes:

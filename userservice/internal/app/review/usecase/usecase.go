@@ -7,7 +7,6 @@ import (
 
 type UseCase interface {
 	Create(review models.Review, ctx context.Context) (*models.Review, error)
-	GetAllReviewByUserId(userId uint64, ctx context.Context) ([]models.Review, error)
-	GetAvgScoreByUserId(userId uint64, ctx context.Context) (uint8, error)
+	GetAllReviewByUserId(userId uint64, ctx context.Context) (*models.UserReviews, error)
 }
 

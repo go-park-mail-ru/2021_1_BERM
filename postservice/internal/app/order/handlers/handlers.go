@@ -205,11 +205,10 @@ func (h *Handlers) SearchOrder(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
-	o, err := h. useCase.SearchOrders(orderSearch.Keyword, context.Background())
+	o, err := h.useCase.SearchOrders(orderSearch.Keyword, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
 	httputils.Respond(w, reqID, http.StatusOK, o)
 }
-

@@ -37,7 +37,8 @@ type UserInfo struct {
 	Specializes pq.StringArray `json:"specializes" db:"specializes,omitempty"`
 	Executor    bool           `json:"executor,omitempty" db:"executor"`
 	Img         string         `json:"img,omitempty" db:"img"`
-	Rating      uint8          `json:"rating,omitempty"`
+	Rating      float64        `json:"rating,omitempty"`
+	ReviewCount uint64         `json:"reviews_count"`
 }
 
 type UserBasicInfo struct {
