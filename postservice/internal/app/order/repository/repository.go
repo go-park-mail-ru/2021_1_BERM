@@ -106,12 +106,12 @@ func (r *Repository) Create(order models.Order, ctx context.Context) (uint64, er
 }
 
 func (r *Repository) Change(order models.Order, ctx context.Context) error {
-	tx, err := r.db.Begin()
+	tx, err := r.db.Beginx()
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)
 		return errors.Wrap(customErr, err.Error())
 	}
-	_, err = tx.Exec(updateOrder, order)
+	_, err = tx.NamedExec(updateOrder, &order)
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)
 		return errors.Wrap(customErr, err.Error())
@@ -177,8 +177,12 @@ func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error
 }
 
 func (r *Repository) UpdateExecutor(order models.Order, ctx context.Context) error {
-	tx := r.db.MustBegin()
-	_, err := tx.NamedExec(updateExecutor, &order)
+	tx, err:= r.db.Beginx()
+	if err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
+	}
+	_, err = tx.NamedExec(updateExecutor, &order)
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)
 		return errors.Wrap(customErr, err.Error())

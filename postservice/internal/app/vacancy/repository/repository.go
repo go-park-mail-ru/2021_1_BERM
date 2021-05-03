@@ -100,12 +100,12 @@ func (r *Repository) GetActualVacancies(ctx context.Context) ([]models.Vacancy, 
 }
 
 func (r *Repository) Change(vacancy models.Vacancy, ctx context.Context) error {
-	tx, err := r.db.Begin()
+	tx, err := r.db.Beginx()
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)
 		return errors.Wrap(customErr, err.Error())
 	}
-	_, err = tx.Exec(updateVacancy, vacancy)
+	_, err = tx.NamedExec(updateVacancy, &vacancy)
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)
 		return errors.Wrap(customErr, err.Error())
@@ -153,8 +153,12 @@ func (r *Repository) FindByCustomerID(customerID uint64, ctx context.Context) ([
 }
 
 func (r *Repository) UpdateExecutor(vacancy models.Vacancy, ctx context.Context) error {
-	tx := r.db.MustBegin()
-	_, err := tx.NamedExec(updateExecutor, &vacancy)
+	tx, err := r.db.Beginx()
+	if err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return errors.Wrap(customErr, err.Error())
+	}
+	_, err = tx.NamedExec(updateExecutor, &vacancy)
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)
 		return errors.Wrap(customErr, err.Error())
