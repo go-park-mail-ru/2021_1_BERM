@@ -1018,7 +1018,6 @@ definitions:
         type: number
         format: uint64
         example: 228
-        readOnly: true
         description: "user id"
       img:
         type: string

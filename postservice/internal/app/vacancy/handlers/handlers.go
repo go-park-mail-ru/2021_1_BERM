@@ -15,7 +15,7 @@ import (
 const (
 	ctxKeySession uint8 = iota
 	ctxKeyReqID   uint8 = 1
-	ctxUserInfo   uint8 = 2
+	ctxUserID     uint8 = 2
 )
 
 type Handlers struct {
@@ -38,7 +38,7 @@ func (h *Handlers) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}(r.Body)
-	id := r.Context().Value(ctxUserInfo).(uint64)
+	id := r.Context().Value(ctxUserID).(uint64)
 	v := &models.Vacancy{
 		CustomerID: id,
 	}

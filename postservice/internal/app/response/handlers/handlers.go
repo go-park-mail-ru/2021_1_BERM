@@ -15,7 +15,7 @@ import (
 const (
 	ctxKeySession uint8 = 3
 	ctxKeyReqID   uint8 = 1
-	ctxUserInfo   uint8 = 2
+	ctxUserID     uint8 = 2
 )
 
 type Handlers struct {
@@ -86,7 +86,7 @@ func (h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, reqID, err)
 		return
 	}
-	response.UserID = r.Context().Value(ctxUserInfo).(uint64)
+	response.UserID = r.Context().Value(ctxUserID).(uint64)
 	response.VacancyResponse = r.URL.String() == "/api/vacancy/"+strconv.FormatUint(response.PostID, 10)+"/response"
 	response.OrderResponse = r.URL.String() == "/api/order/"+strconv.FormatUint(response.PostID, 10)+"/response"
 	responses, err := h.useCase.Change(*response, context.Background())
@@ -111,7 +111,7 @@ func (h *Handlers) DelPostResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.UserID = r.Context().Value(ctxUserInfo).(uint64)
+	response.UserID = r.Context().Value(ctxUserID).(uint64)
 	response.VacancyResponse = r.URL.String() == "/api/vacancy/"+strconv.FormatUint(response.PostID, 10)+"/response"
 	response.OrderResponse = r.URL.String() == "/api/order/"+strconv.FormatUint(response.PostID, 10)+"/response"
 	err = h.useCase.Delete(*response, context.Background())

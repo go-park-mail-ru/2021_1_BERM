@@ -52,7 +52,7 @@ func main() {
 	router.Use(middleware.LoggingRequest)
 	router.Use(csrfMiddleware)
 
-	router.HandleFunc("/profile/avatar", imageHandler.PutAvatar).Methods(http.MethodPut)
+	router.HandleFunc("/api/profile/avatar", imageHandler.PutAvatar).Methods(http.MethodPatch)
 
 	c := middleware.CorsMiddleware(config.Origin)
 

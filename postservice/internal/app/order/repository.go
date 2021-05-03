@@ -14,7 +14,9 @@ type Repository interface {
 	FindByCustomerID(customerID uint64, ctx context.Context) ([]models.Order, error)
 	GetActualOrders(ctx context.Context) ([]models.Order, error)
 	UpdateExecutor(order models.Order, ctx context.Context) error
-	CreateArchive(order models.Order, ctx context.Context) (uint64, error)
-	GetArchiveOrders(ctx context.Context) ([]models.Order, error)
+	CreateArchive(order models.Order, ctx context.Context) error
+	GetArchiveOrdersByExecutorID(executorID uint64, ctx context.Context) ([]models.Order, error)
+	GetArchiveOrdersByCustomerID(customerID uint64, ctx context.Context) ([]models.Order, error)
 	SearchOrders(keyword string, ctx context.Context) ([]models.Order, error)
+	FindArchiveByID(id uint64, ctx context.Context) (*models.Order, error)
 }

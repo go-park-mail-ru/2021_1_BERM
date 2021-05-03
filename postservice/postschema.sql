@@ -15,7 +15,7 @@ CREATE TABLE post.orders
 
 CREATE TABLE post.archive_orders
 (
-    id          SERIAL PRIMARY KEY NOT NULL,
+    id          INTEGER PRIMARY KEY NOT NULL,
     customer_id INTEGER            NOT NULL,
     executor_id INTEGER,
     order_name  VARCHAR            NOT NULL,

@@ -47,8 +47,14 @@ func (u *UseCase) Create(order models.Order, ctx context.Context) (*models.Order
 
 func (u *UseCase) FindByID(id uint64, ctx context.Context) (*models.Order, error) {
 	order, err := u.OrderRepo.FindByID(id, ctx)
+	if order == nil {
+		order, err = u.OrderRepo.FindArchiveByID(id, ctx)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
+	}
+	if order == nil {
+	 	return nil, nil
 	}
 	err = u.supplementingTheOrderModel(order)
 	if err != nil {
@@ -179,15 +185,21 @@ func (u *UseCase) CloseOrder(orderID uint64, ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
-	_, err = u.OrderRepo.CreateArchive(*order, ctx)
+	err = u.OrderRepo.CreateArchive(*order, ctx)
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
 	return nil
 }
 
-func (u *UseCase) GetArchiveOrders(ctx context.Context) ([]models.Order, error) {
-	orders, err := u.OrderRepo.GetArchiveOrders(ctx)
+func (u *UseCase) GetArchiveOrders(userInfo models.UserBasicInfo, ctx context.Context) ([]models.Order, error) {
+	var orders []models.Order
+	var err error
+	if userInfo.Executor {
+		orders, err = u.OrderRepo.GetArchiveOrdersByExecutorID(userInfo.ID, ctx)
+	} else {
+		orders, err = u.OrderRepo.GetArchiveOrdersByCustomerID(userInfo.ID, ctx)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}

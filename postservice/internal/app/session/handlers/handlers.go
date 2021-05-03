@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	ctxUserInfo uint8 = 2
+	ctxUserID   uint8 = 2
 	ctxKeyReqID uint8 = 1
+	ctxExecutor uint8 = 3
 )
 
 type MiddleWare struct {
@@ -37,7 +38,8 @@ func (m *MiddleWare) CheckSession(next http.Handler) http.Handler {
 			httputils.RespondError(w, reqID, err,)
 			return
 		}
-		ctx := context.WithValue(r.Context(), ctxUserInfo, u.ID)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		ctxID := context.WithValue(r.Context(), ctxUserID, u.ID)
+		ctxExecutor := context.WithValue(ctxID, ctxExecutor, u.Executor)
+		next.ServeHTTP(w, r.WithContext(ctxExecutor))
 	})
 }

@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	ctxKeySession uint8 = 3
 	ctxKeyReqID   uint8 = 1
-	ctxUserInfo   uint8 = 2
+	ctxUserID     uint8 = 2
+	ctxExecutor uint8 = 3
+
 )
 
 type Handlers struct {
@@ -29,7 +30,7 @@ func NewHandler(useCase orderUseCase.UseCase) *Handlers {
 
 func (h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	id := r.Context().Value(ctxUserInfo).(uint64)
+	id := r.Context().Value(ctxUserID).(uint64)
 	o := &models.Order{}
 	if err := json.NewDecoder(r.Body).Decode(o); err != nil {
 		httputils.RespondError(w, reqID, err)
@@ -190,7 +191,12 @@ func (h *Handlers) CloseOrder(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) GetAllArchiveUserOrders(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	o, err := h.useCase.GetArchiveOrders(context.Background())
+	params := mux.Vars(r)
+	userInfo := models.UserBasicInfo{}
+	var err error
+	userInfo.ID, err = strconv.ParseUint(params["id"], 10, 64)
+	userInfo.Executor = r.Context().Value(ctxExecutor).(bool)
+	o, err := h.useCase.GetArchiveOrders(userInfo, context.Background())
 	if err != nil {
 		httputils.RespondError(w, reqID, err)
 		return

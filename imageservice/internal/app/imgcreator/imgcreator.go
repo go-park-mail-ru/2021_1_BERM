@@ -57,7 +57,7 @@ func CreateImg(imgBase64 string) (string, error) {
 }
 
 func CropImg(imgURL string) (string, error) {
-	fi, err := os.Open(imgURL)
+	fi, err := os.Open("image/" + imgURL)
 	if err != nil {
 		return "", err
 	}
@@ -75,7 +75,7 @@ func CropImg(imgURL string) (string, error) {
 	fi.Close()
 	sub, ok := img.(SubImager)
 	if ok {
-		fi, err := os.Create(imgURL)
+		fi, err := os.Create("image/" + imgURL)
 		if err != nil {
 			return "", err
 		}
