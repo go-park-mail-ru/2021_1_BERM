@@ -131,7 +131,7 @@ func main() {
 	vacancy.HandleFunc("/{id:[0-9]+}/response", responseHandler.ChangePostResponse).Methods(http.MethodPatch)
 	vacancy.HandleFunc("/{id:[0-9]+}/response", responseHandler.DelPostResponse).Methods(http.MethodDelete)
 	vacancy.HandleFunc("/profile/{id:[0-9]+}", vacancyHandler.GetAllUserVacancies).Methods(http.MethodGet)
-	vacancy.HandleFunc("/{id:[0-9]+}/select", vacancyHandler.SelectExecutor).Methods(http.MethodPatch)
+	vacancy.HandleFunc("/{id:[0-9]+}/select", vacancyHandler.SelectExecutor).Methods(http.MethodPost)
 	vacancy.HandleFunc("/{id:[0-9]+}/select", vacancyHandler.DeleteExecutor).Methods(http.MethodDelete)
 	vacancy.HandleFunc("/{id}/close", vacancyHandler.CloseVacancy).Methods(http.MethodDelete)
 	vacancy.HandleFunc("/profile/{id:[0-9]+}/archive", vacancyHandler.GetAllArchiveUserVacancies).Methods(http.MethodGet)
