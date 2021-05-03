@@ -452,7 +452,7 @@ paths:
         200:
           description: Ok
   /api/order/search:
-    get:
+    patch:
       tags:
         - order
       summary: Поиск заказов
