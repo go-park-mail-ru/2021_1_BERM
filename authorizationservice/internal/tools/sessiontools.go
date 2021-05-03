@@ -2,7 +2,6 @@ package tools
 
 import (
 	"authorizationservice/internal/models"
-	"authorizationservice/pkg/Error"
 	"golang.org/x/crypto/bcrypt"
 	"math/rand"
 )
@@ -15,11 +14,7 @@ func BeforeCreate(session *models.Session) error {
 	salt := make([]byte, saltLength)
 	_, err := rand.Read(salt)
 	if err != nil {
-		return &Error.Error{
-			Err:              err,
-			InternalError:    true,
-			ErrorDescription: Error.InternalServerErrorDescription,
-		}
+		return err
 	}
 
 	session.SessionID = string(hashSessionId(salt, session.SessionID))

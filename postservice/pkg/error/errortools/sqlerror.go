@@ -50,14 +50,13 @@ func sqlErrorListCreate() []sqlErrorInfo {
 	}
 }
 
-func sqlErrorHandle(err error)(map[string]interface{}, int, bool){
+func sqlErrorHandle(err error) (map[string]interface{}, int, bool) {
 	errorList := sqlErrorListCreate()
-	for _, errorInfo := range errorList{
-		if errorInfo.Err == err {
+	for _, errorInfo := range errorList {
+		if errors.Is(err, errorInfo.Err) {
 			data, code := errorInfo.Handler(err)
 			return data, code, true
 		}
 	}
 	return nil, 0, false
 }
-

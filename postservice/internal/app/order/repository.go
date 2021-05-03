@@ -16,4 +16,5 @@ type Repository interface {
 	UpdateExecutor(order models.Order, ctx context.Context) error
 	CreateArchive(order models.Order, ctx context.Context) (uint64, error)
 	GetArchiveOrders(ctx context.Context) ([]models.Order, error)
+	SearchOrders(keyword string, ctx context.Context) ([]models.Order, error)
 }

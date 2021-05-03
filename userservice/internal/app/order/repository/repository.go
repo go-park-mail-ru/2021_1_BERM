@@ -6,5 +6,5 @@ import (
 )
 
 type Repository interface {
-	GetByID(ID uint64, ctx context.Context)  (models.OrderInfo, error)
+	GetByID(ID uint64, ctx context.Context) (*models.OrderInfo, error)
 }

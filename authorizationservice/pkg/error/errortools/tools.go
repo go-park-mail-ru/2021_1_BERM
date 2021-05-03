@@ -1,8 +1,8 @@
 package errortools
 
 import (
+	customError "authorizationservice/pkg/error"
 	"net/http"
-	customError "user/pkg/error"
 )
 
 func ErrorHandle(err error) (interface{}, int) {

@@ -37,11 +37,11 @@ func (s *GRPCServer) RegistrationUser(ctx context.Context, in *api.NewUserReques
 		errData, codeUint32 := errortools.ErrorHandle(err)
 		code := codes.Code(codeUint32)
 		b, jsonErr := json.Marshal(errData)
-		if jsonErr != nil{
+		if jsonErr != nil {
 			return nil, jsonErr
 		}
 		return &api.UserResponse{
-			Id:      0,
+			Id:       0,
 			Executor: false,
 		}, status.Error(code, string(b))
 	}
@@ -58,11 +58,11 @@ func (s *GRPCServer) AuthorizationUser(ctx context.Context, in *api.Authorizatio
 		errData, codeUint32 := errortools.ErrorHandle(err)
 		code := codes.Code(codeUint32)
 		serializeErrData, jsonErr := json.Marshal(errData)
-		if jsonErr != nil{
+		if jsonErr != nil {
 			return nil, jsonErr
 		}
 		return &api.UserResponse{
-			Id:      0,
+			Id:       0,
 			Executor: false,
 		}, status.Error(code, string(serializeErrData))
 	}
@@ -78,7 +78,7 @@ func (s *GRPCServer) GetUserById(ctx context.Context, in *api.UserRequest) (*api
 		errData, codeUint32 := errortools.ErrorHandle(err)
 		code := codes.Code(codeUint32)
 		serializeErrData, jsonErr := json.Marshal(errData)
-		if jsonErr != nil{
+		if jsonErr != nil {
 			return nil, jsonErr
 		}
 		return &api.UserInfoResponse{
@@ -100,7 +100,7 @@ func (s *GRPCServer) GetUserById(ctx context.Context, in *api.UserRequest) (*api
 		Specializes: userInfo.Specializes,
 		Executor:    userInfo.Executor,
 		Img:         userInfo.Img,
-		Rating:      userInfo.Rating,
+		Rating:      int32(userInfo.Rating),
 	}, nil
 }
 
@@ -115,7 +115,7 @@ func (s *GRPCServer) SetImgUrl(ctx context.Context, in *api.SetImgUrlRequest) (*
 		errData, codeUint32 := errortools.ErrorHandle(err)
 		code := codes.Code(codeUint32)
 		serializeErrData, jsonErr := json.Marshal(errData)
-		if jsonErr != nil{
+		if jsonErr != nil {
 			return nil, jsonErr
 		}
 		return &api.SetImgUrlResponse{Successfully: false}, status.Error(code, string(serializeErrData))

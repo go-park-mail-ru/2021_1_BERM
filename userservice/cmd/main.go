@@ -18,6 +18,7 @@ import (
 	"log"
 	"net/http"
 	"user/configs"
+	orderGRPC "user/internal/app/order/repository/grpcrepository"
 	revHandler "user/internal/app/review/handlers"
 	reviewRepo "user/internal/app/review/repository/postgresql"
 	specHandler "user/internal/app/specialize/handler"
@@ -69,13 +70,24 @@ func main() {
 	}
 
 	//connect to auth service
-	grpcConn, err := grpc.Dial(":8085", grpc.WithInsecure())
+	grpcConnAuth, err := grpc.Dial(":8085", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	defer grpcConn.Close()
-	client := api.NewSessionClient(grpcConn)
+	defer grpcConnAuth.Close()
+
+	//connect to order service
+	grpcConnOrder, err := grpc.Dial(":8086", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer grpcConnOrder.Close()
+
+	client := api.NewSessionClient(grpcConnAuth)
 	sessionRepository := grpcrepository.New(client)
+
+	orderClient := api.NewOrderClient(grpcConnOrder)
+	orderRepository := orderGRPC.New(orderClient)
 
 	userUseCase := impl.New(userRepository, specializeRepository, reviewRepository)
 	userHandler := handlers.New(userUseCase)
@@ -86,23 +98,23 @@ func main() {
 	sessionUseCase := impl4.New(sessionRepository)
 	sessionMiddleWare := handlers3.New(sessionUseCase)
 
-	reviewUseCase := impl3.New(reviewRepository)
+	reviewUseCase := impl3.New(reviewRepository, userRepository, orderRepository)
 	reviewHandler := revHandler.New(reviewUseCase)
 	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
 	router := mux.NewRouter()
-	router.Use(sessionMiddleWare.CheckSession)
 	router.Use(middleware.LoggingRequest)
+	router.Use(sessionMiddleWare.CheckSession)
 	router.Use(csrfMiddleware)
 
 	apiRoute := router.PathPrefix("/api").Subrouter()
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.GetUserInfo).Methods(http.MethodGet)
-	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.ChangeProfile).Methods(http.MethodPut)
+	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.ChangeProfile).Methods(http.MethodPatch)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Create).Methods(http.MethodPost)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Remove).Methods(http.MethodDelete)
 
-	apiRoute.HandleFunc("/profile/{id:[0-9]+}/review", reviewHandler.Create).Methods(http.MethodPost)
-	apiRoute.HandleFunc("/profile/{id:[0-9]+}/{id:[0-9]+}/review", reviewHandler.GetAllByUserId).Methods(http.MethodPost)
+	apiRoute.HandleFunc("/profile/review", reviewHandler.Create).Methods(http.MethodPost)
+	apiRoute.HandleFunc("/profile/{id:[0-9]+}/review", reviewHandler.GetAllByUserId).Methods(http.MethodGet)
 	c := middleware.CorsMiddleware(config.Origin)
 	server := &http.Server{
 		Addr:    config.BindAddr,

@@ -197,3 +197,19 @@ func (h *Handlers) GetAllArchiveUserOrders(w http.ResponseWriter, r *http.Reques
 	}
 	httputils.Respond(w, reqID, http.StatusOK, o)
 }
+
+func (h *Handlers) SearchOrder(w http.ResponseWriter, r *http.Request) {
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	orderSearch := models.OrderSearch{}
+	if err := json.NewDecoder(r.Body).Decode(&orderSearch); err != nil {
+		httputils.RespondError(w, reqID, err)
+		return
+	}
+	o, err := h. useCase.SearchOrders(orderSearch.Keyword, context.Background())
+	if err != nil {
+		httputils.RespondError(w, reqID, err)
+		return
+	}
+	httputils.Respond(w, reqID, http.StatusOK, o)
+}
+

@@ -10,8 +10,7 @@ CREATE TABLE userservice.users
     name_surname VARCHAR            NOT NULL,
     about        VARCHAR DEFAULT NULL,
     executor     boolean            NOT NULL,
-    img          VARCHAR DEFAULT '',
-    rating       INTEGER DEFAULT 0
+    img          VARCHAR DEFAULT ''
 );
 
 CREATE TABLE userservice.specializes
@@ -40,8 +39,8 @@ CREATE TABLE userservice.reviews
     description VARCHAR            NOT NULL,
     score       INTEGER            NOT NULL,
     FOREIGN KEY (user_id)
-        REFERENCES userservice.users (id)
-        FOREIGN KEY (to_user_id)
+        REFERENCES userservice.users (id),
+    FOREIGN KEY (to_user_id)
         REFERENCES userservice.users (id)
 
 );

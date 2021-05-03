@@ -73,6 +73,8 @@ const (
 			$6,
             $7
                 ) RETURNING id`
+
+	searchOrders = "SELECT * FROM post.orders WHERE to_tsvector(order_name) @@ to_tsquery($1)"
 )
 
 type Repository struct {
@@ -209,6 +211,19 @@ func (r *Repository) CreateArchive(order models.Order, ctx context.Context) (uin
 func (r *Repository) GetArchiveOrders(ctx context.Context) ([]models.Order, error) {
 	var orders []models.Order
 	if err := r.db.Select(&orders, selectArchiveOrders); err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
+	}
+	return orders, nil
+}
+
+func (r *Repository) SearchOrders(keyword string, ctx context.Context) ([]models.Order, error) {
+	var orders []models.Order
+	if keyword == "" {
+		return nil, nil
+	}
+	keyword += ":*"
+	if err := r.db.Select(&orders, searchOrders, keyword); err != nil {
 		customErr := errortools.SqlErrorChoice(err)
 		return nil, errors.Wrap(customErr, err.Error())
 	}

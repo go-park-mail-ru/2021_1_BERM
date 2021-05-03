@@ -40,7 +40,7 @@ func (useCase *UseCase) Create(user models.NewUser, ctx context.Context) (map[st
 	for _, spec := range user.Specializes {
 		specID, err := useCase.specializeRepository.FindByName(spec, ctx)
 		if err != nil {
-			if err == customErrors.ErrorNoRows {
+			if errors.Is(err, customErrors.ErrorNoRows) {
 				specID, err = useCase.specializeRepository.Create(spec, ctx)
 				if err != nil {
 					return nil, errors.Wrap(err, "Error in data sourse")
@@ -142,7 +142,7 @@ func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (map
 	for _, spec := range user.Specializes {
 		specID, err := useCase.specializeRepository.FindByName(spec, ctx)
 		if err != nil {
-			if err == customErrors.ErrorNoRows{
+			if err == customErrors.ErrorNoRows {
 				specID, err = useCase.specializeRepository.Create(spec, ctx)
 				if err != nil {
 					return nil, errors.Wrap(err, "Error in data sourse")
@@ -163,10 +163,10 @@ func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (map
 	}, nil
 }
 
-func New(userRep repository.Repository, specRep specialize.Repository, reviewsRepository    review.Repository) *UseCase {
+func New(userRep repository.Repository, specRep specialize.Repository, reviewsRepository review.Repository) *UseCase {
 	return &UseCase{
 		specializeRepository: specRep,
 		userRepository:       userRep,
-		reviewsRepository: reviewsRepository,
+		reviewsRepository:    reviewsRepository,
 	}
 }

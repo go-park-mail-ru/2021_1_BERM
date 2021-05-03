@@ -12,3 +12,7 @@ type Order struct {
 	UserLogin   string `json:"user_login,omitempty"`
 	UserImg     string `json:"user_img,omitempty"`
 }
+
+type OrderSearch struct {
+	Keyword string `json:"keyword"`
+}

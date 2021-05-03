@@ -16,4 +16,5 @@ type UseCase interface {
 	DeleteExecutor(order models.Order, ctx context.Context) error
 	CloseOrder(orderID uint64, ctx context.Context) error
 	GetArchiveOrders(ctx context.Context) ([]models.Order, error)
+	SearchOrders(keyword string, ctx context.Context) ([]models.Order, error)
 }

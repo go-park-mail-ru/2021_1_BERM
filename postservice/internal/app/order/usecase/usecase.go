@@ -204,6 +204,24 @@ func (u *UseCase) GetArchiveOrders(ctx context.Context) ([]models.Order, error) 
 	return orders, err
 }
 
+func (u *UseCase) SearchOrders(keyword string, ctx context.Context) ([]models.Order, error) {
+	orders, err := u.OrderRepo.SearchOrders(keyword, ctx)
+	if  err != nil {
+		return nil, errors.Wrap(err, orderUseCaseError)
+	}
+	for i, order := range orders {
+		err = u.supplementingTheOrderModel(&order)
+		if err != nil {
+			return nil, errors.Wrap(err, orderUseCaseError)
+		}
+		orders[i] = order
+	}
+	if orders == nil {
+		return []models.Order{}, nil
+	}
+	return orders, err
+}
+
 //TODO: вынести в отдеьлный модуль
 func (u *UseCase) validateOrder(order *models.Order) error {
 	err := validation.ValidateStruct(
