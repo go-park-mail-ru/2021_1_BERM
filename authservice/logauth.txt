@@ -1,0 +1,2 @@
+time="2021-05-04T22:10:32+03:00" level=info msg="GRPC server start on port :8085"
+time="2021-05-04T22:10:32+03:00" level=info msg="HTTP server start on port :8084"
