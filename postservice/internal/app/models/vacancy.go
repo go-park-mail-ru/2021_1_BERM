@@ -11,3 +11,7 @@ type Vacancy struct {
 	Login       string `json:"user_login,omitempty"`
 	Img         string `json:"user_img,omitempty"`
 }
+
+type VacancySearch struct {
+	Keyword string `json:"keyword"`
+}

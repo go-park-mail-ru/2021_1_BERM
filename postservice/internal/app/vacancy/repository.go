@@ -16,4 +16,5 @@ type Repository interface {
 	UpdateExecutor(vacancy models.Vacancy, ctx context.Context) error
 	CreateArchive(vacancy models.Vacancy, ctx context.Context) (uint64, error)
 	GetArchiveVacancies(ctx context.Context) ([]models.Vacancy, error)
+	SearchVacancy(keyword string, ctx context.Context) ([]models.Vacancy, error)
 }

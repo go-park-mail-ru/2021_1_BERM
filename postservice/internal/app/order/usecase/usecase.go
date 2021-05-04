@@ -1,4 +1,4 @@
-package usecase
+package order
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"post/api"
 	"post/internal/app/models"
-	orderRepo "post/internal/app/order/repository"
+	orderRepo "post/internal/app/order"
 	customErr "post/pkg/error"
 )
 

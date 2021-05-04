@@ -84,7 +84,7 @@ func main() {
 	vacancyRepository := vacancyRepo.NewRepo(postgres.GetPostgres())
 	responseRepository := responseRepo.NewRepo(postgres.GetPostgres())
 
-	orderUseCase := orderUCase.NewUseCase(*orderRepository, userRepo)
+	orderUseCase := orderUCase.NewUseCase(orderRepository, userRepo)
 	vacancyUseCase := vacancyUCase.NewUseCase(*vacancyRepository, userRepo)
 	responseUseCase := responseUCase.NewUseCase(*responseRepository, userRepo)
 
@@ -135,6 +135,7 @@ func main() {
 	vacancy.HandleFunc("/{id:[0-9]+}/select", vacancyHandler.DeleteExecutor).Methods(http.MethodDelete)
 	vacancy.HandleFunc("/{id}/close", vacancyHandler.CloseVacancy).Methods(http.MethodDelete)
 	vacancy.HandleFunc("/profile/{id:[0-9]+}/archive", vacancyHandler.GetAllArchiveUserVacancies).Methods(http.MethodGet)
+	vacancy.HandleFunc("/search", vacancyHandler.SearchVacancy).Methods(http.MethodPatch)
 
 	c := middleware.CorsMiddleware(config.Origin)
 

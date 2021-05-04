@@ -52,6 +52,11 @@ const (
 						  customer_id
 	                  )
 	       VALUES ($1, $2, $3,$4, $5) RETURNING id`
+
+	searchVacanciesInTitle = "SELECT * FROM post.vacancy WHERE to_tsvector(vacancy_name) @@ to_tsquery($1)"
+
+	searchVacanciesInText = "SELECT * FROM post.vacancy WHERE to_tsvector(vacancy_name) @@ to_tsquery($1)"
+
 )
 
 type Repository struct {
@@ -195,3 +200,21 @@ func (r *Repository) GetArchiveVacancies(ctx context.Context) ([]models.Vacancy,
 	return vacancies, nil
 }
 
+func (r *Repository) SearchVacancy(keyword string, ctx context.Context) ([]models.Vacancy, error) {
+	var vacancies []models.Vacancy
+	if keyword == "" {
+		return nil, nil
+	}
+	keyword += ":*"
+	if err := r.db.Select(&vacancies, searchVacanciesInTitle, keyword); err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
+	}
+	if len(vacancies) == 0 {
+		if err := r.db.Select(&vacancies, searchVacanciesInText, keyword); err != nil {
+			customErr := errortools.SqlErrorChoice(err)
+			return nil, errors.Wrap(customErr, err.Error())
+		}
+	}
+	return vacancies, nil
+}

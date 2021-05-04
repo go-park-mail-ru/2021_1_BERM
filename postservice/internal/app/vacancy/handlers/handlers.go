@@ -240,3 +240,18 @@ func (h *Handlers) GetAllArchiveUserVacancies(w http.ResponseWriter, r *http.Req
 	}
 	httputils.Respond(w, reqID, http.StatusOK, v)
 }
+
+func (h *Handlers) SearchVacancy(w http.ResponseWriter, r *http.Request) {
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	vacancySearch := models.VacancySearch{}
+	if err := json.NewDecoder(r.Body).Decode(&vacancySearch); err != nil {
+		httputils.RespondError(w, reqID, err)
+		return
+	}
+	v, err := h.useCase.SearchVacancy(vacancySearch.Keyword, context.Background())
+	if err != nil {
+		httputils.RespondError(w, reqID, err)
+		return
+	}
+	httputils.Respond(w, reqID, http.StatusOK, v)
+}
