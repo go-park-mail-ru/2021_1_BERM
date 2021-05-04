@@ -1,4 +1,4 @@
-package usecase
+package vacancy
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"post/api"
 	"post/internal/app/models"
-	vacancyRepo "post/internal/app/vacancy/repository"
+	vacancyRepo "post/internal/app/vacancy"
 	customErr "post/pkg/error"
 )
 

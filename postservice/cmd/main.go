@@ -85,8 +85,8 @@ func main() {
 	responseRepository := responseRepo.NewRepo(postgres.GetPostgres())
 
 	orderUseCase := orderUCase.NewUseCase(orderRepository, userRepo)
-	vacancyUseCase := vacancyUCase.NewUseCase(*vacancyRepository, userRepo)
-	responseUseCase := responseUCase.NewUseCase(*responseRepository, userRepo)
+	vacancyUseCase := vacancyUCase.NewUseCase(vacancyRepository, userRepo)
+	responseUseCase := responseUCase.NewUseCase(responseRepository, userRepo)
 
 	orderHandler := orderHandlers.NewHandler(*orderUseCase)
 	vacancyHandler := vacancyHandlers.NewHandler(*vacancyUseCase)

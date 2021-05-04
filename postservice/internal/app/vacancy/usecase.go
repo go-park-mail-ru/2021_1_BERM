@@ -5,6 +5,7 @@ import (
 	"post/internal/app/models"
 )
 
+//go:generate mockgen -destination=./mock/mock_usecase.go -package=mock post/internal/app/vacancy UseCase
 type UseCase interface {
 	Create(vacancy models.Vacancy, ctx context.Context) (*models.Vacancy, error)
 	FindByID(userID uint64, ctx context.Context) (*models.Vacancy, error)
