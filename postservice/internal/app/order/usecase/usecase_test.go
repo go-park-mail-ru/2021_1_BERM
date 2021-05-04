@@ -436,4 +436,131 @@ func TestChangeOrder(t *testing.T) {
 	respOrder, err = useCase.ChangeOrder(*orderWithoutFields, ctx)
 
 	require.Error(t, err)
+
+
+
+	mockOrderRepo.EXPECT().
+		FindByID(id, ctx).
+		Times(1).
+		Return(oldOrder, nil)
+	mockOrderRepo.EXPECT().
+		Change(*order, ctx).
+		Times(1).
+		Return(errors.New("DB err"))
+
+
+	respOrder, err = useCase.ChangeOrder(*order, ctx)
+	require.Error(t, err)
+
+
+	mockOrderRepo.EXPECT().
+		FindByID(id, ctx).
+		Times(1).
+		Return(oldOrder, nil)
+	mockOrderRepo.EXPECT().
+		Change(*order, ctx).
+		Times(1).
+		Return(nil)
+	mockUserRepo.EXPECT().
+		GetUserById(ctx, &api.UserRequest{Id: order.CustomerID}).
+		Times(1).
+		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, errors.New("GRPC err"))
+
+	respOrder, err = useCase.ChangeOrder(*order, ctx)
+
+	require.Error(t, err)
+}
+
+
+func TestDeleteOrder (t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	var id uint64
+	id = 1
+	ctx := context.Background()
+	mockOrderRepo := mock.NewMockRepository(ctrl)
+	mockUserRepo := mock.NewMockUserClient(ctrl)
+	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+
+	mockOrderRepo.EXPECT().
+		DeleteOrder(id, ctx).
+		Times(1).
+		Return(nil)
+
+	err := useCase.DeleteOrder(id, ctx)
+
+	require.NoError(t, err)
+
+
+	mockOrderRepo.EXPECT().
+		DeleteOrder(id, ctx).
+		Times(1).
+		Return(errors.New("DB err"))
+
+	err = useCase.DeleteOrder(id, ctx)
+
+	require.Error(t, err)
+}
+
+func TestGetActualOrders (t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	var id uint64
+	id = 1
+	ctx := context.Background()
+	mockOrderRepo := mock.NewMockRepository(ctrl)
+	mockUserRepo := mock.NewMockUserClient(ctrl)
+	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+
+	orders := []models.Order{
+		{
+			ID: 1,
+			OrderName: "Keke",
+			CustomerID: 1,
+			Budget: 1488,
+			Deadline: 22842212,
+			Description: "Aue jizn voram",
+			Category: "Back",
+		},
+	}
+
+	expectOrders := []models.Order{
+		{
+			ID: 1,
+			OrderName: "Keke",
+			CustomerID: 1,
+			Budget: 1488,
+			Deadline: 22842212,
+			Description: "Aue jizn voram",
+			Category: "Back",
+			UserLogin: "Mem",
+			UserImg: "kek",
+		},
+	}
+
+	mockUserRepo.EXPECT().
+		GetUserById(ctx, &api.UserRequest{Id: id}).
+		Times(1).
+		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek", Executor: true}, nil)
+	mockOrderRepo.EXPECT().
+		GetActualOrders(ctx).
+		Times(1).
+		Return(orders, nil)
+
+	respOrders, err := useCase.GetActualOrders(ctx)
+
+	require.Equal(t, respOrders, expectOrders)
+	require.NoError(t, err)
+
+
+
+	mockOrderRepo.EXPECT().
+		GetActualOrders(ctx).
+		Times(1).
+		Return(orders, errors.New("DB err"))
+
+	respOrders, err = useCase.GetActualOrders(ctx)
+
+	require.Error(t, err)
 }

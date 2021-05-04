@@ -55,7 +55,7 @@ const (
 
 	searchVacanciesInTitle = "SELECT * FROM post.vacancy WHERE to_tsvector(vacancy_name) @@ to_tsquery($1)"
 
-	searchVacanciesInText = "SELECT * FROM post.vacancy WHERE to_tsvector(vacancy_name) @@ to_tsquery($1)"
+	searchVacanciesInText = "SELECT * FROM post.vacancy WHERE to_tsvector(description) @@ to_tsquery($1)"
 
 )
 
