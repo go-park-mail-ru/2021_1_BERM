@@ -697,6 +697,22 @@ paths:
       responses:
         200:
           description: Ok
+  /api/vacancy/search:
+    patch:
+      tags:
+        - vacancy
+      summary: Поиск вакансий
+      description: Найти все вакансии по ключевым словам
+      parameters:
+        - name: search
+          in: body
+          schema:
+            $ref: '#/definitions/SearchVacancies'
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Orders'
 
 definitions:
   UserCreate:
@@ -868,6 +884,12 @@ definitions:
     items:
       $ref: '#/definitions/Order'
   SearchOrders:
+    type: object
+    properties:
+      keyword:
+        type: string
+        example: "Адаптивная верстка"
+  SearchVacancies:
     type: object
     properties:
       keyword:
