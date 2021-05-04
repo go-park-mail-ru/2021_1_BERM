@@ -144,11 +144,12 @@ func main() {
 
 	router := mux.NewRouter()
 	router.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
-	router.Use(middleware.LoggingRequest)
-	router.Use(sessionMiddleWare.CheckSession)
-	router.Use(csrfMiddleware)
+
 
 	apiRoute := router.PathPrefix("/api").Subrouter()
+	apiRoute.Use(middleware.LoggingRequest)
+	apiRoute.Use(sessionMiddleWare.CheckSession)
+	apiRoute.Use(csrfMiddleware)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.GetUserInfo).Methods(http.MethodGet)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.ChangeProfile).Methods(http.MethodPatch)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Create).Methods(http.MethodPost)
@@ -157,10 +158,10 @@ func main() {
 	apiRoute.HandleFunc("/profile/review", reviewHandler.Create).Methods(http.MethodPost)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/review", reviewHandler.GetAllByUserId).Methods(http.MethodGet)
 	c := middleware.CorsMiddleware(config.Origin)
-	m := pMetric.New()
+	pMetric.New()
 	server := &http.Server{
 		Addr:    config.BindAddr,
-		Handler: m.Test(c.Handler(router)),
+		Handler: c.Handler(router),
 	}
 	go func() {
 		log.Println("Server start on port", config.BindAddr)

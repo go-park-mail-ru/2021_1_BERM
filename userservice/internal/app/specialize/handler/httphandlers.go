@@ -35,20 +35,20 @@ func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 
 	if err != nil {
-		httputils.RespondError(w, reqID, err)
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
 	s := &models.Specialize{}
 	if err := json.NewDecoder(r.Body).Decode(s); err != nil {
-		httputils.RespondError(w, reqID, err)
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
 	err = h.specializeUseCase.Remove(id, s.Name, context.Background())
 	if err != nil {
-		httputils.RespondError(w, reqID, err)
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	httputils.Respond(w, reqID, 200, nil)
+	httputils.Respond(w, r, reqID, 200, nil)
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
@@ -58,23 +58,23 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 
 	if err != nil {
-		httputils.RespondError(w, reqID, err)
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
 	s := &models.Specialize{}
 	if err = json.NewDecoder(r.Body).Decode(s); err != nil {
-		httputils.RespondError(w, reqID, err)
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
 	err = h.specializeUseCase.AssociateWithUser(id, s.Name, context.Background())
 	if err != nil {
-		httputils.RespondError(w, reqID, err)
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
 	u, err := h.userUseCase.GetById(id, context.Background())
 	if err != nil {
-		httputils.RespondError(w, reqID, err)
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	httputils.Respond(w, reqID, 200, u)
+	httputils.Respond(w, r, reqID, 200, u)
 }
