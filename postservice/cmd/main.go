@@ -144,16 +144,15 @@ func main() {
 		Handler: c.Handler(router),
 	}
 
-	if config.HTTPS {
-		log.Println("TLS server starting at port: ", server.Addr)
-		if err := server.ListenAndServeTLS(
-			"/etc/letsencrypt/live/findfreelancer.ru/cert.pem",
-			"/etc/letsencrypt/live/findfreelancer.ru/privkey.pem"); err != nil {
-			log.Fatal(err)
-		}
-	}
-
 	go func() {
+		if config.HTTPS {
+			log.Println("TLS server starting at port: ", server.Addr)
+			if err := server.ListenAndServeTLS(
+				"/etc/letsencrypt/live/findfreelancer.ru/cert.pem",
+				"/etc/letsencrypt/live/findfreelancer.ru/privkey.pem"); err != nil {
+				log.Fatal(err)
+			}
+		}
 		log.Println("Server starting at port", server.Addr)
 		if err := server.ListenAndServe(); err != nil {
 			log.Fatal(err)
