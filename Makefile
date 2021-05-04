@@ -33,4 +33,8 @@ db:
 	psql -U postgres -d postgres -a -f userservice/userschema.sql
 	psql -U postgres -d postgres -a -f postservice/postschema.sql
 
+.PHONY: tar
+tar:
+	killall -9 tarantool
+	cd db && tarantool fl_store.lua &> /dev/null&
 .DEFAULT_GOAL := build
