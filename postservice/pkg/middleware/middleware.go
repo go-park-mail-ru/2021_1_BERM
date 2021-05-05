@@ -7,22 +7,24 @@ import (
 	"math/rand"
 	"net/http"
 	httputils2 "post/pkg/httputils"
-	logger2 "post/pkg/logger"
+	logger "post/pkg/logger"
+	"time"
 )
 
 
 const (
 	ctxKeyReqID uint8 = 1
+	ctxKeyStartReqTime uint8 = 5
 )
 
 func LoggingRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqID := rand.Uint64()
-		logger2.LoggingRequest(reqID, r.URL, r.Method)
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyReqID, reqID)))
+		logger.LoggingRequest(reqID, r.URL, r.Method)
+		ctx := context.WithValue(r.Context(), ctxKeyStartReqTime, time.Now())
+		next.ServeHTTP(w, r.WithContext(context.WithValue(ctx, ctxKeyReqID, reqID)))
 	})
 }
-
 func CorsMiddleware(origin []string) *cors.Cors {
 	return cors.New(cors.Options{
 		AllowedOrigins:   origin,

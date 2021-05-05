@@ -8,20 +8,22 @@ import (
 	"github.com/rs/cors"
 	"math/rand"
 	"net/http"
+	"time"
 )
 
 const (
 	ctxKeyReqID uint8 = 1
+	ctxKeyStartReqTime uint8 = 5
 )
 
 func LoggingRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqID := rand.Uint64()
 		logger.LoggingRequest(reqID, r.URL, r.Method)
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyReqID, reqID)))
+		ctx := context.WithValue(r.Context(), ctxKeyStartReqTime, time.Now())
+		next.ServeHTTP(w, r.WithContext(context.WithValue(ctx, ctxKeyReqID, reqID)))
 	})
 }
-
 func CorsMiddleware(origin []string) *cors.Cors {
 	return cors.New(cors.Options{
 		AllowedOrigins:   origin,
