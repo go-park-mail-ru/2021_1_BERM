@@ -15,8 +15,14 @@ import (
 	"flag"
 	"github.com/BurntSushi/toml"
 	"github.com/gorilla/mux"
+	traceutils "github.com/opentracing-contrib/go-grpc"
+	"github.com/opentracing/opentracing-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/tarantool/go-tarantool"
+	"github.com/uber/jaeger-client-go"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
+	jaegerlog "github.com/uber/jaeger-client-go/log"
+	"github.com/uber/jaeger-lib/metrics"
 	"google.golang.org/grpc"
 	"net"
 	"net/http"
@@ -48,8 +54,36 @@ func main() {
 	defer conn.Close()
 	sessionRepository := tarantoolrepository.New(conn)
 
+	jaegerCfgInstance := jaegercfg.Configuration{
+		ServiceName: "AuthService",
+		Sampler: &jaegercfg.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter: &jaegercfg.ReporterConfig{
+			LogSpans:           true,
+			LocalAgentHostPort: "localhost:6831",
+		},
+	}
+
+	tracer, closer, err := jaegerCfgInstance.NewTracer(
+		jaegercfg.Logger(jaegerlog.StdLogger),
+		jaegercfg.Metrics(metrics.NullFactory),
+	)
+
+	if err != nil {
+		log.Fatal("cannot create tracer", err)
+	}
+
+	opentracing.SetGlobalTracer(tracer)
+	defer closer.Close()
+
 	// grpc connect to UserService
-	grpcConn, err := grpc.Dial(":8081", grpc.WithInsecure())
+	grpcConn, err := grpc.Dial(
+		":8081",
+		grpc.WithInsecure(),
+		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
+	)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -97,7 +131,7 @@ func main() {
 		}
 	}()
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(grpc.UnaryInterceptor(traceutils.OpenTracingServerInterceptor(tracer)))
 	srv := handlers.NewGRPCServer(sessionUseCase)
 	api.RegisterSessionServer(s, srv)
 	l, err := net.Listen("tcp", ":8085")

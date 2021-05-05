@@ -31,21 +31,21 @@ func (h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		httputils.RespondError(w, reqID, err)
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
 	u := &models.ChangeUser{}
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
-		httputils.RespondError(w, reqID, err)
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
 	u.ID = id
 	response, err := h.userUseCase.Change(*u, context.Background())
 	if err != nil {
-		httputils.RespondError(w, reqID, err)
+		httputils.RespondError(w,r, reqID, err)
 		return
 	}
-	httputils.Respond(w, reqID, http.StatusOK, response)
+	httputils.Respond(w, r, reqID, http.StatusOK, response)
 }
 
 func (h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
@@ -54,13 +54,13 @@ func (h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	ID, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
-		httputils.RespondError(w, reqID, err)
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
 	u, err := h.userUseCase.GetById(ID, context.Background())
 	if err != nil {
-		httputils.RespondError(w, reqID, err)
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	httputils.Respond(w, reqID, http.StatusOK, u)
+	httputils.Respond(w, r, reqID, http.StatusOK, u)
 }

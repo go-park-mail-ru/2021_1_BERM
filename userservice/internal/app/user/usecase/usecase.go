@@ -5,6 +5,7 @@ import (
 	"user/internal/app/models"
 )
 
+//go:generate mockgen -destination=../mock/mock_usecase.go -package=mock user/internal/app/user/usecase UseCase
 type UseCase interface {
 	Create(user models.NewUser, ctx context.Context) (map[string]interface{}, error)
 	Verification(email string, password string, ctx context.Context) (map[string]interface{}, error)

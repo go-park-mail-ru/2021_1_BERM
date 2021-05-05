@@ -4,6 +4,10 @@ import (
 	"flag"
 	"github.com/BurntSushi/toml"
 	"github.com/gorilla/mux"
+	"github.com/opentracing/opentracing-go"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-lib/metrics"
 	"google.golang.org/grpc"
 	"net"
 	"user/api"
@@ -15,6 +19,9 @@ import (
 	"user/internal/app/user/handlers"
 	"user/pkg/middleware"
 
+	traceutils "github.com/opentracing-contrib/go-grpc"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
+	jaegerlog "github.com/uber/jaeger-client-go/log"
 	"log"
 	"net/http"
 	"user/configs"
@@ -27,6 +34,7 @@ import (
 	"user/internal/app/user/usecase/impl"
 	"user/pkg/database/postgresql"
 	"user/pkg/logger"
+	pMetric "user/pkg/metric"
 )
 
 var (
@@ -59,6 +67,30 @@ func main() {
 		}
 	}()
 
+	jaegerCfgInstance := jaegercfg.Configuration{
+		ServiceName: "UserService",
+		Sampler: &jaegercfg.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter: &jaegercfg.ReporterConfig{
+			LogSpans:           true,
+			LocalAgentHostPort: "localhost:6831",
+		},
+	}
+
+	tracer, closer, err := jaegerCfgInstance.NewTracer(
+		jaegercfg.Logger(jaegerlog.StdLogger),
+		jaegercfg.Metrics(metrics.NullFactory),
+	)
+
+	if err != nil {
+		log.Fatal("cannot create tracer", err)
+	}
+
+	opentracing.SetGlobalTracer(tracer)
+	defer closer.Close()
+
 	userRepository := &userRepo.Repository{
 		Db: postgres.GetPostgres(),
 	}
@@ -70,14 +102,22 @@ func main() {
 	}
 
 	//connect to auth service
-	grpcConnAuth, err := grpc.Dial(":8085", grpc.WithInsecure())
+	grpcConnAuth, err := grpc.Dial(
+		":8085",
+		grpc.WithInsecure(),
+		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
+	)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer grpcConnAuth.Close()
 
 	//connect to order service
-	grpcConnOrder, err := grpc.Dial(":8086", grpc.WithInsecure())
+	grpcConnOrder, err := grpc.Dial(
+		":8086",
+		grpc.WithInsecure(),
+		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
+	)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -103,11 +143,13 @@ func main() {
 	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
 	router := mux.NewRouter()
-	router.Use(middleware.LoggingRequest)
-	router.Use(sessionMiddleWare.CheckSession)
-	router.Use(csrfMiddleware)
+	router.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
+
 
 	apiRoute := router.PathPrefix("/api").Subrouter()
+	apiRoute.Use(middleware.LoggingRequest)
+	apiRoute.Use(sessionMiddleWare.CheckSession)
+	apiRoute.Use(csrfMiddleware)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.GetUserInfo).Methods(http.MethodGet)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.ChangeProfile).Methods(http.MethodPatch)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Create).Methods(http.MethodPost)
@@ -116,11 +158,11 @@ func main() {
 	apiRoute.HandleFunc("/profile/review", reviewHandler.Create).Methods(http.MethodPost)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/review", reviewHandler.GetAllByUserId).Methods(http.MethodGet)
 	c := middleware.CorsMiddleware(config.Origin)
+	pMetric.New()
 	server := &http.Server{
 		Addr:    config.BindAddr,
 		Handler: c.Handler(router),
 	}
-
 	go func() {
 		if config.HTTPS {
 			log.Println("TLS server starting at port: ", server.Addr)
@@ -136,7 +178,7 @@ func main() {
 		}
 	}()
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(grpc.UnaryInterceptor(traceutils.OpenTracingServerInterceptor(tracer)))
 	srv := handlers.NewGRPCServer(userUseCase)
 	api.RegisterUserServer(s, srv)
 

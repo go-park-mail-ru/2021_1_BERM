@@ -27,13 +27,13 @@ func (m *MidleWhare) CheckSession(next http.Handler) http.Handler {
 
 		sessionID, err := r.Cookie("sessionID")
 		if err != nil {
-			httputils.RespondError(w, reqID, err,)
+			httputils.RespondError(w, r, reqID, err,)
 			return
 		}
 
 		u, err := m.sessionUseCase.Check(sessionID.Value, context.Background())
 		if err != nil {
-			httputils.RespondError(w, reqID, err,)
+			httputils.RespondError(w, r, reqID, err,)
 			return
 		}
 		ctx := context.WithValue(r.Context(), ctxUserInfo, u)
