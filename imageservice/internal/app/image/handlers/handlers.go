@@ -31,13 +31,13 @@ func (h *Handlers) PutAvatar(w http.ResponseWriter, r *http.Request) {
 	u := models.UserImg{}
 	var err error
 	if err = json.NewDecoder(r.Body).Decode(&u); err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
 	u, err = h.useCase.SetImage(u)
 	if err != nil {
-		httputils.RespondError(w, reqID, err, http.StatusInternalServerError)
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	httputils.Respond(w, reqID, http.StatusOK, u)
+	httputils.Respond(w, r, reqID, http.StatusOK, u)
 }

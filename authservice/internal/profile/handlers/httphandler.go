@@ -30,21 +30,21 @@ func (h *Handler) RegistrationProfile(w http.ResponseWriter, r *http.Request) {
 	ctx := context.WithValue(context.Background(), "ReqID", reqId)
 	u := &models.NewUser{}
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
-		utils.RespondError(w, reqId, err)
+		utils.RespondError(w, r, reqId, err)
 		return
 	}
 	resp, err := h.profileUseCase.Create(*u, ctx)
 	if err != nil {
-		utils.RespondError(w, reqId, err)
+		utils.RespondError(w,r, reqId, err)
 		return
 	}
 	sess, err := h.sessionUseCase.Create(resp.ID, resp.Executor, ctx)
 	if err != nil {
-		utils.RespondError(w, reqId, err)
+		utils.RespondError(w,r, reqId, err)
 		return
 	}
 	utils.CreateCookie(sess, w)
-	utils.Respond(w, reqId, http.StatusAccepted, resp)
+	utils.Respond(w,r, reqId, http.StatusAccepted, resp)
 }
 
 func (h *Handler) AuthorisationProfile(w http.ResponseWriter, r *http.Request) {
@@ -53,19 +53,19 @@ func (h *Handler) AuthorisationProfile(w http.ResponseWriter, r *http.Request) {
 	ctx := context.WithValue(context.Background(), "ReqID", reqId)
 	u := &models.LoginUser{}
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
-		utils.RespondError(w, reqId, err)
+		utils.RespondError(w, r,reqId, err)
 		return
 	}
 	resp, err := h.profileUseCase.Authentication(u.Email, u.Password, ctx)
 	if err != nil {
-		utils.RespondError(w, reqId, err)
+		utils.RespondError(w, r,reqId, err)
 		return
 	}
 	sess, err := h.sessionUseCase.Create(resp.ID, resp.Executor, ctx)
 	if err != nil {
-		utils.RespondError(w, reqId, err)
+		utils.RespondError(w, r,reqId, err)
 		return
 	}
 	utils.CreateCookie(sess, w)
-	utils.Respond(w, reqId, http.StatusAccepted, resp)
+	utils.Respond(w, r,reqId, http.StatusAccepted, resp)
 }
