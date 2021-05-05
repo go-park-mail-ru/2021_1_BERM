@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	traceutils "github.com/opentracing-contrib/go-grpc"
 	"github.com/opentracing/opentracing-go"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"
@@ -18,11 +19,13 @@ import (
 	pb "post/api"
 	"post/configs"
 	"post/internal/app/session/handlers"
-	"post/internal/app/session/repository/grpcrepository"
-	"post/internal/app/session/usecase/impl"
+	"post/internal/app/session/repository"
+	"post/internal/app/session/usecase"
 	"post/pkg/logger"
 	"post/pkg/middleware"
 	"post/pkg/postgresql"
+
+	pMetric "post/pkg/metric"
 
 	orderHandlers "post/internal/app/order/handlers"
 	orderRepo "post/internal/app/order/repository"
@@ -114,8 +117,8 @@ func main() {
 	}
 	defer grpcConn.Close()
 	client := api.NewSessionClient(grpcConn)
-	sessionRepository := grpcrepository.New(client)
-	sessionUseCase := impl.New(sessionRepository)
+	sessionRepository := repository.New(client)
+	sessionUseCase := usecase.New(sessionRepository)
 	sessionMiddleWare := handlers.New(sessionUseCase)
 
 	orderRepository := orderRepo.NewRepo(postgres.GetPostgres())
@@ -131,12 +134,14 @@ func main() {
 	responseHandler := responseHandlers.NewHandler(*responseUseCase)
 
 	router := mux.NewRouter()
-	router.Use(middleware.LoggingRequest)
-	router.Use(sessionMiddleWare.CheckSession)
+	router.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
+
 
 	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
 	apiRoute := router.PathPrefix("/api").Subrouter()
+	apiRoute.Use(middleware.LoggingRequest)
+	apiRoute.Use(sessionMiddleWare.CheckSession)
 
 	order := apiRoute.PathPrefix("/order").Subrouter()
 	order.Use(csrfMiddleware)
@@ -177,6 +182,7 @@ func main() {
 
 	c := middleware.CorsMiddleware(config.Origin)
 
+	pMetric.New()
 	server := &http.Server{
 		Addr:    config.BindAddr,
 		Handler: c.Handler(router),

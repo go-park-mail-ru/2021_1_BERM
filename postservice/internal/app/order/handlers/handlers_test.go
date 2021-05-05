@@ -11,10 +11,15 @@ import (
 	"net/http/httptest"
 	"post/internal/app/models"
 	"post/internal/app/order/mock"
+	"post/pkg/metric"
 	"testing"
+	"time"
 )
 
+const ctxKeyStartReqTime uint8 = 5
+
 func TestCreateOrder(t *testing.T) {
+	metric.New()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -53,6 +58,7 @@ func TestCreateOrder(t *testing.T) {
 	val2 = 2281488
 	ctx = context.WithValue(ctx, ctxUserID, val1)
 	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
+	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 	req = req.WithContext(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -87,6 +93,8 @@ func TestCreateOrder(t *testing.T) {
 	val2 = 2281488
 	ctx = context.WithValue(ctx, ctxUserID, val1)
 	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
+	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
+
 	req = req.WithContext(ctx)
 	rr2 := httptest.NewRecorder()
 	handler.ServeHTTP(rr2, req)
@@ -103,6 +111,7 @@ func TestCreateOrder(t *testing.T) {
 	val2 = 2281488
 	ctx = context.WithValue(ctx, ctxUserID, val1)
 	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
+	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 	req = req.WithContext(ctx)
 	rr2 = httptest.NewRecorder()
 	handler.ServeHTTP(rr2, req)
@@ -142,6 +151,7 @@ func TestGetActualOrder(t *testing.T) {
 	val2 = 2281488
 	ctx = context.WithValue(ctx, ctxUserID, val1)
 	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
+	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 	req = req.WithContext(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -196,6 +206,7 @@ func TestGetActualOrderErr(t *testing.T) {
 	val2 = 2281488
 	ctx = context.WithValue(ctx, ctxUserID, val1)
 	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
+	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 	req = req.WithContext(ctx)
 	if err != nil {
 		t.Fatal(err)
