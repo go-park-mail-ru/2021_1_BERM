@@ -1,2 +1,2 @@
-2021/05/04 22:10:32 Server start on port :8080
-2021/05/04 22:10:32 GRPC Server start on port :8081
+2021/05/04 22:44:52 Server start on port :8080
+2021/05/04 22:44:52 GRPC Server start on port :8081

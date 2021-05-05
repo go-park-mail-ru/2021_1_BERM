@@ -16,6 +16,7 @@ require (
 	github.com/rs/cors v1.7.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.5.1
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/net v0.0.0-20210331212208-0fccb6fa2b5c
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/grpc v1.37.0
