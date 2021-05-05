@@ -1,4 +1,4 @@
-package postgresql
+package repository
 
 const (
 	CreateUserSpecializeRequest = `INSERT INTO userservice.user_specializes ( user_id, specialize_id )

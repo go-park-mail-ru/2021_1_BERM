@@ -7,23 +7,23 @@ import (
 	"google.golang.org/grpc/status"
 	"user/api"
 	"user/internal/app/models"
-	"user/internal/app/user/usecase"
+	"user/internal/app/user"
 	"user/pkg/error/errortools"
 )
 
 type GRPCServer struct {
 	api.UnimplementedUserServer
-	userUseCase usecase.UseCase
+	userUseCase user.UseCase
 }
 
-func NewGRPCServer(userUseCase usecase.UseCase) *GRPCServer {
+func NewGRPCServer(userUseCase user.UseCase) *GRPCServer {
 	return &GRPCServer{
 		userUseCase: userUseCase,
 	}
 }
 
 func (s *GRPCServer) RegistrationUser(ctx context.Context, in *api.NewUserRequest) (*api.UserResponse, error) {
-	u := models.NewUser{
+	u := &models.NewUser{
 		Email:       in.GetEmail(),
 		Login:       in.GetLogin(),
 		NameSurname: in.GetNameSurname(),
@@ -47,8 +47,8 @@ func (s *GRPCServer) RegistrationUser(ctx context.Context, in *api.NewUserReques
 	}
 
 	return &api.UserResponse{
-		Id:       answer["id"].(uint64),
-		Executor: answer["executor"].(bool),
+		Id:      answer.ID,
+		Executor: answer.Executor,
 	}, nil
 }
 
@@ -67,8 +67,8 @@ func (s *GRPCServer) AuthorizationUser(ctx context.Context, in *api.Authorizatio
 		}, status.Error(code, string(serializeErrData))
 	}
 	return &api.UserResponse{
-		Id:       answer["id"].(uint64),
-		Executor: answer["executor"].(bool),
+		Id:      answer.ID,
+		Executor: answer.Executor,
 	}, nil
 }
 
