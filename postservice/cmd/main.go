@@ -122,9 +122,9 @@ func main() {
 	vacancyRepository := vacancyRepo.NewRepo(postgres.GetPostgres())
 	responseRepository := responseRepo.NewRepo(postgres.GetPostgres())
 
-	orderUseCase := orderUCase.NewUseCase(*orderRepository, userRepo)
-	vacancyUseCase := vacancyUCase.NewUseCase(*vacancyRepository, userRepo)
-	responseUseCase := responseUCase.NewUseCase(*responseRepository, userRepo)
+	orderUseCase := orderUCase.NewUseCase(orderRepository, userRepo)
+	vacancyUseCase := vacancyUCase.NewUseCase(vacancyRepository, userRepo)
+	responseUseCase := responseUCase.NewUseCase(responseRepository, userRepo)
 
 	orderHandler := orderHandlers.NewHandler(*orderUseCase)
 	vacancyHandler := vacancyHandlers.NewHandler(*vacancyUseCase)
@@ -173,6 +173,7 @@ func main() {
 	vacancy.HandleFunc("/{id:[0-9]+}/select", vacancyHandler.DeleteExecutor).Methods(http.MethodDelete)
 	vacancy.HandleFunc("/{id}/close", vacancyHandler.CloseVacancy).Methods(http.MethodDelete)
 	vacancy.HandleFunc("/profile/{id:[0-9]+}/archive", vacancyHandler.GetAllArchiveUserVacancies).Methods(http.MethodGet)
+	vacancy.HandleFunc("/search", vacancyHandler.SearchVacancy).Methods(http.MethodPatch)
 
 	c := middleware.CorsMiddleware(config.Origin)
 
@@ -181,16 +182,15 @@ func main() {
 		Handler: c.Handler(router),
 	}
 
-	if config.HTTPS {
-		log.Println("TLS server starting at port: ", server.Addr)
-		if err := server.ListenAndServeTLS(
-			"/etc/letsencrypt/live/findfreelancer.ru/cert.pem",
-			"/etc/letsencrypt/live/findfreelancer.ru/privkey.pem"); err != nil {
-			log.Fatal(err)
-		}
-	}
-
 	go func() {
+		if config.HTTPS {
+			log.Println("TLS server starting at port: ", server.Addr)
+			if err := server.ListenAndServeTLS(
+				"/etc/letsencrypt/live/findfreelancer.ru/cert.pem",
+				"/etc/letsencrypt/live/findfreelancer.ru/privkey.pem"); err != nil {
+				log.Fatal(err)
+			}
+		}
 		log.Println("Server starting at port", server.Addr)
 		if err := server.ListenAndServe(); err != nil {
 			log.Fatal(err)

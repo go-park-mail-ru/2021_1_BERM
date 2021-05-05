@@ -1,4 +1,4 @@
-package handlers
+package order
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"post/internal/app/models"
-	orderUseCase "post/internal/app/order/usecase"
+	orderUseCase "post/internal/app/order"
 	"post/pkg/httputils"
 	"strconv"
 )
@@ -15,7 +15,6 @@ const (
 	ctxKeyReqID   uint8 = 1
 	ctxUserID     uint8 = 2
 	ctxExecutor uint8 = 3
-
 )
 
 type Handlers struct {

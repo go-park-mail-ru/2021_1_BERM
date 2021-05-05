@@ -5,6 +5,7 @@ import (
 	"post/internal/app/models"
 )
 
+//go:generate mockgen -destination=./mock/mock_repository.go -package=mock post/internal/app/order Repository
 type Repository interface {
 	Create(order models.Order, ctx context.Context) (uint64, error)
 	Change(order models.Order, ctx context.Context) error

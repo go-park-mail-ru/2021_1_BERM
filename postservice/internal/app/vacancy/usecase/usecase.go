@@ -1,4 +1,4 @@
-package usecase
+package vacancy
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"post/api"
 	"post/internal/app/models"
-	vacancyRepo "post/internal/app/vacancy/repository"
+	vacancyRepo "post/internal/app/vacancy"
 	customErr "post/pkg/error"
 )
 
@@ -198,6 +198,24 @@ func (u *UseCase) GetArchiveVacancies(ctx context.Context) ([]models.Vacancy, er
 	return vacancies, err
 }
 
+func (u *UseCase) SearchVacancy(keyword string, ctx context.Context) ([]models.Vacancy, error) {
+	vacancies, err := u.VacancyRepo.SearchVacancy(keyword, ctx)
+	if  err != nil {
+		return nil, errors.Wrap(err, vacancyUseCaseError)
+	}
+	for i, vacancy := range vacancies {
+		err = u.supplementingTheVacancyModel(&vacancy)
+		if err != nil {
+			return nil, errors.Wrap(err, vacancyUseCaseError)
+		}
+		vacancies[i] = vacancy
+	}
+	if vacancies == nil {
+		return []models.Vacancy{}, nil
+	}
+	return vacancies, err
+}
+
 func (u *UseCase) supplementingTheVacancyModel(vacancy *models.Vacancy) error {
 	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: vacancy.CustomerID})
 	if err != nil {
@@ -214,3 +232,5 @@ func (u *UseCase) sanitizeVacancy(vacancy *models.Vacancy) {
 	vacancy.Description = sanitizer.Sanitize(vacancy.Description)
 	vacancy.Category = sanitizer.Sanitize(vacancy.Category)
 }
+
+

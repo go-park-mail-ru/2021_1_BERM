@@ -1,11 +1,11 @@
-package usecase
+package response
 
 import (
 	"context"
 	"github.com/pkg/errors"
 	"post/api"
 	"post/internal/app/models"
-	responseRepo "post/internal/app/response/repository"
+	responseRepo "post/internal/app/response"
 )
 
 const (
