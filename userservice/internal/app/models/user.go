@@ -42,6 +42,10 @@ type UserInfo struct {
 }
 
 type UserBasicInfo struct {
-	ID       uint64
-	Executor bool
+	ID          uint64 `json:"id"`
+	Email       string `json:"email,omitempty"`
+	About       string `json:"about,omitempty"`
+	Executor    bool   `json:"executor"`
+	Login       string `json:"login,omitempty"`
+	NameSurname string `json:"name_surname,omitempty"`
 }

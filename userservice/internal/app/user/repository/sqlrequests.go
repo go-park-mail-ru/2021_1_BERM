@@ -1,4 +1,4 @@
-package postgresql
+package repository
 
 const (
 	CreateUserRequest = `INSERT INTO userservice.users (email, password, login, name_surname, about, executor)

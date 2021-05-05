@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"net/http"
-	usecase2 "user/internal/app/session/usecase"
+	"user/internal/app/session"
 	"user/pkg/httputils"
 )
 const (
@@ -12,10 +12,10 @@ const (
 )
 
 type MidleWhare struct {
-	sessionUseCase usecase2.UseCase
+	sessionUseCase session.UseCase
 }
 
-func New(sessionUseCase usecase2.UseCase) *MidleWhare {
+func New(sessionUseCase session.UseCase) *MidleWhare {
 	return &MidleWhare{
 		sessionUseCase: sessionUseCase,
 	}

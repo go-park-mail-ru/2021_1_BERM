@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"user/internal/app/models"
-	"user/internal/app/user/usecase"
+	"user/internal/app/user"
 	"user/pkg/httputils"
 )
 
@@ -16,10 +16,10 @@ const (
 )
 
 type Handlers struct {
-	userUseCase usecase.UseCase
+	userUseCase user.UseCase
 }
 
-func New(userUseCase usecase.UseCase) *Handlers {
+func New(userUseCase user.UseCase) *Handlers {
 	return &Handlers{
 		userUseCase: userUseCase,
 	}
@@ -40,7 +40,7 @@ func (h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u.ID = id
-	response, err := h.userUseCase.Change(*u, context.Background())
+	response, err := h.userUseCase.Change(u, context.Background())
 	if err != nil {
 		httputils.RespondError(w,r, reqID, err)
 		return

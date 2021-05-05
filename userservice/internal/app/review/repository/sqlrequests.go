@@ -1,4 +1,4 @@
-package postgresql
+package repository
 
 const (
 	CreateReviewsRequest = `INSERT INTO userservice.reviews(user_id, to_user_id, order_id, description, score)

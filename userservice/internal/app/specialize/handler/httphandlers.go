@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strconv"
 	"user/internal/app/models"
-	"user/internal/app/specialize/usecase"
-	usecase2 "user/internal/app/user/usecase"
+	"user/internal/app/specialize"
+	"user/internal/app/user"
 	"user/pkg/httputils"
 )
 
@@ -17,11 +17,11 @@ const (
 )
 
 type Handler struct {
-	specializeUseCase usecase.UseCase
-	userUseCase usecase2.UseCase
+	specializeUseCase specialize.UseCase
+	userUseCase       user.UseCase
 }
 
-func New(specializeUseCase usecase.UseCase, userUseCase usecase2.UseCase) *Handler {
+func New(specializeUseCase specialize.UseCase, userUseCase user.UseCase) *Handler {
 	return &Handler{
 		specializeUseCase: specializeUseCase,
 		userUseCase: userUseCase,

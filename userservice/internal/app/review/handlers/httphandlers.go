@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"user/internal/app/models"
-	"user/internal/app/review/usecase"
+	"user/internal/app/review"
 	"user/pkg/httputils"
 )
 
@@ -15,10 +15,10 @@ const (
 )
 
 type Handler struct {
-	reviewsUseCase usecase.UseCase
+	reviewsUseCase review.UseCase
 }
 
-func New(reviewsUseCase usecase.UseCase) *Handler {
+func New(reviewsUseCase review.UseCase) *Handler {
 	return &Handler{
 		reviewsUseCase: reviewsUseCase,
 	}

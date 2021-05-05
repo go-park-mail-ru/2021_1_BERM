@@ -11,12 +11,17 @@ import (
 	"google.golang.org/grpc"
 	"net"
 	"user/api"
-	impl3 "user/internal/app/review/usecase/impl"
+	repository5 "user/internal/app/order/repository"
+	repository4 "user/internal/app/review/repository"
+	usecase4 "user/internal/app/review/usecase"
 	handlers3 "user/internal/app/session/handlers"
-	"user/internal/app/session/repository/grpcrepository"
-	impl4 "user/internal/app/session/usecase/impl"
-	impl2 "user/internal/app/specialize/usecase/impl"
+	repository3 "user/internal/app/session/repository"
+	usecase3 "user/internal/app/session/usecase"
+	repository2 "user/internal/app/specialize/repository"
+	usecase2 "user/internal/app/specialize/usecase"
 	"user/internal/app/user/handlers"
+	"user/internal/app/user/repository"
+	"user/internal/app/user/usecase"
 	"user/pkg/middleware"
 
 	traceutils "github.com/opentracing-contrib/go-grpc"
@@ -25,13 +30,8 @@ import (
 	"log"
 	"net/http"
 	"user/configs"
-	orderGRPC "user/internal/app/order/repository/grpcrepository"
 	revHandler "user/internal/app/review/handlers"
-	reviewRepo "user/internal/app/review/repository/postgresql"
 	specHandler "user/internal/app/specialize/handler"
-	specializeRepo "user/internal/app/specialize/repository/postgresql"
-	userRepo "user/internal/app/user/repository/postgresql"
-	"user/internal/app/user/usecase/impl"
 	"user/pkg/database/postgresql"
 	"user/pkg/logger"
 	pMetric "user/pkg/metric"
@@ -91,13 +91,13 @@ func main() {
 	opentracing.SetGlobalTracer(tracer)
 	defer closer.Close()
 
-	userRepository := &userRepo.Repository{
+	userRepository := &repository.Repository{
 		Db: postgres.GetPostgres(),
 	}
-	specializeRepository := &specializeRepo.Repository{
+	specializeRepository := &repository2.Repository{
 		Db: postgres.GetPostgres(),
 	}
-	reviewRepository := &reviewRepo.Repository{
+	reviewRepository := &repository4.Repository{
 		Db: postgres.GetPostgres(),
 	}
 
@@ -124,21 +124,21 @@ func main() {
 	defer grpcConnOrder.Close()
 
 	client := api.NewSessionClient(grpcConnAuth)
-	sessionRepository := grpcrepository.New(client)
+	sessionRepository := repository3.New(client)
 
 	orderClient := api.NewOrderClient(grpcConnOrder)
-	orderRepository := orderGRPC.New(orderClient)
+	orderRepository := repository5.New(orderClient)
 
-	userUseCase := impl.New(userRepository, specializeRepository, reviewRepository)
+	userUseCase := usecase.New(userRepository, specializeRepository, reviewRepository)
 	userHandler := handlers.New(userUseCase)
 
-	specializeUseCase := impl2.New(specializeRepository)
+	specializeUseCase := usecase2.New(specializeRepository)
 	specializeHandler := specHandler.New(specializeUseCase, userUseCase)
 
-	sessionUseCase := impl4.New(sessionRepository)
+	sessionUseCase := usecase3.New(sessionRepository)
 	sessionMiddleWare := handlers3.New(sessionUseCase)
 
-	reviewUseCase := impl3.New(reviewRepository, userRepository, orderRepository)
+	reviewUseCase := usecase4.New(reviewRepository, userRepository, orderRepository)
 	reviewHandler := revHandler.New(reviewUseCase)
 	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
