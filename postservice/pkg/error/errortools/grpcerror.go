@@ -1,7 +1,6 @@
 package errortools
 
 import (
-	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"net/http"
@@ -16,8 +15,7 @@ type grpcErrorInfo struct {
 
 
 func grpcErrorHandle(err error)(interface{}, int, bool){
-	grpcErr := &status.Status{}
-	if errors.As(err, &grpcErr){
+	if grpcErr, ok := status.FromError(err); ok{
 		if grpcErr.Code() <= 16{
 			return map[string]string{
 				"message" : customError.InternalServerErrorMsg,
