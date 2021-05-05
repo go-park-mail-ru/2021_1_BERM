@@ -4,6 +4,7 @@ import (
 	"flag"
 	"github.com/BurntSushi/toml"
 	"github.com/gorilla/mux"
+	traceutils "github.com/opentracing-contrib/go-grpc"
 	"github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/uber/jaeger-client-go"
@@ -41,12 +42,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// grpc connect to UserService
-	conn, err := grpc.Dial("localhost:8081", grpc.WithInsecure())
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close()
 	jaegerCfgInstance := jaegercfg.Configuration{
 		ServiceName: "ImageService",
 		Sampler: &jaegercfg.SamplerConfig{
@@ -71,6 +66,12 @@ func main() {
 	opentracing.SetGlobalTracer(tracer)
 	defer closer.Close()
 
+	// grpc connect to UserService
+	conn, err := grpc.Dial("localhost:8081", grpc.WithInsecure(), grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
 	userRepo := api.NewUserClient(conn)
 
 	imageUseCase := imageUCase.NewUseCase(userRepo)
