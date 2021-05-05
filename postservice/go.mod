@@ -18,14 +18,10 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rs/cors v1.7.0
 	github.com/sirupsen/logrus v1.8.1
-<<<<<<< HEAD
+	github.com/stretchr/testify v1.7.0
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
 	go.uber.org/atomic v1.7.0 // indirect
-=======
-	github.com/stretchr/testify v1.5.1
-	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
->>>>>>> development
 	golang.org/x/net v0.0.0-20210331212208-0fccb6fa2b5c
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/grpc v1.37.0
