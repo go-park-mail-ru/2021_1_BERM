@@ -82,10 +82,10 @@ func main() {
 	router := mux.NewRouter()
 	router.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
 
-	router.HandleFunc("/api/profile/avatar", imageHandler.PutAvatar).Methods(http.MethodPatch)
 	apiRouter := router.PathPrefix("/api").Subrouter()
 	apiRouter.Use(middleware.LoggingRequest)
 	apiRouter.Use(csrfMiddleware)
+	apiRouter.HandleFunc("/profile/avatar", imageHandler.PutAvatar).Methods(http.MethodPatch)
 	metric.New()
 	c := middleware.CorsMiddleware(config.Origin)
 
