@@ -11,12 +11,14 @@ import (
 	"authorizationservice/internal/session/repository/tarantoolrepository"
 	"authorizationservice/internal/session/usecase/impl"
 	"authorizationservice/pkg/logger"
+	"authorizationservice/pkg/metric"
 	"authorizationservice/pkg/middleware"
 	"flag"
 	"github.com/BurntSushi/toml"
 	"github.com/gorilla/mux"
 	traceutils "github.com/opentracing-contrib/go-grpc"
 	"github.com/opentracing/opentracing-go"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/tarantool/go-tarantool"
 	"github.com/uber/jaeger-client-go"
@@ -100,8 +102,11 @@ func main() {
 	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
 	router := mux.NewRouter()
-	router.Use(middleware.LoggingRequest)
+	router.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
+
+
 	apiRout := router.PathPrefix("/api").Subrouter()
+	apiRout.Use(middleware.LoggingRequest)
 	apiRout.HandleFunc("/logout", sessionHandler.LogOut).Methods(http.MethodDelete)
 	apiRout.HandleFunc("/profile", profileHandler.RegistrationProfile).Methods(http.MethodPost)
 	apiRout.HandleFunc("/login", profileHandler.AuthorisationProfile).Methods(http.MethodPost)
@@ -131,6 +136,7 @@ func main() {
 		}
 	}()
 
+	metric.New()
 	s := grpc.NewServer(grpc.UnaryInterceptor(traceutils.OpenTracingServerInterceptor(tracer)))
 	srv := handlers.NewGRPCServer(sessionUseCase)
 	api.RegisterSessionServer(s, srv)
