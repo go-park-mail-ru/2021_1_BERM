@@ -31,7 +31,7 @@ func (h *Handler) CheckLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 	sessionId := cookie.Value
 	session, err := h.sessionUseCase.Get(sessionId, ctx)
-	utils.Respond(w, reqId, http.StatusAccepted, session)
+	utils.Respond(w, r, reqId, http.StatusAccepted, session)
 }
 
 func (h *Handler) LogOut(w http.ResponseWriter, r *http.Request) {
@@ -39,5 +39,5 @@ func (h *Handler) LogOut(w http.ResponseWriter, r *http.Request) {
 	reqId := rand.Uint64()
 	cookies := r.Cookies()
 	utils.RemoveCookies(cookies, w)
-	utils.Respond(w, reqId, http.StatusAccepted, nil)
+	utils.Respond(w, r,reqId, http.StatusAccepted, nil)
 }
