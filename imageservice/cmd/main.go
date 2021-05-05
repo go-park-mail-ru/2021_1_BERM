@@ -5,6 +5,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/gorilla/mux"
 	"github.com/opentracing/opentracing-go"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"
@@ -15,6 +16,7 @@ import (
 	imageHandlers "image/internal/app/image/handlers"
 	imageUCase "image/internal/app/image/usecase"
 	"image/internal/app/logger"
+	"image/internal/app/metric"
 	"image/internal/app/middleware"
 	"log"
 	"net/http"
@@ -78,11 +80,13 @@ func main() {
 	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
 	router := mux.NewRouter()
-	router.Use(middleware.LoggingRequest)
-	router.Use(csrfMiddleware)
+	router.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
 
 	router.HandleFunc("/api/profile/avatar", imageHandler.PutAvatar).Methods(http.MethodPatch)
-
+	apiRouter := router.PathPrefix("/api").Subrouter()
+	apiRouter.Use(middleware.LoggingRequest)
+	apiRouter.Use(csrfMiddleware)
+	metric.New()
 	c := middleware.CorsMiddleware(config.Origin)
 
 	server := &http.Server{
