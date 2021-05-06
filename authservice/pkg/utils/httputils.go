@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"authorizationservice/internal/models"
+	models2 "authorizationservice/internal/app/models"
 	"authorizationservice/pkg/error/errortools"
 	"authorizationservice/pkg/logger"
 	"authorizationservice/pkg/metric"
@@ -46,7 +46,7 @@ func RespondCSRF() http.Handler {
 	})
 }
 
-func CreateCookie(session *models.Session, w http.ResponseWriter) {
+func CreateCookie(session *models2.Session, w http.ResponseWriter) {
 	cookies := []http.Cookie{
 		{
 			Name:     "sessionID",

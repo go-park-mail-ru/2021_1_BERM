@@ -2,16 +2,16 @@ package handlers
 
 import (
 	"authorizationservice/api"
-	"authorizationservice/internal/session/usecase"
+	session2 "authorizationservice/internal/app/session"
 	"context"
 )
 
 type GRPCServer struct {
 	api.UnimplementedSessionServer
-	sessionUseCase usecase.UseCase
+	sessionUseCase session2.UseCase
 }
 
-func NewGRPCServer(sessionUseCase usecase.UseCase) *GRPCServer {
+func NewGRPCServer(sessionUseCase session2.UseCase) *GRPCServer {
 	return &GRPCServer{
 		sessionUseCase: sessionUseCase,
 	}

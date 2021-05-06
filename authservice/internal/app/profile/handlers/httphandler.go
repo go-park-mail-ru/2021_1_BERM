@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"authorizationservice/internal/models"
-	"authorizationservice/internal/profile/usecase"
-	session "authorizationservice/internal/session/usecase"
+	models2 "authorizationservice/internal/app/models"
+	profile2 "authorizationservice/internal/app/profile"
+	"authorizationservice/internal/app/session"
 	"authorizationservice/pkg/utils"
 	"context"
 	"encoding/json"
@@ -14,10 +14,10 @@ import (
 
 type Handler struct {
 	sessionUseCase session.UseCase
-	profileUseCase usecase.UseCase
+	profileUseCase profile2.UseCase
 }
 
-func New(sessionUseCase session.UseCase, profileUseCase usecase.UseCase) *Handler {
+func New(sessionUseCase session.UseCase, profileUseCase profile2.UseCase) *Handler {
 	return &Handler{
 		sessionUseCase: sessionUseCase,
 		profileUseCase: profileUseCase,
@@ -28,7 +28,7 @@ func (h *Handler) RegistrationProfile(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 	reqId := rand.Uint64()
 	ctx := context.WithValue(context.Background(), "ReqID", reqId)
-	u := &models.NewUser{}
+	u := &models2.NewUser{}
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
 		utils.RespondError(w, r, reqId, err)
 		return
@@ -51,7 +51,7 @@ func (h *Handler) AuthorisationProfile(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 	reqId := rand.Uint64()
 	ctx := context.WithValue(context.Background(), "ReqID", reqId)
-	u := &models.LoginUser{}
+	u := &models2.LoginUser{}
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
 		utils.RespondError(w, r,reqId, err)
 		return
