@@ -23,7 +23,7 @@ type Handler struct {
 func New(specializeUseCase specialize.UseCase, userUseCase user.UseCase) *Handler {
 	return &Handler{
 		specializeUseCase: specializeUseCase,
-		userUseCase: userUseCase,
+		userUseCase:       userUseCase,
 	}
 }
 

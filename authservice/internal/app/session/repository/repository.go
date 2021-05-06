@@ -16,7 +16,7 @@ type Repository struct {
 
 func New(conn *tarantool.Connection) *Repository {
 	return &Repository{
-		conn: conn,
+		conn:  conn,
 		tools: &sessiontools2.SessionTools{},
 	}
 }

@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	"time"
 	"post/api"
 	"post/internal/app/models"
+	"time"
 )
 
 type Repository struct {

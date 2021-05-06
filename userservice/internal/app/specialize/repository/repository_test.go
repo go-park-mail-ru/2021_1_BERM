@@ -64,4 +64,3 @@ func TestFindSpecializeByName(t *testing.T) {
 		return
 	}
 }
-

@@ -34,16 +34,14 @@ func TestRegistrationProfile(t *testing.T) {
 	}
 	sessionID := "sadasdsadkmsalkdsajklda"
 	req.AddCookie(&http.Cookie{
-		Name: "sessionID",
+		Name:  "sessionID",
 		Value: sessionID,
 	})
-
 
 	sessionUseCaseMock := sessionMock.NewMockUseCase(ctrl)
 	sessionUseCaseMock.EXPECT().Get(sessionID, context.Background()).Times(1).Return(&models.Session{}, nil)
 
 	handle := New(sessionUseCaseMock)
-
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.CheckLogin)
@@ -56,7 +54,6 @@ func TestRegistrationProfile(t *testing.T) {
 	}
 	metric.Destroy()
 }
-
 
 func TestLogOut(t *testing.T) {
 	metric.New()
@@ -75,14 +72,12 @@ func TestLogOut(t *testing.T) {
 	}
 	sessionID := "sadasdsadkmsalkdsajklda"
 	req.AddCookie(&http.Cookie{
-		Name: "sessionID",
+		Name:  "sessionID",
 		Value: sessionID,
 	})
 
-
 	sessionUseCaseMock := sessionMock.NewMockUseCase(ctrl)
 	handle := New(sessionUseCaseMock)
-
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.LogOut)
@@ -94,4 +89,3 @@ func TestLogOut(t *testing.T) {
 			status, http.StatusCreated)
 	}
 }
-

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/lib/pq"
 )
+
 //go:generate mockgen -destination=./mock/mock_repository.go -package=mock user/internal/app/specialize Repository
 type Repository interface {
 	Create(specialize string, ctx context.Context) (uint64, error)

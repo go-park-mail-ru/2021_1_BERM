@@ -29,23 +29,23 @@ func TestHandlers_CreatePostResponse(t *testing.T) {
 	handle := NewHandler(mockUseCase)
 
 	response := models.Response{
-			PostID: 1,
-			UserID: 1,
-			Rate: 322,
-			Text: "TESTIY ZLO",
-			Time:      228,
-			UserLogin: "astlok",
-			OrderResponse: true,
+		PostID:        1,
+		UserID:        1,
+		Rate:          322,
+		Text:          "TESTIY ZLO",
+		Time:          228,
+		UserLogin:     "astlok",
+		OrderResponse: true,
 	}
 
 	resResponse := models.Response{
-		ID: 1,
-		PostID: 1,
-		UserID: 1,
-		Rate: 322,
-		Text: "TESTIY ZLO",
-		Time:      228,
-		UserLogin: "astlok",
+		ID:            1,
+		PostID:        1,
+		UserID:        1,
+		Rate:          322,
+		Text:          "TESTIY ZLO",
+		Time:          228,
+		UserLogin:     "astlok",
 		OrderResponse: true,
 	}
 
@@ -258,25 +258,25 @@ func TestHandlers_GetAllPostResponses(t *testing.T) {
 
 	response := []models.Response{
 		{
-			PostID: 1,
-			UserID: 1,
-			Rate: 322,
-			Text: "TESTIY ZLO",
-			Time:      228,
-			UserLogin: "astlok",
+			PostID:        1,
+			UserID:        1,
+			Rate:          322,
+			Text:          "TESTIY ZLO",
+			Time:          228,
+			UserLogin:     "astlok",
 			OrderResponse: true,
 		},
 	}
 
 	resResponse := []models.Response{
 		{
-			ID: 1,
-			PostID: 1,
-			UserID: 1,
-			Rate: 322,
-			Text: "TESTIY ZLO",
-			Time:      228,
-			UserLogin: "astlok",
+			ID:            1,
+			PostID:        1,
+			UserID:        1,
+			Rate:          322,
+			Text:          "TESTIY ZLO",
+			Time:          228,
+			UserLogin:     "astlok",
 			OrderResponse: true,
 		},
 	}
@@ -329,12 +329,12 @@ func TestHandlers_GetAllPostResponsesErrVars(t *testing.T) {
 
 	response := []models.Response{
 		{
-			PostID: 1,
-			UserID: 1,
-			Rate: 322,
-			Text: "TESTIY ZLO",
-			Time:      228,
-			UserLogin: "astlok",
+			PostID:        1,
+			UserID:        1,
+			Rate:          322,
+			Text:          "TESTIY ZLO",
+			Time:          228,
+			UserLogin:     "astlok",
 			OrderResponse: true,
 		},
 	}
@@ -383,25 +383,25 @@ func TestHandlers_GetAllPostResponsesErr(t *testing.T) {
 
 	response := []models.Response{
 		{
-			PostID: 1,
-			UserID: 1,
-			Rate: 322,
-			Text: "TESTIY ZLO",
-			Time:      228,
-			UserLogin: "astlok",
+			PostID:        1,
+			UserID:        1,
+			Rate:          322,
+			Text:          "TESTIY ZLO",
+			Time:          228,
+			UserLogin:     "astlok",
 			OrderResponse: true,
 		},
 	}
 
 	resResponse := []models.Response{
 		{
-			ID: 1,
-			PostID: 1,
-			UserID: 1,
-			Rate: 322,
-			Text: "TESTIY ZLO",
-			Time:      228,
-			UserLogin: "astlok",
+			ID:            1,
+			PostID:        1,
+			UserID:        1,
+			Rate:          322,
+			Text:          "TESTIY ZLO",
+			Time:          228,
+			UserLogin:     "astlok",
 			OrderResponse: true,
 		},
 	}
@@ -453,23 +453,23 @@ func TestHandlers_ChangePostResponse(t *testing.T) {
 	handle := NewHandler(mockUseCase)
 
 	response := models.Response{
-		PostID: 1,
-		UserID: 1,
-		Rate: 322,
-		Text: "TESTIY ZLO",
-		Time:      228,
-		UserLogin: "astlok",
+		PostID:        1,
+		UserID:        1,
+		Rate:          322,
+		Text:          "TESTIY ZLO",
+		Time:          228,
+		UserLogin:     "astlok",
 		OrderResponse: true,
 	}
 
 	resResponse := models.Response{
-		ID: 1,
-		PostID: 1,
-		UserID: 1,
-		Rate: 322,
-		Text: "TESTIY ZLO",
-		Time:      228,
-		UserLogin: "astlok",
+		ID:            1,
+		PostID:        1,
+		UserID:        1,
+		Rate:          322,
+		Text:          "TESTIY ZLO",
+		Time:          228,
+		UserLogin:     "astlok",
 		OrderResponse: true,
 	}
 
@@ -560,12 +560,12 @@ func TestHandlers_ChangePostResponseErrVar(t *testing.T) {
 	handle := NewHandler(mockUseCase)
 
 	response := models.Response{
-		PostID: 1,
-		UserID: 1,
-		Rate: 322,
-		Text: "TESTIY ZLO",
-		Time:      228,
-		UserLogin: "astlok",
+		PostID:        1,
+		UserID:        1,
+		Rate:          322,
+		Text:          "TESTIY ZLO",
+		Time:          228,
+		UserLogin:     "astlok",
 		OrderResponse: true,
 	}
 
@@ -611,23 +611,23 @@ func TestHandlers_ChangePostResponseErr(t *testing.T) {
 	handle := NewHandler(mockUseCase)
 
 	response := models.Response{
-		PostID: 1,
-		UserID: 1,
-		Rate: 322,
-		Text: "TESTIY ZLO",
-		Time:      228,
-		UserLogin: "astlok",
+		PostID:        1,
+		UserID:        1,
+		Rate:          322,
+		Text:          "TESTIY ZLO",
+		Time:          228,
+		UserLogin:     "astlok",
 		OrderResponse: true,
 	}
 
 	resResponse := models.Response{
-		ID: 1,
-		PostID: 1,
-		UserID: 1,
-		Rate: 322,
-		Text: "TESTIY ZLO",
-		Time:      228,
-		UserLogin: "astlok",
+		ID:            1,
+		PostID:        1,
+		UserID:        1,
+		Rate:          322,
+		Text:          "TESTIY ZLO",
+		Time:          228,
+		UserLogin:     "astlok",
 		OrderResponse: true,
 	}
 
@@ -696,9 +696,9 @@ func TestHandlers_DelPostResponse(t *testing.T) {
 	req = mux.SetURLVars(req, vars)
 
 	response := models.Response{
-		PostID: 1,
-		UserID: 1,
-		OrderResponse: true,
+		PostID:          1,
+		UserID:          1,
+		OrderResponse:   true,
 		VacancyResponse: false,
 	}
 	rr := httptest.NewRecorder()
@@ -788,9 +788,9 @@ func TestHandlers_DelPostResponseErr(t *testing.T) {
 	req = mux.SetURLVars(req, vars)
 
 	response := models.Response{
-		PostID: 1,
-		UserID: 1,
-		OrderResponse: true,
+		PostID:          1,
+		UserID:          1,
+		OrderResponse:   true,
 		VacancyResponse: false,
 	}
 	rr := httptest.NewRecorder()

@@ -18,7 +18,6 @@ type UserReviews struct {
 	Reviews []Review `json:"reviews"`
 }
 
-
 type UserReviewInfo struct {
 	ReviewCount uint64  `db:"reviews_count"`
 	Rating      float64 `db:"rating"`

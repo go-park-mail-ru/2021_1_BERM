@@ -38,5 +38,5 @@ func (h *Handler) LogOut(w http.ResponseWriter, r *http.Request) {
 	reqId := rand.Uint64()
 	cookies := r.Cookies()
 	utils.RemoveCookies(cookies, w)
-	utils.Respond(w, r,reqId, http.StatusAccepted, nil)
+	utils.Respond(w, r, reqId, http.StatusAccepted, nil)
 }

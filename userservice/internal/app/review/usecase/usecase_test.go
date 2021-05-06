@@ -17,14 +17,14 @@ func TestCreateReview(t *testing.T) {
 	defer ctrl.Finish()
 
 	review := &models.Review{
-		ID : 1,
-		UserId: 1,
-		ToUserId: 2,
-		OrderId: 1,
-		Description: "Збс делает",
-		Score: 4,
-		OrderName: "Сделай что то",
-		UserLogin: "Lala@mail.ru",
+		ID:              1,
+		UserId:          1,
+		ToUserId:        2,
+		OrderId:         1,
+		Description:     "Збс делает",
+		Score:           4,
+		OrderName:       "Сделай что то",
+		UserLogin:       "Lala@mail.ru",
 		UserNameSurname: "Name surname",
 	}
 
@@ -44,14 +44,14 @@ func TestGetAllReviewsByUserID(t *testing.T) {
 	defer ctrl.Finish()
 
 	review := &models.Review{
-		ID : 1,
-		UserId: 1,
-		ToUserId: 2,
-		OrderId: 1,
-		Description: "Збс делает",
-		Score: 4,
-		OrderName: "Сделай что то",
-		UserLogin: "Lala@mail.ru",
+		ID:              1,
+		UserId:          1,
+		ToUserId:        2,
+		OrderId:         1,
+		Description:     "Збс делает",
+		Score:           4,
+		OrderName:       "Сделай что то",
+		UserLogin:       "Lala@mail.ru",
 		UserNameSurname: "Name surname",
 	}
 	reviews := []models.Review{*review}
@@ -67,8 +67,8 @@ func TestGetAllReviewsByUserID(t *testing.T) {
 	mockOrderRepository.EXPECT().GetByID(review.OrderId, ctx).Times(1).Return(&models.OrderInfo{}, nil)
 	useCase := UseCase{
 		reviewRepository: mockReviewRepo,
-		userRepository: mockUserRepository,
-		orderRepository: mockOrderRepository,
+		userRepository:   mockUserRepository,
+		orderRepository:  mockOrderRepository,
 	}
 	userRewiews, err := useCase.GetAllReviewByUserId(2, ctx)
 	require.NoError(t, err)

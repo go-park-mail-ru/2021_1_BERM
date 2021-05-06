@@ -12,10 +12,9 @@ const (
 )
 
 type PasswordEncrypter struct {
-
 }
 
-func (p PasswordEncrypter)CompPass(passHash []byte, plainPassword string) bool {
+func (p PasswordEncrypter) CompPass(passHash []byte, plainPassword string) bool {
 	salt := make([]byte, 8)
 	copy(salt, passHash[0:8])
 
@@ -23,7 +22,7 @@ func (p PasswordEncrypter)CompPass(passHash []byte, plainPassword string) bool {
 	return bytes.Equal(userPassHash, passHash)
 }
 
-func (p PasswordEncrypter)BeforeCreate(user models.NewUser) (models.NewUser, error) {
+func (p PasswordEncrypter) BeforeCreate(user models.NewUser) (models.NewUser, error) {
 	salt := make([]byte, saltLength)
 	_, err := rand.Read(salt)
 	if err != nil {
@@ -37,7 +36,7 @@ func (p PasswordEncrypter)BeforeCreate(user models.NewUser) (models.NewUser, err
 	return user, nil
 }
 
-func (p PasswordEncrypter)BeforeChange(user models.ChangeUser) (models.ChangeUser, error) {
+func (p PasswordEncrypter) BeforeChange(user models.ChangeUser) (models.ChangeUser, error) {
 	salt := make([]byte, saltLength)
 	_, err := rand.Read(salt)
 	if err != nil {

@@ -22,16 +22,15 @@ func TestCreateReview(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-
 	review := models.Review{
-		ID : 1,
-		UserId: 1,
-		ToUserId: 2,
-		OrderId: 1,
-		Description: "Збс делает",
-		Score: 4,
-		OrderName: "Сделай что то",
-		UserLogin: "Lala@mail.ru",
+		ID:              1,
+		UserId:          1,
+		ToUserId:        2,
+		OrderId:         1,
+		Description:     "Збс делает",
+		Score:           4,
+		OrderName:       "Сделай что то",
+		UserLogin:       "Lala@mail.ru",
 		UserNameSurname: "Name surname",
 	}
 
@@ -63,7 +62,6 @@ func TestCreateReview(t *testing.T) {
 	}
 	metric.Destroy()
 }
-
 
 func TestGetAllByUserID(t *testing.T) {
 	metric.New()
@@ -101,4 +99,3 @@ func TestGetAllByUserID(t *testing.T) {
 	}
 	metric.Destroy()
 }
-

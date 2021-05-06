@@ -24,11 +24,11 @@ func TestUseCase_SetImage(t *testing.T) {
 	imgUrl := "kek.jpeg"
 	user := models.UserImg{
 		Img: "/9j/4AAQSkZJRgA",
-		ID: 1,
+		ID:  1,
 	}
 	expectUser := models.UserImg{
 		Img: imgUrl,
-		ID: 1,
+		ID:  1,
 	}
 	mockUserRepo.EXPECT().
 		SetImgUrl(context.Background(), &api.SetImgUrlRequest{Id: user.ID, ImgIrl: imgUrl}).
@@ -59,7 +59,7 @@ func TestUseCase_SetImageErr(t *testing.T) {
 	imgUrl := "kek.jpeg"
 	user := models.UserImg{
 		Img: "/9j/4AAQSkZJRgA",
-		ID: 1,
+		ID:  1,
 	}
 
 	mockCr.EXPECT().
@@ -83,7 +83,7 @@ func TestUseCase_SetImageErr2(t *testing.T) {
 	imgUrl := "kek.jpeg"
 	user := models.UserImg{
 		Img: "/9j/4AAQSkZJRgA",
-		ID: 1,
+		ID:  1,
 	}
 
 	mockCr.EXPECT().
@@ -110,7 +110,7 @@ func TestUseCase_SetImage3(t *testing.T) {
 	imgUrl := "kek.jpeg"
 	user := models.UserImg{
 		Img: "/9j/4AAQSkZJRgA",
-		ID: 1,
+		ID:  1,
 	}
 	mockUserRepo.EXPECT().
 		SetImgUrl(context.Background(), &api.SetImgUrlRequest{Id: user.ID, ImgIrl: imgUrl}).
@@ -128,4 +128,3 @@ func TestUseCase_SetImage3(t *testing.T) {
 
 	require.Error(t, err)
 }
-

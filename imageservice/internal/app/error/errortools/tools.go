@@ -2,8 +2,8 @@ package errortools
 
 import (
 	"github.com/pkg/errors"
-	"net/http"
 	customError "imageservice/internal/app/error"
+	"net/http"
 )
 
 func ErrorHandle(err error) (interface{}, int) {

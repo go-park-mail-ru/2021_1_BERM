@@ -41,7 +41,7 @@ func TestCreateUserClient(t *testing.T) {
 
 	useCase := UseCase{
 		userRepository: mockUserRepo,
-		encrypter: mockEncrypter,
+		encrypter:      mockEncrypter,
 	}
 	userBasicInfo, err := useCase.Create(*newUser, ctx)
 	require.NoError(t, err)
@@ -106,11 +106,10 @@ func TestCreateUserExecutorWithoutSpecInDB(t *testing.T) {
 	mockEncrypter := mock.NewMockPasswordEncrypter(ctrl)
 	mockEncrypter.EXPECT().BeforeCreate(newUser).Times(1).Return(newReturnUser, nil)
 
-
 	useCase := UseCase{
 		userRepository:       mockUserRepo,
 		specializeRepository: mockSpecializeRepo,
-		encrypter: mockEncrypter,
+		encrypter:            mockEncrypter,
 	}
 	userBasicInfo, err := useCase.Create(newUser, ctx)
 	require.NoError(t, err)
@@ -156,7 +155,7 @@ func TestCreateUserExecutorWithSpecInDB(t *testing.T) {
 	useCase := UseCase{
 		userRepository:       mockUserRepo,
 		specializeRepository: mockSpecializeRepo,
-		encrypter: mockEncrypter,
+		encrypter:            mockEncrypter,
 	}
 	userBasicInfo, err := useCase.Create(newUser, ctx)
 	require.NoError(t, err)
@@ -278,7 +277,7 @@ func TestChangeUserWithSpecInDB(t *testing.T) {
 		Email:       "abc@mail.ru",
 		Login:       "abcdefg",
 		NameSurname: "abc bdf",
-		Password:    []byte{1, 2, 3, 4, 5, 6, 7, 8,9 , 10},
+		Password:    []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
 		Rating:      3,
 		ReviewCount: 2,
 		Executor:    false,
@@ -304,12 +303,11 @@ func TestChangeUserWithSpecInDB(t *testing.T) {
 	useCase := UseCase{
 		userRepository:       mockUserRepo,
 		specializeRepository: mockSpecializeRepo,
-		encrypter: mockEncrypter,
+		encrypter:            mockEncrypter,
 	}
 	_, err := useCase.Change(changeUser, ctx)
 	require.NoError(t, err)
 }
-
 
 //Логин юзера с валидным поролем
 func TestUserVerification(t *testing.T) {
@@ -354,7 +352,7 @@ func TestUserVerification(t *testing.T) {
 
 	useCase := UseCase{
 		userRepository: mockUserRepo,
-		encrypter: encrypt,
+		encrypter:      encrypt,
 	}
 	userBasicInfo, err := useCase.Verification(newUser.Email, newUser.Password, ctx)
 	require.NoError(t, err)
@@ -386,7 +384,7 @@ func TestUserVerificationBadPass(t *testing.T) {
 
 	useCase := UseCase{
 		userRepository: mockUserRepo,
-		encrypter: encrypter,
+		encrypter:      encrypter,
 	}
 	_, err := useCase.Verification("asdas@mail.ru", "SAdadasdsda", ctx)
 	require.Error(t, err)

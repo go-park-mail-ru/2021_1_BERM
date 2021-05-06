@@ -34,6 +34,7 @@ func (r *Repository) Create(specialize string, ctx context.Context) (uint64, err
 	}
 	return ID, nil
 }
+
 //
 //func (r *Repository) FindById(ID uint64, ctx context.Context) (string, error) {
 //	spec := models.Specialize{}
@@ -78,7 +79,7 @@ func (r *Repository) AssociateSpecializationWithUser(specId uint64, userId uint6
 //	return nil
 //}
 
-func (r *Repository)RemoveAssociateSpecializationWithUser(specId uint64, userId uint64, ctx context.Context) error{
+func (r *Repository) RemoveAssociateSpecializationWithUser(specId uint64, userId uint64, ctx context.Context) error {
 	err := r.Db.QueryRow(DeleteAssociateSpecializeWithUser, userId, specId).Err()
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)

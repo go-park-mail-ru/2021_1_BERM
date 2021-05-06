@@ -763,8 +763,8 @@ func TestGetArchiveOrders(t *testing.T) {
 			Description: "Aue jizn voram",
 			Category:    "Back",
 			ExecutorID:  2,
-			UserImg: "kek",
-			UserLogin: "Mem",
+			UserImg:     "kek",
+			UserLogin:   "Mem",
 		},
 	}
 
@@ -801,8 +801,6 @@ func TestGetArchiveOrders(t *testing.T) {
 	require.Equal(t, expectOrders, resOrders)
 	require.NoError(t, err)
 
-
-
 	mockOrderRepo.EXPECT().
 		GetArchiveOrdersByExecutorID(id, ctx).
 		Times(1).
@@ -811,7 +809,6 @@ func TestGetArchiveOrders(t *testing.T) {
 	resOrders, err = useCase.GetArchiveOrders(userInfo, ctx)
 
 	require.Error(t, err)
-
 
 	mockOrderRepo.EXPECT().
 		GetArchiveOrdersByExecutorID(id, ctx).
@@ -824,7 +821,6 @@ func TestGetArchiveOrders(t *testing.T) {
 
 	resOrders, err = useCase.GetArchiveOrders(userInfo, ctx)
 	require.Error(t, err)
-
 
 	mockOrderRepo.EXPECT().
 		GetArchiveOrdersByExecutorID(id, ctx).
@@ -844,7 +840,6 @@ func TestSearchOrders(t *testing.T) {
 	mockOrderRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
 	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
-
 
 	keyword := "Aue"
 	orders := []models.Order{
@@ -875,7 +870,6 @@ func TestSearchOrders(t *testing.T) {
 		},
 	}
 
-
 	mockOrderRepo.EXPECT().
 		SearchOrders(keyword, ctx).
 		Times(1).
@@ -890,13 +884,10 @@ func TestSearchOrders(t *testing.T) {
 	require.Equal(t, expectOrders, resOrders)
 	require.NoError(t, err)
 
-
-
 	mockOrderRepo.EXPECT().
 		SearchOrders(keyword, ctx).
 		Times(1).
 		Return(nil, nil)
-
 
 	resOrders, err = useCase.SearchOrders(keyword, ctx)
 
@@ -904,18 +895,14 @@ func TestSearchOrders(t *testing.T) {
 	require.Equal(t, emptyOrders, resOrders)
 	require.NoError(t, err)
 
-
-
 	mockOrderRepo.EXPECT().
 		SearchOrders(keyword, ctx).
 		Times(1).
 		Return(orders, errors.New("DB error"))
 
-
 	resOrders, err = useCase.SearchOrders(keyword, ctx)
 
 	require.Error(t, err)
-
 
 	mockOrderRepo.EXPECT().
 		SearchOrders(keyword, ctx).

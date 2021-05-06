@@ -54,7 +54,7 @@ func (u *UseCase) FindByID(id uint64, ctx context.Context) (*models.Order, error
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
 	if order == nil {
-	 	return nil, nil
+		return nil, nil
 	}
 	err = u.supplementingTheOrderModel(order)
 	if err != nil {
@@ -218,7 +218,7 @@ func (u *UseCase) GetArchiveOrders(userInfo models.UserBasicInfo, ctx context.Co
 
 func (u *UseCase) SearchOrders(keyword string, ctx context.Context) ([]models.Order, error) {
 	orders, err := u.OrderRepo.SearchOrders(keyword, ctx)
-	if  err != nil {
+	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
 	for i, order := range orders {

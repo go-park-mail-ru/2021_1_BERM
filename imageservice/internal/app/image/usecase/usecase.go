@@ -8,13 +8,13 @@ import (
 )
 
 type UseCase struct {
-	UserRepo api.UserClient
+	UserRepo   api.UserClient
 	ImgCreator imgcreator.ImgCreatorI
 }
 
 func NewUseCase(userRepo api.UserClient, imgCreator imgcreator.ImgCreatorI) *UseCase {
 	return &UseCase{
-		UserRepo: userRepo,
+		UserRepo:   userRepo,
 		ImgCreator: imgCreator,
 	}
 }

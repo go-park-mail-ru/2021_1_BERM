@@ -16,14 +16,14 @@ type UseCase struct {
 func New(sessionRepository session2.Repository) *UseCase {
 	return &UseCase{
 		sessionRepository: sessionRepository,
-		tools: &sessiontools2.SessionTools{},
+		tools:             &sessiontools2.SessionTools{},
 	}
 }
 
 func (useCase *UseCase) Create(ID uint64, executor bool, ctx context.Context) (*models2.Session, error) {
 	session := models2.Session{
-		UserId:    ID,
-		Executor:  executor,
+		UserId:   ID,
+		Executor: executor,
 	}
 	var err error
 	session, err = useCase.tools.BeforeCreate(session)

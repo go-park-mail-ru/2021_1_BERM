@@ -6,8 +6,8 @@ package mock
 
 import (
 	context "context"
-	reflect "reflect"
 	models "post/internal/app/models"
+	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
 )

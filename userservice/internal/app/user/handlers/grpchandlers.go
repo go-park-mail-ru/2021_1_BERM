@@ -47,7 +47,7 @@ func (s *GRPCServer) RegistrationUser(ctx context.Context, in *api.NewUserReques
 	}
 
 	return &api.UserResponse{
-		Id:      answer.ID,
+		Id:       answer.ID,
 		Executor: answer.Executor,
 	}, nil
 }
@@ -67,7 +67,7 @@ func (s *GRPCServer) AuthorizationUser(ctx context.Context, in *api.Authorizatio
 		}, status.Error(code, string(serializeErrData))
 	}
 	return &api.UserResponse{
-		Id:      answer.ID,
+		Id:       answer.ID,
 		Executor: answer.Executor,
 	}, nil
 }

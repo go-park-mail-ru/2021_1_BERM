@@ -14,7 +14,8 @@ import (
 const (
 	ctxKeyReqID uint8 = 1
 )
-func Respond(w http.ResponseWriter, r* http.Request, requestId uint64, code int, data interface{}) {
+
+func Respond(w http.ResponseWriter, r *http.Request, requestId uint64, code int, data interface{}) {
 	w.WriteHeader(code)
 	if data != nil {
 		err := json.NewEncoder(w).Encode(data)
@@ -28,7 +29,7 @@ func Respond(w http.ResponseWriter, r* http.Request, requestId uint64, code int,
 	logger.LoggingResponse(requestId, code)
 }
 
-func RespondError(w http.ResponseWriter, r* http.Request, requestId uint64, err error) {
+func RespondError(w http.ResponseWriter, r *http.Request, requestId uint64, err error) {
 	logger.LoggingError(requestId, err)
 	responseBody, code := errortools.ErrorHandle(err)
 	metric.CrateRequestError(err)
@@ -40,7 +41,7 @@ func RespondCSRF() http.Handler {
 		reqID := r.Context().Value(ctxKeyReqID).(uint64)
 
 		logger.LoggingError(reqID, errors.New("Invalid CSRF token"))
-		Respond(w, r,reqID, http.StatusForbidden, map[string]interface{}{
+		Respond(w, r, reqID, http.StatusForbidden, map[string]interface{}{
 			"error": "Invalid CSRF token",
 		})
 	})
@@ -59,7 +60,6 @@ func CreateCookie(session *models2.Session, w http.ResponseWriter) {
 		http.SetCookie(w, &cookie)
 	}
 }
-
 
 func RemoveCookies(cookies []*http.Cookie, w http.ResponseWriter) {
 	for i, _ := range cookies {

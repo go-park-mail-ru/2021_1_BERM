@@ -16,7 +16,7 @@ type SubImager interface {
 	SubImage(r image.Rectangle) image.Image
 }
 
-type ImgCreator struct {}
+type ImgCreator struct{}
 
 func randomFilename16Char() (s string, err error) {
 	b := make([]byte, 8)

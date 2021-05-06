@@ -6,6 +6,7 @@ import (
 	"user/internal/app/session"
 	"user/pkg/httputils"
 )
+
 const (
 	ctxUserInfo uint8 = 2
 	ctxKeyReqID uint8 = 1
@@ -27,13 +28,13 @@ func (m *MidleWhare) CheckSession(next http.Handler) http.Handler {
 
 		sessionID, err := r.Cookie("sessionID")
 		if err != nil {
-			httputils.RespondError(w, r, reqID, err,)
+			httputils.RespondError(w, r, reqID, err)
 			return
 		}
 
 		u, err := m.sessionUseCase.Check(sessionID.Value, r.Context())
 		if err != nil {
-			httputils.RespondError(w, r, reqID, err,)
+			httputils.RespondError(w, r, reqID, err)
 			return
 		}
 		ctx := context.WithValue(r.Context(), ctxUserInfo, u)

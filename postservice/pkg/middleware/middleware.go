@@ -11,9 +11,8 @@ import (
 	"time"
 )
 
-
 const (
-	ctxKeyReqID uint8 = 1
+	ctxKeyReqID        uint8 = 1
 	ctxKeyStartReqTime uint8 = 5
 )
 

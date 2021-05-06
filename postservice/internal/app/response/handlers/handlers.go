@@ -11,7 +11,6 @@ import (
 	"strconv"
 )
 
-
 const (
 	ctxKeySession uint8 = 3
 	ctxKeyReqID   uint8 = 1

@@ -252,10 +252,6 @@ func TestChange(t *testing.T) {
 	require.Equal(t, expectResponse, resResponse)
 	require.NoError(t, err)
 
-
-
-
-
 	response = &models.Response{
 		ID:              1,
 		Time:            123456789,
@@ -293,20 +289,14 @@ func TestChange(t *testing.T) {
 	require.Equal(t, expectResponse, resResponse)
 	require.NoError(t, err)
 
-
-
-
 	mockResponseRepo.EXPECT().
 		ChangeVacancyResponse(*response, ctx).
 		Times(1).
 		Return(response, errors.New("DB err"))
 
-
 	resResponse, err = useCase.Change(*response, ctx)
 
 	require.Error(t, err)
-
-
 
 	mockResponseRepo.EXPECT().
 		ChangeVacancyResponse(*response, ctx).
@@ -351,9 +341,6 @@ func TestDelete(t *testing.T) {
 
 	require.NoError(t, err)
 
-
-
-
 	response = &models.Response{
 		ID:              1,
 		Time:            123456789,
@@ -373,7 +360,6 @@ func TestDelete(t *testing.T) {
 	err = useCase.Delete(*response, ctx)
 
 	require.NoError(t, err)
-
 
 	mockResponseRepo.EXPECT().
 		DeleteVacancyResponse(*response, ctx).

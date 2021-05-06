@@ -10,6 +10,5 @@ var (
 
 const (
 	PostgreDuplicateErrorCode = "23505"
-	InternalServerErrorMsg = "Ooops. Something went wrong!!! :("
+	InternalServerErrorMsg    = "Ooops. Something went wrong!!! :("
 )
-

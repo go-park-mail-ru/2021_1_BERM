@@ -103,7 +103,6 @@ func main() {
 	router := mux.NewRouter()
 	router.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
 
-
 	apiRout := router.PathPrefix("/api").Subrouter()
 	apiRout.Use(middleware.LoggingRequest)
 	apiRout.HandleFunc("/logout", sessionHandler.LogOut).Methods(http.MethodDelete)

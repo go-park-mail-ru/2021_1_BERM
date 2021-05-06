@@ -6,6 +6,7 @@ import (
 	"post/internal/app/session"
 	"post/pkg/httputils"
 )
+
 const (
 	ctxUserInfo uint8 = 2
 	ctxKeyReqID uint8 = 1

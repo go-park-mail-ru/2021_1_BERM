@@ -200,7 +200,7 @@ func (u *UseCase) GetArchiveVacancies(ctx context.Context) ([]models.Vacancy, er
 
 func (u *UseCase) SearchVacancy(keyword string, ctx context.Context) ([]models.Vacancy, error) {
 	vacancies, err := u.VacancyRepo.SearchVacancy(keyword, ctx)
-	if  err != nil {
+	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)
 	}
 	for i, vacancy := range vacancies {
@@ -232,5 +232,3 @@ func (u *UseCase) sanitizeVacancy(vacancy *models.Vacancy) {
 	vacancy.Description = sanitizer.Sanitize(vacancy.Description)
 	vacancy.Category = sanitizer.Sanitize(vacancy.Category)
 }
-
-

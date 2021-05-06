@@ -24,9 +24,8 @@ func TestCreateSession(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-
 	specialize := &models.Specialize{
-		ID :1,
+		ID:   1,
 		Name: "Govno",
 	}
 	body, _ := json.Marshal(specialize)
@@ -47,12 +46,12 @@ func TestCreateSession(t *testing.T) {
 	}
 	sessionID := "sadasdsad sdKFLDASD"
 	req.AddCookie(&http.Cookie{
-		Name: "sessionID",
+		Name:  "sessionID",
 		Value: sessionID,
 	})
 	mockSessionUseCase := sessionMock.NewMockUseCase(ctrl)
 	mockSessionUseCase.EXPECT().Check(sessionID, ctx).Times(1).Return(&models.UserBasicInfo{
-		ID: 1,
+		ID:       1,
 		Executor: true,
 	}, nil)
 	handle := New(mockSessionUseCase)
@@ -64,14 +63,10 @@ func TestCreateSession(t *testing.T) {
 	metric.Destroy()
 }
 
-
-
 func TestLogingMiddleWare(t *testing.T) {
 	metric.New()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-
-
 
 	req, err := http.NewRequest("POST", "/profile/1/specialize", nil)
 	vars := map[string]string{

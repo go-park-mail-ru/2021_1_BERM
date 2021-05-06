@@ -17,8 +17,8 @@ type UseCase struct {
 func New(reviewRepository review.Repository, userRepository user.Repository, orderRepository order.Repository) *UseCase {
 	return &UseCase{
 		reviewRepository: reviewRepository,
-		userRepository: userRepository,
-		orderRepository: orderRepository,
+		userRepository:   userRepository,
+		orderRepository:  orderRepository,
 	}
 }
 
@@ -60,9 +60,8 @@ func (useCase *UseCase) GetAllReviewByUserId(userId uint64, ctx context.Context)
 		}, nil
 	}
 	return &models.UserReviews{
-		Name: u.NameSurname,
-		Login: u.Login,
+		Name:    u.NameSurname,
+		Login:   u.Login,
 		Reviews: reviews,
-	},nil
+	}, nil
 }
-

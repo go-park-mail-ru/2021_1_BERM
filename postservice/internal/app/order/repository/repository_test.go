@@ -16,7 +16,6 @@ func TestRepository_Create(t *testing.T) {
 	}
 	defer db.Close()
 
-
 	repo := NewRepo(db)
 
 	restOrder := models.Order{

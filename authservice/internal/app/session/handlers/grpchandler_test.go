@@ -17,14 +17,13 @@ func TestGRPCServer_Check(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-
 	sessionInfo := models.Session{
 		SessionID: "kek",
-		UserId: 1,
-		Executor: true,
+		UserId:    1,
+		Executor:  true,
 	}
 	expectResponse := &api.SessionCheckResponse{
-		ID: 1,
+		ID:       1,
 		Executor: true,
 	}
 	mockUseCase := mock.NewMockUseCase(ctrl)
@@ -47,11 +46,10 @@ func TestGRPCServer_CheckErr(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-
 	sessionInfo := models.Session{
 		SessionID: "kek",
-		UserId: 1,
-		Executor: true,
+		UserId:    1,
+		Executor:  true,
 	}
 
 	mockUseCase := mock.NewMockUseCase(ctrl)

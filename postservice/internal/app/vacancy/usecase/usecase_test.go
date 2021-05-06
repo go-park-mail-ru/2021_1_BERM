@@ -438,7 +438,7 @@ func TestGetActualVacancies(t *testing.T) {
 	vacancies := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Keke",
+			VacancyName: "Keke",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Aue jizn voram",
@@ -449,13 +449,13 @@ func TestGetActualVacancies(t *testing.T) {
 	expectVacancies := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Keke",
+			VacancyName: "Keke",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Aue jizn voram",
 			Category:    "Back",
-			Login:   "Mem",
-			Img:     "kek",
+			Login:       "Mem",
+			Img:         "kek",
 		},
 	}
 
@@ -518,7 +518,7 @@ func TestSelectExecutor(t *testing.T) {
 
 	vacancy := &models.Vacancy{
 		ID:          1,
-		VacancyName:   "Keke",
+		VacancyName: "Keke",
 		CustomerID:  1,
 		Salary:      1488,
 		Description: "Aue jizn voram",
@@ -541,7 +541,7 @@ func TestSelectExecutor(t *testing.T) {
 
 	errVacancy := &models.Vacancy{
 		ID:          1,
-		VacancyName:   "Keke",
+		VacancyName: "Keke",
 		CustomerID:  1,
 		Salary:      1488,
 		Description: "Aue jizn voram",
@@ -603,7 +603,7 @@ func TestCloseVacancy(t *testing.T) {
 
 	vacancy := &models.Vacancy{
 		ID:          1,
-		VacancyName:   "Keke",
+		VacancyName: "Keke",
 		CustomerID:  1,
 		Salary:      1488,
 		Description: "Aue jizn voram",
@@ -676,11 +676,10 @@ func TestGetArchiveVacancies(t *testing.T) {
 	mockUserRepo := mock.NewMockUserClient(ctrl)
 	useCase := NewUseCase(mockVacancyRepo, mockUserRepo)
 
-
 	vacancy := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Keke",
+			VacancyName: "Keke",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Aue jizn voram",
@@ -692,17 +691,16 @@ func TestGetArchiveVacancies(t *testing.T) {
 	expectVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Keke",
+			VacancyName: "Keke",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Aue jizn voram",
 			Category:    "Back",
 			ExecutorID:  2,
-			Img:     "kek",
-			Login:   "Mem",
+			Img:         "kek",
+			Login:       "Mem",
 		},
 	}
-
 
 	mockVacancyRepo.EXPECT().
 		GetArchiveVacancies(ctx).
@@ -753,7 +751,7 @@ func TestSearchVacancies(t *testing.T) {
 	vacancies := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Keke",
+			VacancyName: "Keke",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Aue jizn voram",
@@ -765,14 +763,14 @@ func TestSearchVacancies(t *testing.T) {
 	expectVacancies := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Keke",
+			VacancyName: "Keke",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Aue jizn voram",
 			Category:    "Back",
 			ExecutorID:  2,
-			Img:     "kek",
-			Login:   "Mem",
+			Img:         "kek",
+			Login:       "Mem",
 		},
 	}
 

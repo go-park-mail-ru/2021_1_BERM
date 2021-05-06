@@ -12,11 +12,11 @@ const ctxKeyStartReqTime uint8 = 5
 
 var (
 	hits    *prometheus.CounterVec
-	errors   *prometheus.CounterVec
+	errors  *prometheus.CounterVec
 	timings *prometheus.CounterVec
 )
 
-func Destroy(){
+func Destroy() {
 	prometheus.Unregister(hits)
 	prometheus.Unregister(errors)
 	prometheus.Unregister(timings)
@@ -44,7 +44,7 @@ func CrateRequestHits(status int, r *http.Request) {
 	hits.WithLabelValues(strconv.Itoa(status), r.URL.Path).Inc()
 }
 
-func  CrateRequestError(err error) {
+func CrateRequestError(err error) {
 	if err != nil {
 		errors.WithLabelValues(err.Error()).Inc()
 	}

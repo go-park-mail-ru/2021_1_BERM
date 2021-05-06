@@ -12,18 +12,15 @@ const (
 	saltLength = 8
 )
 
-
 type SessionTools struct {
-
 }
 
-
-func (s SessionTools)BeforeCreate(session models2.Session) (models2.Session, error) {
+func (s SessionTools) BeforeCreate(session models2.Session) (models2.Session, error) {
 	session.SessionID = strconv.FormatUint(session.UserId, 10) + time.Now().String()
 	salt := make([]byte, saltLength)
 	_, err := rand.Read(salt)
 	if err != nil {
-		return models2.Session{},err
+		return models2.Session{}, err
 	}
 
 	session.SessionID = string(hashSessionId(salt, session.SessionID))
@@ -35,7 +32,7 @@ func hashSessionId(salt []byte, plainPassword string) []byte {
 	hashedPass, _ := bcrypt.GenerateFromPassword([]byte(plainPassword+string(salt)), bcrypt.MinCost)
 	return hashedPass
 }
-func (s SessionTools)EncodingSessionToTarantool(sess *models2.Session) []interface{} {
+func (s SessionTools) EncodingSessionToTarantool(sess *models2.Session) []interface{} {
 	return []interface{}{sess.SessionID, sess.UserId, sess.Executor}
 }
 

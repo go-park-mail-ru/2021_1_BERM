@@ -177,6 +177,6 @@ func New(userRep user.Repository, specRep specialize2.Repository, reviewsReposit
 		specializeRepository: specRep,
 		userRepository:       userRep,
 		reviewsRepository:    reviewsRepository,
-		encrypter: &passwordencrypt.PasswordEncrypter{},
+		encrypter:            &passwordencrypt.PasswordEncrypter{},
 	}
 }

@@ -161,4 +161,3 @@ func TestHandlers_PutAvatarErrJson(t *testing.T) {
 	}
 	metric.Destroy()
 }
-

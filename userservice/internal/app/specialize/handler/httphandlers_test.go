@@ -23,9 +23,8 @@ func TestCreateSpecialize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-
 	specialize := &models.Specialize{
-		ID :1,
+		ID:   1,
 		Name: "Govno",
 	}
 	body, _ := json.Marshal(specialize)
@@ -64,15 +63,13 @@ func TestCreateSpecialize(t *testing.T) {
 	metric.Destroy()
 }
 
-
 func TestRemoveSpecialize(t *testing.T) {
 	metric.New()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-
 	specialize := &models.Specialize{
-		ID :1,
+		ID:   1,
 		Name: "Govno",
 	}
 	body, _ := json.Marshal(specialize)

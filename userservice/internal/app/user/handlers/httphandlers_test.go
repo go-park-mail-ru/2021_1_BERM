@@ -28,12 +28,12 @@ func TestCreateUserWithValidUrl(t *testing.T) {
 	handle := New(mockUserUseCase)
 
 	changeUser := &models.ChangeUser{
-		ID : 1,
-		Email: "abc@mail.ru",
-		Login: "Abcdasda",
+		ID:          1,
+		Email:       "abc@mail.ru",
+		Login:       "Abcdasda",
 		NameSurname: "Abc Def",
-		Password: "zxcvb1234$",
-		About: "ADSAdasd asd assad a dasd adsad asdas dsa dsa das da",
+		Password:    "zxcvb1234$",
+		About:       "ADSAdasd asd assad a dasd adsad asdas dsa dsa das da",
 	}
 
 	body, _ := json.Marshal(changeUser)
@@ -56,7 +56,7 @@ func TestCreateUserWithValidUrl(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.ChangeProfile)
 	mockUserUseCase.EXPECT().Change(*changeUser, req.Context()).Times(1).Return(&models.UserBasicInfo{
-		ID: 1,
+		ID:       1,
 		Executor: true,
 	}, nil)
 
@@ -69,7 +69,6 @@ func TestCreateUserWithValidUrl(t *testing.T) {
 	metric.Destroy()
 }
 
-
 func TestCreateUserWithInvalidUrl(t *testing.T) {
 	metric.New()
 	ctrl := gomock.NewController(t)
@@ -80,12 +79,12 @@ func TestCreateUserWithInvalidUrl(t *testing.T) {
 	handle := New(mockUserUseCase)
 
 	changeUser := &models.ChangeUser{
-		ID : 1,
-		Email: "abc@mail.ru",
-		Login: "Abcdasda",
+		ID:          1,
+		Email:       "abc@mail.ru",
+		Login:       "Abcdasda",
 		NameSurname: "Abc Def",
-		Password: "zxcvb1234$",
-		About: "ADSAdasd asd assad a dasd adsad asdas dsa dsa das da",
+		Password:    "zxcvb1234$",
+		About:       "ADSAdasd asd assad a dasd adsad asdas dsa dsa das da",
 	}
 
 	body, _ := json.Marshal(changeUser)
@@ -103,7 +102,6 @@ func TestCreateUserWithInvalidUrl(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.ChangeProfile)
-
 
 	handler.ServeHTTP(recorder, req)
 
@@ -136,14 +134,12 @@ func TestGetUserInfo(t *testing.T) {
 
 	mockUserUseCase.EXPECT().GetById(uint64(1), req.Context()).Times(1).Return(&models.UserInfo{}, nil)
 
-
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.GetUserInfo)
-
 
 	handler.ServeHTTP(recorder, req)
 

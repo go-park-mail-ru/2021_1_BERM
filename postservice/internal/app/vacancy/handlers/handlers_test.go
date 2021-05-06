@@ -29,7 +29,7 @@ func TestCreateOrder(t *testing.T) {
 	handle := NewHandler(mockUseCase)
 
 	vacancy := models.Vacancy{
-		VacancyName:   "Сверстать сайт",
+		VacancyName: "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
 		Salary:      1488,
@@ -38,12 +38,12 @@ func TestCreateOrder(t *testing.T) {
 
 	retVacancy := &models.Vacancy{
 		ID:          1,
-		VacancyName:   "Сверстать сайт",
+		VacancyName: "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
 		Salary:      1488,
 		Description: "Pomogite sdelat API",
-		Login:   "astlok",
+		Login:       "astlok",
 	}
 
 	body, _ := json.Marshal(vacancy)
@@ -134,12 +134,12 @@ func TestGetActualVacancy(t *testing.T) {
 	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Сверстать сайт",
+			VacancyName: "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			Login:   "astlok",
+			Login:       "astlok",
 		},
 	}
 
@@ -191,12 +191,12 @@ func TestGetActualVacancyErr(t *testing.T) {
 	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Сверстать сайт",
+			VacancyName: "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			Login:   "astlok",
+			Login:       "astlok",
 		},
 	}
 
@@ -247,12 +247,12 @@ func TestGetVacancy(t *testing.T) {
 
 	retVacancy := &models.Vacancy{
 		ID:          1,
-		VacancyName:   "Сверстать сайт",
+		VacancyName: "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
 		Salary:      1488,
 		Description: "Pomogite sdelat API",
-		Login:   "astlok",
+		Login:       "astlok",
 	}
 
 	req, err := http.NewRequest("GET", "/api/vacancy/1", nil)
@@ -332,12 +332,12 @@ func TestGetVacancyErr(t *testing.T) {
 
 	retVacancy := &models.Vacancy{
 		ID:          1,
-		VacancyName:   "Сверстать сайт",
+		VacancyName: "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
 		Salary:      1488,
 		Description: "Pomogite sdelat API",
-		Login:   "astlok",
+		Login:       "astlok",
 	}
 	req, err := http.NewRequest("GET", "/api/vacancy/1", nil)
 
@@ -387,7 +387,7 @@ func TestChangeVacancy(t *testing.T) {
 	handle := NewHandler(mockUseCase)
 	vacancy := models.Vacancy{
 		ID:          1,
-		VacancyName:   "Сверстать сайт",
+		VacancyName: "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
 		Salary:      1488,
@@ -395,12 +395,12 @@ func TestChangeVacancy(t *testing.T) {
 	}
 	retVacancy := &models.Vacancy{
 		ID:          1,
-		VacancyName:   "Сверстать сайт",
+		VacancyName: "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
 		Salary:      1488,
 		Description: "Pomogite sdelat API",
-		Login:   "astlok",
+		Login:       "astlok",
 	}
 	body, _ := json.Marshal(vacancy)
 	req, err := http.NewRequest("GET", "/api/vacancy/1", bytes.NewBuffer(body))
@@ -474,7 +474,6 @@ func TestChangeVacancyBadJson(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.ChangeVacancy)
 
-
 	vars := map[string]string{
 		"id": "1",
 	}
@@ -486,7 +485,6 @@ func TestChangeVacancyBadJson(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusInternalServerError)
 	}
-
 
 	metric.Destroy()
 }
@@ -502,7 +500,7 @@ func TestChangeVacancyErr(t *testing.T) {
 	handle := NewHandler(mockUseCase)
 	vacancy := models.Vacancy{
 		ID:          1,
-		VacancyName:   "Сверстать сайт",
+		VacancyName: "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
 		Salary:      1488,
@@ -510,12 +508,12 @@ func TestChangeVacancyErr(t *testing.T) {
 	}
 	retVacancy := &models.Vacancy{
 		ID:          1,
-		VacancyName:   "Сверстать сайт",
+		VacancyName: "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
 		Salary:      1488,
 		Description: "Pomogite sdelat API",
-		Login:   "astlok",
+		Login:       "astlok",
 	}
 	body, _ := json.Marshal(vacancy)
 	req, err := http.NewRequest("GET", "/api/vacancy/1", bytes.NewBuffer(body))
@@ -566,7 +564,7 @@ func TestChangeVacancyErrParse(t *testing.T) {
 	handle := NewHandler(mockUseCase)
 	vacancy := models.Vacancy{
 		ID:          1,
-		VacancyName:   "Сверстать сайт",
+		VacancyName: "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
 		Salary:      1488,
@@ -1097,12 +1095,12 @@ func TestGetAllVacancys(t *testing.T) {
 	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Сверстать сайт",
+			VacancyName: "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			Login:   "astlok",
+			Login:       "astlok",
 		},
 	}
 
@@ -1209,12 +1207,12 @@ func TestGetAllVacancysErr(t *testing.T) {
 	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Сверстать сайт",
+			VacancyName: "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			Login:   "astlok",
+			Login:       "astlok",
 		},
 	}
 
@@ -1413,12 +1411,12 @@ func TestGetAllArchiveUserVacancys(t *testing.T) {
 	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Сверстать сайт",
+			VacancyName: "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			Login:   "astlok",
+			Login:       "astlok",
 		},
 	}
 
@@ -1473,12 +1471,12 @@ func TestGetAllArchiveUserVacancysErr(t *testing.T) {
 	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Сверстать сайт",
+			VacancyName: "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			Login:   "astlok",
+			Login:       "astlok",
 		},
 	}
 
@@ -1530,12 +1528,12 @@ func TestSearchVacancy(t *testing.T) {
 	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Сверстать сайт",
+			VacancyName: "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			Login:   "astlok",
+			Login:       "astlok",
 		},
 	}
 
@@ -1595,12 +1593,12 @@ func TestSearchVacancyErr(t *testing.T) {
 	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			VacancyName:   "Сверстать сайт",
+			VacancyName: "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
 			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			Login:   "astlok",
+			Login:       "astlok",
 		},
 	}
 
@@ -1684,4 +1682,3 @@ func TestSearchVacancyJsonErr(t *testing.T) {
 	}
 	metric.Destroy()
 }
-

@@ -31,7 +31,7 @@ const (
 
 	selectOrderByID = "SELECT * FROM post.orders WHERE id=$1"
 
-	selectArchiveOrderByID =  "SELECT * FROM post.archive_orders WHERE id=$1"
+	selectArchiveOrderByID = "SELECT * FROM post.archive_orders WHERE id=$1"
 
 	selectOrderByExecutorID = "SELECT * FROM post.orders WHERE executor_id=$1"
 

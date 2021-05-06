@@ -13,7 +13,7 @@ type grpcErrorInfo struct {
 }
 
 func grpcErrorHandle(err error) (interface{}, int, bool) {
-	if grpcErr, ok := status.FromError(err); ok{
+	if grpcErr, ok := status.FromError(err); ok {
 		if grpcErr.Code() <= 16 {
 			return map[string]string{
 				"message": customError.InternalServerErrorMsg,

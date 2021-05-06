@@ -15,7 +15,6 @@ func TestCreateSpecialize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-
 	ctx := context.Background()
 	mockSpecializeMock := mock.NewMockRepository(ctrl)
 	spec := "spec"
@@ -29,12 +28,10 @@ func TestCreateSpecialize(t *testing.T) {
 	require.Equal(t, ID, uint64(1))
 }
 
-
 //Проверка удаления ассоциации специализации с юзером специализации
 func TestRemoveSpecialize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-
 
 	ctx := context.Background()
 	mockSpecializeMock := mock.NewMockRepository(ctrl)
@@ -44,7 +41,7 @@ func TestRemoveSpecialize(t *testing.T) {
 	useCase := UseCase{
 		specializeRepository: mockSpecializeMock,
 	}
-	err := useCase.Remove(1 ,spec, ctx)
+	err := useCase.Remove(1, spec, ctx)
 	require.NoError(t, err)
 }
 
@@ -52,7 +49,6 @@ func TestRemoveSpecialize(t *testing.T) {
 func TestAssociateSpecWithUsser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-
 
 	ctx := context.Background()
 	mockSpecializeMock := mock.NewMockRepository(ctrl)
@@ -63,7 +59,7 @@ func TestAssociateSpecWithUsser(t *testing.T) {
 	useCase := UseCase{
 		specializeRepository: mockSpecializeMock,
 	}
-	err := useCase.AssociateWithUser(1 ,spec, ctx)
+	err := useCase.AssociateWithUser(1, spec, ctx)
 	require.NoError(t, err)
 }
 
@@ -71,7 +67,6 @@ func TestAssociateSpecWithUsser(t *testing.T) {
 func TestAssociateSpecWithUsserWithDuplicate(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-
 
 	ctx := context.Background()
 	mockSpecializeMock := mock.NewMockRepository(ctrl)
@@ -83,7 +78,7 @@ func TestAssociateSpecWithUsserWithDuplicate(t *testing.T) {
 	useCase := UseCase{
 		specializeRepository: mockSpecializeMock,
 	}
-	err := useCase.AssociateWithUser(1 ,spec, ctx)
+	err := useCase.AssociateWithUser(1, spec, ctx)
 	require.Error(t, err)
 }
 
