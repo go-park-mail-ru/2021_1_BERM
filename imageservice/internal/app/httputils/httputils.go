@@ -3,9 +3,9 @@ package httputils
 import (
 	"encoding/json"
 	"github.com/pkg/errors"
-	"image/internal/app/error/errortools"
-	"image/internal/app/logger"
-	"image/internal/app/metric"
+	"imageservice/internal/app/error/errortools"
+	"imageservice/internal/app/logger"
+	"imageservice/internal/app/metric"
 	"net/http"
 )
 

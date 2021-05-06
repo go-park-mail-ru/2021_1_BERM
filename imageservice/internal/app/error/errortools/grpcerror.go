@@ -3,7 +3,7 @@ package errortools
 import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	customError "image/internal/app/error"
+	customError "imageservice/internal/app/error"
 	"net/http"
 )
 

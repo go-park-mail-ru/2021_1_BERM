@@ -756,7 +756,7 @@ definitions:
           - "Front"
       img:
         type: string
-        example: "findreelancer.ru/images/kek.jpg"
+        example: "findreelancer.ru/images/kek.jpeg"
         readOnly: true
       rating:
         type: integer
@@ -800,7 +800,7 @@ definitions:
           - "Front"
       img:
         type: string
-        example: "findreelancer.ru/images/kek.jpg"
+        example: "findreelancer.ru/images/kek.jpeg"
         readOnly: true
       rating:
         type: number
@@ -846,7 +846,7 @@ definitions:
         readOnly: true
       user_img:
         type: string
-        example: "findreelancer.ru/images/kek.jpg"
+        example: "findreelancer.ru/images/kek.jpeg"
         readOnly: true
   OrderChange:
     type: object
@@ -921,7 +921,7 @@ definitions:
         readOnly: true
       user_img:
         type: string
-        example: "findreelancer.ru/images/kek.jpg"
+        example: "findreelancer.ru/images/kek.jpeg"
         readOnly: true
       time:
         type: number
@@ -968,7 +968,7 @@ definitions:
         readOnly: true
       user_img:
         type: string
-        example: "findreelancer.ru/images/kek.jpg"
+        example: "findreelancer.ru/images/kek.jpeg"
         readOnly: true
   Vacancies:
     type: array

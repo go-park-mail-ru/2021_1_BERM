@@ -5,7 +5,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 
-	customError "image/internal/app/error"
+	customError "imageservice/internal/app/error"
 	"net/http"
 )
 

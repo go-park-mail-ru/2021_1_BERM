@@ -1,10 +1,10 @@
-package handlers
+package image
 
 import (
 	"encoding/json"
-	"image/internal/app/httputils"
-	imgUseCase "image/internal/app/image/usecase"
-	"image/internal/app/models"
+	"imageservice/internal/app/httputils"
+	imgUseCase "imageservice/internal/app/image"
+	"imageservice/internal/app/models"
 	"net/http"
 )
 
@@ -25,7 +25,6 @@ func NewHandler(useCase imgUseCase.UseCase) *Handlers {
 }
 
 func (h *Handlers) PutAvatar(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 
 	u := models.UserImg{}

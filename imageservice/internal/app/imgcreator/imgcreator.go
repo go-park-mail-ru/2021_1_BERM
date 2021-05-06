@@ -16,6 +16,8 @@ type SubImager interface {
 	SubImage(r image.Rectangle) image.Image
 }
 
+type ImgCreator struct {}
+
 func randomFilename16Char() (s string, err error) {
 	b := make([]byte, 8)
 	_, err = rand.Read(b)
@@ -26,7 +28,7 @@ func randomFilename16Char() (s string, err error) {
 	return
 }
 
-func CreateImg(imgBase64 string) (string, error) {
+func (i *ImgCreator) CreateImg(imgBase64 string) (string, error) {
 	reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(imgBase64))
 	m, _, err := image.Decode(reader)
 	if err != nil {
@@ -56,7 +58,7 @@ func CreateImg(imgBase64 string) (string, error) {
 	return jpegFilename, nil
 }
 
-func CropImg(imgURL string) (string, error) {
+func (i *ImgCreator) CropImg(imgURL string) (string, error) {
 	fi, err := os.Open("image/" + imgURL)
 	if err != nil {
 		return "", err

@@ -12,13 +12,14 @@ import (
 	jaegerlog "github.com/uber/jaeger-client-go/log"
 	"github.com/uber/jaeger-lib/metrics"
 	"google.golang.org/grpc"
-	"image/api"
-	"image/configs"
-	imageHandlers "image/internal/app/image/handlers"
-	imageUCase "image/internal/app/image/usecase"
-	"image/internal/app/logger"
-	"image/internal/app/metric"
-	"image/internal/app/middleware"
+	"imageservice/api"
+	"imageservice/configs"
+	imageHandlers "imageservice/internal/app/image/handlers"
+	imageUCase "imageservice/internal/app/image/usecase"
+	"imageservice/internal/app/imgcreator"
+	"imageservice/internal/app/logger"
+	"imageservice/internal/app/metric"
+	"imageservice/internal/app/middleware"
 	"log"
 	"net/http"
 )
@@ -74,9 +75,10 @@ func main() {
 	defer conn.Close()
 	userRepo := api.NewUserClient(conn)
 
-	imageUseCase := imageUCase.NewUseCase(userRepo)
+	imgCr := imgcreator.ImgCreator{}
+	imageUseCase := imageUCase.NewUseCase(userRepo, &imgCr)
 
-	imageHandler := imageHandlers.NewHandler(*imageUseCase)
+	imageHandler := imageHandlers.NewHandler(imageUseCase)
 
 	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 

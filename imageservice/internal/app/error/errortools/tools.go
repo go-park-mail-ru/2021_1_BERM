@@ -3,7 +3,7 @@ package errortools
 import (
 	"github.com/pkg/errors"
 	"net/http"
-	customError "image/internal/app/error"
+	customError "imageservice/internal/app/error"
 )
 
 func ErrorHandle(err error) (interface{}, int) {

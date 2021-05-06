@@ -1,29 +1,31 @@
-package usecase
+package image
 
 import (
 	"context"
-	"image/api"
-	"image/internal/app/imgcreator"
-	"image/internal/app/models"
+	"imageservice/api"
+	"imageservice/internal/app/imgcreator"
+	"imageservice/internal/app/models"
 )
 
 type UseCase struct {
 	UserRepo api.UserClient
+	ImgCreator imgcreator.ImgCreatorI
 }
 
-func NewUseCase(userRepo api.UserClient) *UseCase {
+func NewUseCase(userRepo api.UserClient, imgCreator imgcreator.ImgCreatorI) *UseCase {
 	return &UseCase{
 		UserRepo: userRepo,
+		ImgCreator: imgCreator,
 	}
 }
 
 func (u *UseCase) SetImage(user models.UserImg) (models.UserImg, error) {
-	imgUrl, err := imgcreator.CreateImg(user.Img)
+	imgUrl, err := u.ImgCreator.CreateImg(user.Img)
 	if err != nil {
 		return models.UserImg{}, err
 	}
 
-	imgUrl, err = imgcreator.CropImg(imgUrl)
+	imgUrl, err = u.ImgCreator.CropImg(imgUrl)
 	if err != nil {
 		return models.UserImg{}, err
 	}
