@@ -1,0 +1,11 @@
+user service:
+    http: 8080
+    grpc: 8081
+post service:
+    http: 8082
+    grpc: 8086
+image service:
+    http: 8083
+auth service:
+    http: 8084
+    grpc: 8085

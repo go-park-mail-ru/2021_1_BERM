@@ -2,3 +2,5 @@
 *.xlog
 *.snap
 .DS_Store
+*.out
+*.html
