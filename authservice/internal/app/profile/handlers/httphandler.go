@@ -27,18 +27,17 @@ func New(sessionUseCase session.UseCase, profileUseCase profile2.UseCase) *Handl
 func (h *Handler) RegistrationProfile(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 	reqId := rand.Uint64()
-	ctx := context.WithValue(context.Background(), "ReqID", reqId)
 	u := &models2.NewUser{}
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
 		utils.RespondError(w, r, reqId, err)
 		return
 	}
-	resp, err := h.profileUseCase.Create(*u, ctx)
+	resp, err := h.profileUseCase.Create(*u, context.Background())
 	if err != nil {
 		utils.RespondError(w,r, reqId, err)
 		return
 	}
-	sess, err := h.sessionUseCase.Create(resp.ID, resp.Executor, ctx)
+	sess, err := h.sessionUseCase.Create(resp.ID, resp.Executor, context.Background())
 	if err != nil {
 		utils.RespondError(w,r, reqId, err)
 		return

@@ -16,6 +16,12 @@ var (
 	timings *prometheus.CounterVec
 )
 
+func Destroy(){
+	prometheus.Unregister(hits)
+	prometheus.Unregister(errors)
+	prometheus.Unregister(timings)
+}
+
 func New() {
 	hits = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "hits",
