@@ -759,7 +759,7 @@ func TestSelectEx(t *testing.T) {
 	metric.New()
 
 	order := models.Order{
-		ID: 1,
+		ID:         1,
 		ExecutorID: 1,
 	}
 
@@ -810,7 +810,6 @@ func TestSelectEx(t *testing.T) {
 
 func TestSelectExErrJson(t *testing.T) {
 	metric.New()
-
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -1100,7 +1099,7 @@ func TestDeleteExecutorErr(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestGetAllOrders (t *testing.T) {
+func TestGetAllOrders(t *testing.T) {
 	metric.New()
 
 	order := models.Order{
@@ -1165,7 +1164,7 @@ func TestGetAllOrders (t *testing.T) {
 	metric.Destroy()
 }
 
-func TestGetAllOrdersErrVar (t *testing.T) {
+func TestGetAllOrdersErrVar(t *testing.T) {
 	metric.New()
 
 	order := models.Order{
@@ -1213,7 +1212,7 @@ func TestGetAllOrdersErrVar (t *testing.T) {
 	metric.Destroy()
 }
 
-func TestGetAllOrdersErr (t *testing.T) {
+func TestGetAllOrdersErr(t *testing.T) {
 	metric.New()
 
 	order := models.Order{
@@ -1276,4 +1275,145 @@ func TestGetAllOrdersErr (t *testing.T) {
 	}
 
 	metric.Destroy()
+}
+
+func TestCloseOrder(t *testing.T) {
+	metric.New()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUseCase := mock.NewMockUseCase(ctrl)
+
+	handle := NewHandler(mockUseCase)
+	req, err := http.NewRequest("DELETE", "/api/order/1/close", nil)
+
+	ctx := req.Context()
+	var val1 uint64
+	var val2 uint64
+	val1 = 1
+	val2 = 2281488
+	ctx = context.WithValue(ctx, ctxUserID, val1)
+	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
+	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
+
+	req = req.WithContext(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(handle.CloseOrder)
+	mockUseCase.EXPECT().
+		CloseOrder(uint64(1), context.Background()).
+		Times(1).
+		Return(nil)
+
+	vars := map[string]string{
+		"id": "1",
+	}
+	req = mux.SetURLVars(req, vars)
+
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	metric.Destroy()
+}
+
+func TestCloseOrderErr(t *testing.T) {
+	metric.New()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUseCase := mock.NewMockUseCase(ctrl)
+
+	handle := NewHandler(mockUseCase)
+	req, err := http.NewRequest("DELETE", "/api/order/1/close", nil)
+
+	ctx := req.Context()
+	var val1 uint64
+	var val2 uint64
+	val1 = 1
+	val2 = 2281488
+	ctx = context.WithValue(ctx, ctxUserID, val1)
+	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
+	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
+
+	req = req.WithContext(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(handle.CloseOrder)
+	mockUseCase.EXPECT().
+		CloseOrder(uint64(1), context.Background()).
+		Times(1).
+		Return(sql.ErrNoRows)
+
+	vars := map[string]string{
+		"id": "1",
+	}
+	req = mux.SetURLVars(req, vars)
+
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusInternalServerError {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusInternalServerError)
+	}
+
+	metric.Destroy()
+}
+
+func TestCloseOrderErrVar(t *testing.T) {
+	metric.New()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUseCase := mock.NewMockUseCase(ctrl)
+
+	handle := NewHandler(mockUseCase)
+	req, err := http.NewRequest("DELETE", "/api/order/1/close", nil)
+
+	ctx := req.Context()
+	var val1 uint64
+	var val2 uint64
+	val1 = 1
+	val2 = 2281488
+	ctx = context.WithValue(ctx, ctxUserID, val1)
+	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
+	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
+
+	req = req.WithContext(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(handle.CloseOrder)
+
+	vars := map[string]string{
+		"kek": "1",
+	}
+	req = mux.SetURLVars(req, vars)
+
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusInternalServerError {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusInternalServerError)
+	}
+
+	metric.Destroy()
+}
+
+func TestGetAllArchiveUserOrders(t *testing.T) {
+
 }
