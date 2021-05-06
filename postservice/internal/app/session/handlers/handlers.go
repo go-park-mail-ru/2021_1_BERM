@@ -9,6 +9,7 @@ import (
 const (
 	ctxUserInfo uint8 = 2
 	ctxKeyReqID uint8 = 1
+	ctxExecutor uint8 = 3
 )
 
 type MidleWhare struct {
@@ -37,6 +38,7 @@ func (m *MidleWhare) CheckSession(next http.Handler) http.Handler {
 			return
 		}
 		ctx := context.WithValue(r.Context(), ctxUserInfo, u.ID)
+		ctx = context.WithValue(ctx, ctxExecutor, u.Executor)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
