@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"authorizationservice/internal/session/usecase"
+	session2 "authorizationservice/internal/app/session"
 	"authorizationservice/pkg/utils"
 	"context"
 	"github.com/gorilla/csrf"
@@ -11,10 +11,10 @@ import (
 )
 
 type Handler struct {
-	sessionUseCase usecase.UseCase
+	sessionUseCase session2.UseCase
 }
 
-func New(sessionUseCase usecase.UseCase) *Handler {
+func New(sessionUseCase session2.UseCase) *Handler {
 	return &Handler{
 		sessionUseCase: sessionUseCase,
 	}

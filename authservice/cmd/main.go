@@ -3,13 +3,12 @@ package main
 import (
 	"authorizationservice/api"
 	"authorizationservice/configs"
-	profHandler "authorizationservice/internal/profile/handlers"
-	"authorizationservice/internal/profile/repository/grpcrepository"
-	profileImpl "authorizationservice/internal/profile/usecase/impl"
-	"authorizationservice/internal/session/handlers"
-	sessHandler "authorizationservice/internal/session/handlers"
-	"authorizationservice/internal/session/repository/tarantoolrepository"
-	"authorizationservice/internal/session/usecase/impl"
+	handlers2 "authorizationservice/internal/app/profile/handlers"
+	repository3 "authorizationservice/internal/app/profile/repository"
+	usecase3 "authorizationservice/internal/app/profile/usecase"
+	handlers3 "authorizationservice/internal/app/session/handlers"
+	"authorizationservice/internal/app/session/repository"
+	"authorizationservice/internal/app/session/usecase"
 	"authorizationservice/pkg/logger"
 	"authorizationservice/pkg/metric"
 	"authorizationservice/pkg/middleware"
@@ -54,7 +53,7 @@ func main() {
 	}
 	conn, err := tarantool.Connect(config.DatabaseURL, opts)
 	defer conn.Close()
-	sessionRepository := tarantoolrepository.New(conn)
+	sessionRepository := repository.New(conn)
 
 	jaegerCfgInstance := jaegercfg.Configuration{
 		ServiceName: "AuthService",
@@ -91,13 +90,13 @@ func main() {
 	}
 	defer grpcConn.Close()
 	client := api.NewUserClient(grpcConn)
-	profileRepository := grpcrepository.New(client)
+	profileRepository := repository3.New(client)
 
-	sessionUseCase := impl.New(sessionRepository)
-	profileUseCase := profileImpl.New(profileRepository)
+	sessionUseCase := usecase.New(sessionRepository)
+	profileUseCase := usecase3.New(profileRepository)
 
-	sessionHandler := sessHandler.New(sessionUseCase)
-	profileHandler := profHandler.New(sessionUseCase, profileUseCase)
+	sessionHandler := handlers3.New(sessionUseCase)
+	profileHandler := handlers2.New(sessionUseCase, profileUseCase)
 
 	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 
@@ -138,7 +137,7 @@ func main() {
 
 	metric.New()
 	s := grpc.NewServer(grpc.UnaryInterceptor(traceutils.OpenTracingServerInterceptor(tracer)))
-	srv := handlers.NewGRPCServer(sessionUseCase)
+	srv := handlers3.NewGRPCServer(sessionUseCase)
 	api.RegisterSessionServer(s, srv)
 	l, err := net.Listen("tcp", ":8085")
 	if err != nil {
