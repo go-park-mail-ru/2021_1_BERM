@@ -54,6 +54,7 @@ func TestRegistrationProfile(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusCreated)
 	}
+	metric.Destroy()
 }
 
 func TestAuthorizationProfile(t *testing.T) {
@@ -91,9 +92,9 @@ func TestAuthorizationProfile(t *testing.T) {
 
 	handler.ServeHTTP(recorder, req)
 
-	if status := recorder.Code; status != http.StatusOK {
+	if status := recorder.Code; status != http.StatusAccepted {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusCreated)
+			status, http.StatusAccepted)
 	}
 
 	metric.Destroy()
