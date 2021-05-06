@@ -50,18 +50,17 @@ func (h *Handler) RegistrationProfile(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) AuthorisationProfile(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 	reqId := rand.Uint64()
-	ctx := context.WithValue(context.Background(), "ReqID", reqId)
 	u := &models2.LoginUser{}
 	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
 		utils.RespondError(w, r,reqId, err)
 		return
 	}
-	resp, err := h.profileUseCase.Authentication(u.Email, u.Password, ctx)
+	resp, err := h.profileUseCase.Authentication(u.Email, u.Password, r.Context())
 	if err != nil {
 		utils.RespondError(w, r,reqId, err)
 		return
 	}
-	sess, err := h.sessionUseCase.Create(resp.ID, resp.Executor, ctx)
+	sess, err := h.sessionUseCase.Create(resp.ID, resp.Executor, r.Context())
 	if err != nil {
 		utils.RespondError(w, r,reqId, err)
 		return

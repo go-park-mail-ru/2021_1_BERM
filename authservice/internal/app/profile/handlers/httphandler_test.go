@@ -56,7 +56,48 @@ func TestRegistrationProfile(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusCreated)
 	}
-	//metric.D
-
 }
+
+func TestAuthorizationProfile(t *testing.T) {
+	metric.New()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	newLogin := models.LoginUser{
+		Password: "1qwqwdas",
+		Email: "1312322",
+	}
+	body, _ := json.Marshal(newLogin)
+	req, err := http.NewRequest("POST", "/login", bytes.NewBuffer(body))
+	ctx := req.Context()
+	reqID := uint64(2281488)
+	ctx = context.WithValue(ctx, ctxKeyReqID, reqID)
+	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
+	req = req.WithContext(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	profileUseCaseMock := profileMock.NewMockUseCase(ctrl)
+	profileUseCaseMock.EXPECT().Authentication(newLogin.Email, newLogin.Password, ctx).Times(1).Return(&models.UserBasicInfo{
+		ID : 1,
+		Executor: true,
+	}, nil)
+	sessionUseCaseMock := sessionMock.NewMockUseCase(ctrl)
+	sessionUseCaseMock.EXPECT().Create(uint64(1), true, ctx).Times(1).Return(&models.Session{}, nil)
+
+	handle := New(sessionUseCaseMock, profileUseCaseMock)
+
+
+	recorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(handle.AuthorisationProfile)
+
+	handler.ServeHTTP(recorder, req)
+
+	if status := recorder.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusCreated)
+	}
+	metric.Destroy()
+}
+
 
