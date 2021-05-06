@@ -39,7 +39,7 @@ func TestUserCreate(t *testing.T) {
 			testUser.Executor).
 		WillReturnRows(rows)
 
-	id, err := store.Create(&testUser, context.Background())
+	id, err := store.Create(testUser, context.Background())
 	if err != nil {
 		t.Errorf("unexpected err: %s", err)
 		return
@@ -63,7 +63,7 @@ func TestUserCreate(t *testing.T) {
 			testUser.Executor).
 		WillReturnError(fmt.Errorf("db_error"))
 
-	_, err = store.Create(&testUser, context.Background())
+	_, err = store.Create(testUser, context.Background())
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 		return

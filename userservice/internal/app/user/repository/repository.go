@@ -12,6 +12,12 @@ type Repository struct {
 	Db *sqlx.DB
 }
 
+func NewRepo(db *sqlx.DB) *Repository {
+	return &Repository{
+		db,
+	}
+}
+
 func (r *Repository) Create(user models.NewUser, ctx context.Context) (uint64, error) {
 	var ID uint64
 	err := r.Db.QueryRow(

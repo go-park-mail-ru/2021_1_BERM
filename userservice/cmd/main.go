@@ -20,7 +20,7 @@ import (
 	repository2 "user/internal/app/specialize/repository"
 	usecase2 "user/internal/app/specialize/usecase"
 	"user/internal/app/user/handlers"
-	"user/internal/app/user/repository"
+	userRepo "user/internal/app/user/repository"
 	"user/internal/app/user/usecase"
 	"user/pkg/middleware"
 
@@ -91,9 +91,7 @@ func main() {
 	opentracing.SetGlobalTracer(tracer)
 	defer closer.Close()
 
-	userRepository := &repository.Repository{
-		Db: postgres.GetPostgres(),
-	}
+	userRepository := userRepo.NewRepo(postgres.GetPostgres())
 	specializeRepository := &repository2.Repository{
 		Db: postgres.GetPostgres(),
 	}
