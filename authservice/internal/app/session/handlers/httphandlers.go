@@ -22,7 +22,6 @@ func New(sessionUseCase session2.UseCase) *Handler {
 func (h *Handler) CheckLogin(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 	reqId := rand.Uint64()
-	ctx := context.WithValue(context.Background(), "ReqID", reqId)
 	cookie, err := r.Cookie("sessionID")
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -30,7 +29,7 @@ func (h *Handler) CheckLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 	sessionId := cookie.Value
-	session, err := h.sessionUseCase.Get(sessionId, ctx)
+	session, err := h.sessionUseCase.Get(sessionId, context.Background())
 	utils.Respond(w, r, reqId, http.StatusAccepted, session)
 }
 
