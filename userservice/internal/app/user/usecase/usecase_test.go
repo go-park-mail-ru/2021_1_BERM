@@ -11,7 +11,7 @@ import (
 	mock3 "user/internal/app/review/mock"
 	mock2 "user/internal/app/specialize/mock"
 	"user/internal/app/user/mock"
-	"user/internal/app/user/tools"
+	"user/internal/app/user/tools/passwordencrypt"
 	customError "user/pkg/error"
 )
 
@@ -29,12 +29,17 @@ func TestCreateUserClient(t *testing.T) {
 	}
 	ctx := context.Background()
 	mockUserRepo := mock.NewMockRepository(ctrl)
-	mockUserRepo.EXPECT().Create(newUser, ctx).Times(1).Return(uint64(1), nil)
-
+	mockEncrypter := mock.NewMockPasswordEncrypter(ctrl)
+	bcCall := mockEncrypter.EXPECT().BeforeCreate(newUser).Times(1)
+	newUser.EncryptPassword = []byte{1, 2, 3, 4, 5}
+	newUser.Executor = true
+	bcCall.Return(newUser, nil)
+	mockUserRepo.EXPECT().Create(*newUser, ctx).Times(1).Return(uint64(1), nil)
 	useCase := UseCase{
 		userRepository: mockUserRepo,
+		encrypter: mockEncrypter,
 	}
-	userBasicInfo, err := useCase.Create(newUser, ctx)
+	userBasicInfo, err := useCase.Create(*newUser, ctx)
 	require.NoError(t, err)
 	require.Equal(t, userBasicInfo.ID, uint64(1))
 	require.Equal(t, userBasicInfo.Executor, false)
@@ -55,7 +60,7 @@ func TestCreateUserClientWithInvalidLogin(t *testing.T) {
 	ctx := context.Background()
 
 	useCase := UseCase{}
-	_, err := useCase.Create(newUser, ctx)
+	_, err := useCase.Create(*newUser, ctx)
 	require.Error(t, err)
 
 }
@@ -93,7 +98,7 @@ func TestCreateUserExecutorWithoutSpecInDB(t *testing.T) {
 		userRepository:       mockUserRepo,
 		specializeRepository: mockSpecializeRepo,
 	}
-	userBasicInfo, err := useCase.Create(newUser, ctx)
+	userBasicInfo, err := useCase.Create(*newUser, ctx)
 	require.NoError(t, err)
 	require.Equal(t, userBasicInfo.ID, uint64(1))
 	require.Equal(t, userBasicInfo.Executor, true)
@@ -130,7 +135,7 @@ func TestCreateUserExecutorWithSpecInDB(t *testing.T) {
 		userRepository:       mockUserRepo,
 		specializeRepository: mockSpecializeRepo,
 	}
-	userBasicInfo, err := useCase.Create(newUser, ctx)
+	userBasicInfo, err := useCase.Create(*newUser, ctx)
 	require.NoError(t, err)
 	require.Equal(t, userBasicInfo.ID, uint64(1))
 	require.Equal(t, userBasicInfo.Executor, true)
@@ -252,7 +257,9 @@ func TestChangeUserWithSpecInDB(t *testing.T) {
 		About:       "sdaasd sadasdAS DSdaS DAS",
 		Specializes: spec,
 	}
-	err := tools.BeforeCreate(newUser)
+	encrypter := &passwordencrypt.PasswordEncrypter{}
+	var err error
+	*newUser, err = encrypter.BeforeCreate(*newUser)
 	if err != nil {
 		return
 	}
@@ -282,7 +289,7 @@ func TestChangeUserWithSpecInDB(t *testing.T) {
 		userRepository:       mockUserRepo,
 		specializeRepository: mockSpecializeRepo,
 	}
-	userBasicInfo, err := useCase.Change(changeUser, ctx)
+	userBasicInfo, err := useCase.Change(*changeUser, ctx)
 	require.NoError(t, err)
 	require.Equal(t, userBasicInfo.ID, uint64(1))
 	require.Equal(t, userBasicInfo.Executor, true)
@@ -311,7 +318,9 @@ func TestChangeUserWithoutSpecInDB(t *testing.T) {
 		About:       "sdaasd sadasdAS DSdaS DAS",
 		Specializes: spec,
 	}
-	err := tools.BeforeCreate(newUser)
+	encrypter := &passwordencrypt.PasswordEncrypter{}
+	var err error
+	*newUser, err = encrypter.BeforeCreate(*newUser)
 	if err != nil {
 		return
 	}
@@ -348,7 +357,7 @@ func TestChangeUserWithoutSpecInDB(t *testing.T) {
 		userRepository:       mockUserRepo,
 		specializeRepository: mockSpecializeRepo,
 	}
-	userBasicInfo, err := useCase.Change(changeUser, ctx)
+	userBasicInfo, err := useCase.Change(*changeUser, ctx)
 	require.NoError(t, err)
 	require.Equal(t, userBasicInfo.ID, uint64(1))
 	require.Equal(t, userBasicInfo.Executor, true)
@@ -371,7 +380,9 @@ func TestUserVerification(t *testing.T) {
 		About:       "sdaasd sadasdAS DSdaS DAS",
 		Specializes: spec,
 	}
-	err := tools.BeforeCreate(newUser)
+	encrypter := &passwordencrypt.PasswordEncrypter{}
+	var err error
+	*newUser, err = encrypter.BeforeCreate(*newUser)
 	if err != nil {
 		return
 	}

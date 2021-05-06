@@ -36,7 +36,7 @@ func (m *MockUseCase) EXPECT() *MockUseCaseMockRecorder {
 }
 
 // Change mocks base method.
-func (m *MockUseCase) Change(arg0 *models.ChangeUser, arg1 context.Context) (*models.UserBasicInfo, error) {
+func (m *MockUseCase) Change(arg0 models.ChangeUser, arg1 context.Context) (*models.UserBasicInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Change", arg0, arg1)
 	ret0, _ := ret[0].(*models.UserBasicInfo)
@@ -51,7 +51,7 @@ func (mr *MockUseCaseMockRecorder) Change(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // Create mocks base method.
-func (m *MockUseCase) Create(arg0 *models.NewUser, arg1 context.Context) (*models.UserBasicInfo, error) {
+func (m *MockUseCase) Create(arg0 models.NewUser, arg1 context.Context) (*models.UserBasicInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1)
 	ret0, _ := ret[0].(*models.UserBasicInfo)

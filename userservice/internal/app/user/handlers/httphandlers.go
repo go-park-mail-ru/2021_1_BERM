@@ -40,7 +40,7 @@ func (h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u.ID = id
-	response, err := h.userUseCase.Change(u, context.Background())
+	response, err := h.userUseCase.Change(*u, r.Context())
 	if err != nil {
 		httputils.RespondError(w,r, reqID, err)
 		return
