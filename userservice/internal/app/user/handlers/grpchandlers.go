@@ -32,7 +32,7 @@ func (s *GRPCServer) RegistrationUser(ctx context.Context, in *api.NewUserReques
 		Specializes: in.GetSpecializes(),
 	}
 
-	answer, err := s.userUseCase.Create(u, ctx)
+	answer, err := s.userUseCase.Create(*u, ctx)
 	if err != nil {
 		errData, codeUint32 := errortools.ErrorHandle(err)
 		code := codes.Code(codeUint32)

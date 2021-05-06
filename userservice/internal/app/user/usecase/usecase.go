@@ -2,12 +2,14 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"github.com/pkg/errors"
 	"user/internal/app/models"
 	review2 "user/internal/app/review"
 	specialize2 "user/internal/app/specialize"
 	"user/internal/app/user"
 	"user/internal/app/user/tools"
+	"user/internal/app/user/tools/passwordencrypt"
 	customErrors "user/pkg/error"
 )
 
@@ -15,6 +17,7 @@ type UseCase struct {
 	userRepository       user.Repository
 	specializeRepository specialize2.Repository
 	reviewsRepository    review2.Repository
+	encrypter            tools.PasswordEncrypter
 }
 
 func (useCase *UseCase) SetImg(ID uint64, img string, ctx context.Context) error {
@@ -25,11 +28,12 @@ func (useCase *UseCase) SetImg(ID uint64, img string, ctx context.Context) error
 	return err
 }
 
-func (useCase *UseCase) Create(user *models.NewUser, ctx context.Context) (*models.UserBasicInfo, error) {
-	if err := tools.ValidationCreateUser(user); err != nil {
+func (useCase *UseCase) Create(user models.NewUser, ctx context.Context) (*models.UserBasicInfo, error) {
+	err := tools.ValidationCreateUser(&user)
+	if err != nil {
 		return nil, errors.Wrap(err, "Validation error")
 	}
-	if err := tools.BeforeCreate(user); err != nil {
+	if user, err = useCase.encrypter.BeforeCreate(user); err != nil {
 		return nil, errors.Wrap(err, "Encrypt password error")
 	}
 	ID, err := useCase.userRepository.Create(user, ctx)
@@ -64,12 +68,12 @@ func (useCase *UseCase) Verification(email string, password string, ctx context.
 	if err != nil {
 		return nil, errors.Wrap(err, "Error in user repository.")
 	}
-	if !tools.CompPass(user.Password, password) {
+	if !useCase.encrypter.CompPass(user.Password, password) {
 		return nil, customErrors.ErrorInvalidPassword
 	}
 
 	return &models.UserBasicInfo{
-		ID: user.ID,
+		ID:       user.ID,
 		Executor: user.Executor,
 	}, nil
 }
@@ -94,7 +98,8 @@ func (useCase *UseCase) GetById(ID uint64, ctx context.Context) (*models.UserInf
 	return user, nil
 }
 
-func (useCase *UseCase) Change(user *models.ChangeUser, ctx context.Context) (*models.UserBasicInfo, error) {
+func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (*models.UserBasicInfo, error) {
+	fmt.Println(user)
 	err := tools.ValidationChangeUser(user)
 	if err != nil {
 		return nil, err
@@ -104,13 +109,14 @@ func (useCase *UseCase) Change(user *models.ChangeUser, ctx context.Context) (*m
 		return nil, errors.Wrap(err, "User db error")
 	}
 
-	if !tools.CompPass(oldUser.Password, user.Password) {
+	if !useCase.encrypter.CompPass(oldUser.Password, user.Password) {
 		return nil, customErrors.ErrorInvalidPassword
 	}
 	if user.NewPassword != "" {
 		user.Password = user.NewPassword
 	}
-	if err := tools.BeforeChange(user); err != nil {
+	fmt.Println(user)
+	if user, err = useCase.encrypter.BeforeChange(user); err != nil {
 		return nil, err
 	}
 	if user.Email == "" {
@@ -156,12 +162,12 @@ func (useCase *UseCase) Change(user *models.ChangeUser, ctx context.Context) (*m
 		}
 	}
 
-	return 	&models.UserBasicInfo{
-		ID: user.ID,
-		Email: user.Email,
-		About: user.About,
-		Executor: user.Executor,
-		Login: user.Login,
+	return &models.UserBasicInfo{
+		ID:          user.ID,
+		Email:       user.Email,
+		About:       user.About,
+		Executor:    user.Executor,
+		Login:       user.Login,
 		NameSurname: user.NameSurname,
 	}, nil
 }
@@ -171,5 +177,6 @@ func New(userRep user.Repository, specRep specialize2.Repository, reviewsReposit
 		specializeRepository: specRep,
 		userRepository:       userRep,
 		reviewsRepository:    reviewsRepository,
+		encrypter: &passwordencrypt.PasswordEncrypter{},
 	}
 }

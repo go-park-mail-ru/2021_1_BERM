@@ -36,7 +36,7 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // Change mocks base method.
-func (m *MockRepository) Change(arg0 *models.ChangeUser, arg1 context.Context) error {
+func (m *MockRepository) Change(arg0 models.ChangeUser, arg1 context.Context) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Change", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -50,7 +50,7 @@ func (mr *MockRepositoryMockRecorder) Change(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // Create mocks base method.
-func (m *MockRepository) Create(arg0 *models.NewUser, arg1 context.Context) (uint64, error) {
+func (m *MockRepository) Create(arg0 models.NewUser, arg1 context.Context) (uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0, arg1)
 	ret0, _ := ret[0].(uint64)

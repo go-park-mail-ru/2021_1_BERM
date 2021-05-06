@@ -31,7 +31,7 @@ func (m *MidleWhare) CheckSession(next http.Handler) http.Handler {
 			return
 		}
 
-		u, err := m.sessionUseCase.Check(sessionID.Value, context.Background())
+		u, err := m.sessionUseCase.Check(sessionID.Value, r.Context())
 		if err != nil {
 			httputils.RespondError(w, r, reqID, err,)
 			return

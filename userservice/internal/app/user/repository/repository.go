@@ -12,7 +12,7 @@ type Repository struct {
 	Db *sqlx.DB
 }
 
-func (r *Repository) Create(user *models.NewUser, ctx context.Context) (uint64, error) {
+func (r *Repository) Create(user models.NewUser, ctx context.Context) (uint64, error) {
 	var ID uint64
 	err := r.Db.QueryRow(
 		CreateUserRequest,
@@ -29,7 +29,7 @@ func (r *Repository) Create(user *models.NewUser, ctx context.Context) (uint64, 
 	return ID, nil
 }
 
-func (r *Repository) Change(user *models.ChangeUser, ctx context.Context) error {
+func (r *Repository) Change(user models.ChangeUser, ctx context.Context) error {
 	tx := r.Db.MustBegin()
 	_, err := tx.NamedExec(UpdateUser, user)
 	if err != nil {

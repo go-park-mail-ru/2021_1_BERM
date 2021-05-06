@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
@@ -11,7 +12,7 @@ import (
 	mock3 "user/internal/app/review/mock"
 	mock2 "user/internal/app/specialize/mock"
 	"user/internal/app/user/mock"
-	"user/internal/app/user/tools"
+	"user/internal/app/user/tools/passwordencrypt"
 	customError "user/pkg/error"
 )
 
@@ -27,14 +28,22 @@ func TestCreateUserClient(t *testing.T) {
 		Password:    "zxcv12345@asd;A",
 		About:       "sdaasd sadasdAS DSdaS DAS",
 	}
+	newReturnUser := *newUser
+	newReturnUser.EncryptPassword = []byte{1, 2, 3, 4, 5}
+	newReturnUser.Executor = false
+
 	ctx := context.Background()
 	mockUserRepo := mock.NewMockRepository(ctrl)
-	mockUserRepo.EXPECT().Create(newUser, ctx).Times(1).Return(uint64(1), nil)
+	mockUserRepo.EXPECT().Create(newReturnUser, ctx).Times(1).Return(uint64(1), nil)
+
+	mockEncrypter := mock.NewMockPasswordEncrypter(ctrl)
+	mockEncrypter.EXPECT().BeforeCreate(*newUser).Times(1).Return(newReturnUser, nil)
 
 	useCase := UseCase{
 		userRepository: mockUserRepo,
+		encrypter: mockEncrypter,
 	}
-	userBasicInfo, err := useCase.Create(newUser, ctx)
+	userBasicInfo, err := useCase.Create(*newUser, ctx)
 	require.NoError(t, err)
 	require.Equal(t, userBasicInfo.ID, uint64(1))
 	require.Equal(t, userBasicInfo.Executor, false)
@@ -55,7 +64,7 @@ func TestCreateUserClientWithInvalidLogin(t *testing.T) {
 	ctx := context.Background()
 
 	useCase := UseCase{}
-	_, err := useCase.Create(newUser, ctx)
+	_, err := useCase.Create(*newUser, ctx)
 	require.Error(t, err)
 
 }
@@ -69,7 +78,7 @@ func TestCreateUserExecutorWithoutSpecInDB(t *testing.T) {
 	for index, _ := range spec {
 		spec[index] = "123" + strconv.Itoa(index)
 	}
-	newUser := &models.NewUser{
+	newUser := models.NewUser{
 		Email:       "abc@mail.ru",
 		Login:       "abcdefg",
 		NameSurname: "abc bdf",
@@ -77,10 +86,14 @@ func TestCreateUserExecutorWithoutSpecInDB(t *testing.T) {
 		About:       "sdaasd sadasdAS DSdaS DAS",
 		Specializes: spec,
 	}
+	newReturnUser := newUser
+	newReturnUser.EncryptPassword = []byte{1, 2, 3, 4, 5}
+	newReturnUser.Executor = true
+
 	ctx := context.Background()
 
 	mockUserRepo := mock.NewMockRepository(ctrl)
-	mockUserRepo.EXPECT().Create(newUser, ctx).Times(1).Return(uint64(1), nil)
+	mockUserRepo.EXPECT().Create(newReturnUser, ctx).Times(1).Return(uint64(1), nil)
 
 	mockSpecializeRepo := mock2.NewMockRepository(ctrl)
 	mockSpecializeRepo.EXPECT().FindByName(spec[0], ctx).Times(1).Return(uint64(0), customError.ErrorNoRows)
@@ -89,9 +102,15 @@ func TestCreateUserExecutorWithoutSpecInDB(t *testing.T) {
 	mockSpecializeRepo.EXPECT().Create(spec[1], ctx).Times(1).Return(uint64(2), nil)
 	mockSpecializeRepo.EXPECT().AssociateSpecializationWithUser(uint64(1), uint64(1), ctx).Times(1).Return(nil)
 	mockSpecializeRepo.EXPECT().AssociateSpecializationWithUser(uint64(2), uint64(1), ctx).Times(1).Return(nil)
+
+	mockEncrypter := mock.NewMockPasswordEncrypter(ctrl)
+	mockEncrypter.EXPECT().BeforeCreate(newUser).Times(1).Return(newReturnUser, nil)
+
+
 	useCase := UseCase{
 		userRepository:       mockUserRepo,
 		specializeRepository: mockSpecializeRepo,
+		encrypter: mockEncrypter,
 	}
 	userBasicInfo, err := useCase.Create(newUser, ctx)
 	require.NoError(t, err)
@@ -108,7 +127,7 @@ func TestCreateUserExecutorWithSpecInDB(t *testing.T) {
 	for index, _ := range spec {
 		spec[index] = "123" + strconv.Itoa(index)
 	}
-	newUser := &models.NewUser{
+	newUser := models.NewUser{
 		Email:       "abc@mail.ru",
 		Login:       "abcdefg",
 		NameSurname: "abc bdf",
@@ -116,19 +135,28 @@ func TestCreateUserExecutorWithSpecInDB(t *testing.T) {
 		About:       "sdaasd sadasdAS DSdaS DAS",
 		Specializes: spec,
 	}
+
+	newReturnUser := newUser
+	newReturnUser.EncryptPassword = []byte{1, 2, 3, 4, 5}
+	newReturnUser.Executor = true
+
 	ctx := context.Background()
 
 	mockUserRepo := mock.NewMockRepository(ctrl)
-	mockUserRepo.EXPECT().Create(newUser, ctx).Times(1).Return(uint64(1), nil)
+	mockUserRepo.EXPECT().Create(newReturnUser, ctx).Times(1).Return(uint64(1), nil)
 
 	mockSpecializeRepo := mock2.NewMockRepository(ctrl)
 	mockSpecializeRepo.EXPECT().FindByName(spec[0], ctx).Times(1).Return(uint64(1), nil)
 	mockSpecializeRepo.EXPECT().FindByName(spec[1], ctx).Times(1).Return(uint64(2), nil)
 	mockSpecializeRepo.EXPECT().AssociateSpecializationWithUser(uint64(1), uint64(1), ctx).Times(1).Return(nil)
 	mockSpecializeRepo.EXPECT().AssociateSpecializationWithUser(uint64(2), uint64(1), ctx).Times(1).Return(nil)
+
+	mockEncrypter := mock.NewMockPasswordEncrypter(ctrl)
+	mockEncrypter.EXPECT().BeforeCreate(newUser).Times(1).Return(newReturnUser, nil)
 	useCase := UseCase{
 		userRepository:       mockUserRepo,
 		specializeRepository: mockSpecializeRepo,
+		encrypter: mockEncrypter,
 	}
 	userBasicInfo, err := useCase.Create(newUser, ctx)
 	require.NoError(t, err)
@@ -234,7 +262,7 @@ func TestChangeUserWithSpecInDB(t *testing.T) {
 	for index, _ := range spec {
 		spec[index] = "123" + strconv.Itoa(index)
 	}
-	changeUser := &models.ChangeUser{
+	changeUser := models.ChangeUser{
 		ID:          1,
 		Email:       "abc@mail.ru",
 		Login:       "abcdefg",
@@ -244,115 +272,44 @@ func TestChangeUserWithSpecInDB(t *testing.T) {
 		About:       "sdaasd sadasdAS DSdaS DAS",
 		Specializes: spec,
 	}
-	newUser := &models.NewUser{
-		Email:       "abc@mail.ru",
-		Login:       "abcdefg",
-		NameSurname: "abc bdf",
-		Password:    "zxcv12345@asd;A",
-		About:       "sdaasd sadasdAS DSdaS DAS",
-		Specializes: spec,
-	}
-	err := tools.BeforeCreate(newUser)
-	if err != nil {
-		return
-	}
+
 	userInfo := &models.UserInfo{
 		ID:          1,
 		Email:       "abc@mail.ru",
 		Login:       "abcdefg",
 		NameSurname: "abc bdf",
-		Password:    newUser.EncryptPassword,
+		Password:    []byte{1, 2, 3, 4, 5, 6, 7, 8,9 , 10},
 		Rating:      3,
 		ReviewCount: 2,
 		Executor:    false,
 	}
+	newChangeUser := changeUser
+	newChangeUser.Password = changeUser.NewPassword
 
 	ctx := context.Background()
-
 	mockUserRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo.EXPECT().FindUserByID(changeUser.ID, ctx).Times(1).Return(userInfo, nil)
-	mockUserRepo.EXPECT().Change(changeUser, ctx).Times(1).Return(nil)
+	mockUserRepo.EXPECT().Change(newChangeUser, ctx).Times(1).Return(nil)
 
 	mockSpecializeRepo := mock2.NewMockRepository(ctrl)
 	mockSpecializeRepo.EXPECT().FindByName(spec[0], ctx).Times(1).Return(uint64(1), nil)
 	mockSpecializeRepo.EXPECT().FindByName(spec[1], ctx).Times(1).Return(uint64(2), nil)
 	mockSpecializeRepo.EXPECT().AssociateSpecializationWithUser(uint64(1), uint64(1), ctx).Times(1).Return(nil)
 	mockSpecializeRepo.EXPECT().AssociateSpecializationWithUser(uint64(2), uint64(1), ctx).Times(1).Return(nil)
+
+	mockEncrypter := mock.NewMockPasswordEncrypter(ctrl)
+	mockEncrypter.EXPECT().CompPass(userInfo.Password, changeUser.Password).Times(1).Return(true)
+	mockEncrypter.EXPECT().BeforeChange(newChangeUser).Times(1).Return(newChangeUser, nil)
+	fmt.Println(changeUser)
 	useCase := UseCase{
 		userRepository:       mockUserRepo,
 		specializeRepository: mockSpecializeRepo,
+		encrypter: mockEncrypter,
 	}
-	userBasicInfo, err := useCase.Change(changeUser, ctx)
+	_, err := useCase.Change(changeUser, ctx)
 	require.NoError(t, err)
-	require.Equal(t, userBasicInfo.ID, uint64(1))
-	require.Equal(t, userBasicInfo.Executor, true)
 }
 
-//Тестирование изменение юзера при отсутствии в базе необходимых специадизаций
-func TestChangeUserWithoutSpecInDB(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	spec := make(pq.StringArray, 2)
-	for index, _ := range spec {
-		spec[index] = "123" + strconv.Itoa(index)
-	}
-	changeUser := &models.ChangeUser{
-		ID:       1,
-		Password: "zxcv12345@asd;A",
-
-		Specializes: spec,
-	}
-	newUser := &models.NewUser{
-		Email:       "abc@mail.ru",
-		Login:       "abcdefg",
-		NameSurname: "abc bdf",
-		Password:    "zxcv12345@asd;A",
-		About:       "sdaasd sadasdAS DSdaS DAS",
-		Specializes: spec,
-	}
-	err := tools.BeforeCreate(newUser)
-	if err != nil {
-		return
-	}
-	spec1 := make(pq.StringArray, 1)
-	spec1[0] = "ffsd"
-	userInfo := &models.UserInfo{
-		ID:          1,
-		Email:       "abc@mail.ru",
-		Login:       "abcdefg",
-		NameSurname: "abc bdf",
-		Password:    newUser.EncryptPassword,
-		Specializes: spec1,
-		Rating:      3,
-		ReviewCount: 2,
-		Executor:    false,
-	}
-
-	ctx := context.Background()
-
-	mockUserRepo := mock.NewMockRepository(ctrl)
-	mockUserRepo.EXPECT().FindUserByID(changeUser.ID, ctx).Times(1).Return(userInfo, nil)
-	mockUserRepo.EXPECT().Change(changeUser, ctx).Times(1).Return(nil)
-
-	mockSpecializeRepo := mock2.NewMockRepository(ctrl)
-	mockSpecializeRepo.EXPECT().FindByName(spec[0], ctx).Times(1).Return(uint64(0), customError.ErrorNoRows)
-	mockSpecializeRepo.EXPECT().FindByName(spec[1], ctx).Times(1).Return(uint64(0), customError.ErrorNoRows)
-	mockSpecializeRepo.EXPECT().FindByName(spec1[0], ctx).Times(1).Return(uint64(1), nil)
-	mockSpecializeRepo.EXPECT().Create(spec[0], ctx).Times(1).Return(uint64(2), nil)
-	mockSpecializeRepo.EXPECT().Create(spec[1], ctx).Times(1).Return(uint64(3), nil)
-	mockSpecializeRepo.EXPECT().AssociateSpecializationWithUser(uint64(1), uint64(1), ctx).Times(1).Return(nil)
-	mockSpecializeRepo.EXPECT().AssociateSpecializationWithUser(uint64(2), uint64(1), ctx).Times(1).Return(nil)
-	mockSpecializeRepo.EXPECT().AssociateSpecializationWithUser(uint64(3), uint64(1), ctx).Times(1).Return(nil)
-	useCase := UseCase{
-		userRepository:       mockUserRepo,
-		specializeRepository: mockSpecializeRepo,
-	}
-	userBasicInfo, err := useCase.Change(changeUser, ctx)
-	require.NoError(t, err)
-	require.Equal(t, userBasicInfo.ID, uint64(1))
-	require.Equal(t, userBasicInfo.Executor, true)
-}
 
 //Логин юзера с валидным поролем
 func TestUserVerification(t *testing.T) {
@@ -363,7 +320,7 @@ func TestUserVerification(t *testing.T) {
 	for index, _ := range spec {
 		spec[index] = "123" + strconv.Itoa(index)
 	}
-	newUser := &models.NewUser{
+	newUser := models.NewUser{
 		Email:       "abc@mail.ru",
 		Login:       "abcdefg",
 		NameSurname: "abc bdf",
@@ -371,7 +328,9 @@ func TestUserVerification(t *testing.T) {
 		About:       "sdaasd sadasdAS DSdaS DAS",
 		Specializes: spec,
 	}
-	err := tools.BeforeCreate(newUser)
+	encrypter := passwordencrypt.PasswordEncrypter{}
+	var err error
+	newUser, err = encrypter.BeforeCreate(newUser)
 	if err != nil {
 		return
 	}
@@ -391,8 +350,11 @@ func TestUserVerification(t *testing.T) {
 	mockUserRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo.EXPECT().FindUserByEmail(newUser.Email, ctx).Times(1).Return(userInfo, nil)
 
+	encrypt := passwordencrypt.PasswordEncrypter{}
+
 	useCase := UseCase{
 		userRepository: mockUserRepo,
+		encrypter: encrypt,
 	}
 	userBasicInfo, err := useCase.Verification(newUser.Email, newUser.Password, ctx)
 	require.NoError(t, err)
@@ -415,6 +377,7 @@ func TestUserVerificationBadPass(t *testing.T) {
 		ReviewCount: 2,
 		Executor:    false,
 	}
+	encrypter := passwordencrypt.PasswordEncrypter{}
 
 	ctx := context.Background()
 
@@ -423,9 +386,28 @@ func TestUserVerificationBadPass(t *testing.T) {
 
 	useCase := UseCase{
 		userRepository: mockUserRepo,
+		encrypter: encrypter,
 	}
 	_, err := useCase.Verification("asdas@mail.ru", "SAdadasdsda", ctx)
 	require.Error(t, err)
+}
+
+//Логин юзера с невалидным поролем
+func TestSetImgUser(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	img := "jopa.url"
+	ctx := context.Background()
+
+	mockUserRepo := mock.NewMockRepository(ctrl)
+	mockUserRepo.EXPECT().SetUserImg(uint64(1), img, ctx).Times(1).Return(nil)
+
+	useCase := UseCase{
+		userRepository: mockUserRepo,
+	}
+	err := useCase.SetImg(1, img, ctx)
+	require.NoError(t, err)
 }
 
 func TestNewUser(t *testing.T) {

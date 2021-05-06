@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"golang.org/x/net/context"
 	"net/http"
 	"strconv"
 	"user/internal/app/models"
@@ -40,7 +39,7 @@ func (h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u.ID = id
-	response, err := h.userUseCase.Change(u, context.Background())
+	response, err := h.userUseCase.Change(*u, r.Context())
 	if err != nil {
 		httputils.RespondError(w,r, reqID, err)
 		return
@@ -57,7 +56,7 @@ func (h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	u, err := h.userUseCase.GetById(ID, context.Background())
+	u, err := h.userUseCase.GetById(ID, r.Context())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
