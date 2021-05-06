@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"github.com/pkg/errors"
 	"user/internal/app/models"
 	review2 "user/internal/app/review"
@@ -98,7 +99,8 @@ func (useCase *UseCase) GetById(ID uint64, ctx context.Context) (*models.UserInf
 }
 
 func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (*models.UserBasicInfo, error) {
-	err := tools.ValidationChangeUser(&user)
+	fmt.Println(user)
+	err := tools.ValidationChangeUser(user)
 	if err != nil {
 		return nil, err
 	}
@@ -113,6 +115,7 @@ func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (*mo
 	if user.NewPassword != "" {
 		user.Password = user.NewPassword
 	}
+	fmt.Println(user)
 	if user, err = useCase.encrypter.BeforeChange(user); err != nil {
 		return nil, err
 	}

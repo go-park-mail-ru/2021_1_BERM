@@ -25,10 +25,10 @@ func ValidationCreateUser(user *models.NewUser) error {
 	return nil
 }
 
-func ValidationChangeUser(user *models.ChangeUser) error {
+func ValidationChangeUser(user models.ChangeUser) error {
 
 	err := validation.ValidateStruct(
-		user,
+		&user,
 		validation.Field(&user.Email, is.Email),
 		validation.Field(&user.Password, validation.Length(minPasswordLength, maxPasswordLength)),
 	)

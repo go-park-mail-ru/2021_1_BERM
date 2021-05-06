@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -43,7 +42,7 @@ func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	err = h.specializeUseCase.Remove(id, s.Name, context.Background())
+	err = h.specializeUseCase.Remove(id, s.Name, r.Context())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
@@ -66,12 +65,12 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	err = h.specializeUseCase.AssociateWithUser(id, s.Name, context.Background())
+	err = h.specializeUseCase.AssociateWithUser(id, s.Name, r.Context())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	u, err := h.userUseCase.GetById(id, context.Background())
+	u, err := h.userUseCase.GetById(id, r.Context())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
