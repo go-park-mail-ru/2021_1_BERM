@@ -1,13 +1,12 @@
-package handlers
+package vacancy
 
 import (
 	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"io"
 	"net/http"
 	"post/internal/app/models"
-	vacancyUseCase "post/internal/app/vacancy/usecase"
+	vacancyUseCase "post/internal/app/vacancy"
 	"post/pkg/httputils"
 	"strconv"
 )
@@ -31,13 +30,6 @@ func NewHandler(useCase vacancyUseCase.UseCase) *Handlers {
 func (h *Handlers) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			httputils.RespondError(w, r, reqID, err)
-			return
-		}
-	}(r.Body)
 	id := r.Context().Value(ctxUserID).(uint64)
 	v := &models.Vacancy{
 		CustomerID: id,
@@ -58,14 +50,6 @@ func (h *Handlers) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			httputils.RespondError(w, r, reqID, err)
-
-			return
-		}
-	}(r.Body)
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
@@ -95,14 +79,6 @@ func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			httputils.RespondError(w, r, reqID, err)
-
-			return
-		}
-	}(r.Body)
 	vacancy := models.Vacancy{}
 	var err error
 	if err = json.NewDecoder(r.Body).Decode(&vacancy); err != nil {
@@ -128,14 +104,6 @@ func (h *Handlers) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			httputils.RespondError(w, r, reqID, err)
-
-			return
-		}
-	}(r.Body)
 	params := mux.Vars(r)
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
@@ -155,14 +123,6 @@ func (h *Handlers) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) GetAllUserVacancies(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			httputils.RespondError(w, r, reqID, err)
-
-			return
-		}
-	}(r.Body)
 	params := mux.Vars(r)
 	userID, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
@@ -182,14 +142,6 @@ func (h *Handlers) GetAllUserVacancies(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			httputils.RespondError(w, r, reqID, err)
-
-			return
-		}
-	}(r.Body)
 	vacancy := models.Vacancy{}
 	var err error
 	if err = json.NewDecoder(r.Body).Decode(&vacancy); err != nil {

@@ -1,4 +1,4 @@
-package order
+package vacancy
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"post/internal/app/models"
-	"post/internal/app/order/mock"
+	"post/internal/app/vacancy/mock"
 	"post/pkg/metric"
 	"testing"
 	"time"
@@ -28,29 +28,27 @@ func TestCreateOrder(t *testing.T) {
 
 	handle := NewHandler(mockUseCase)
 
-	order := models.Order{
-		OrderName:   "Сверстать сайт",
+	vacancy := models.Vacancy{
+		VacancyName:   "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
-		Deadline:    1617004533,
-		Budget:      1488,
+		Salary:      1488,
 		Description: "Pomogite sdelat API",
 	}
 
-	retOrder := &models.Order{
+	retVacancy := &models.Vacancy{
 		ID:          1,
-		OrderName:   "Сверстать сайт",
+		VacancyName:   "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
-		Deadline:    1617004533,
-		Budget:      1488,
+		Salary:      1488,
 		Description: "Pomogite sdelat API",
-		UserLogin:   "astlok",
+		Login:   "astlok",
 	}
 
-	body, _ := json.Marshal(order)
+	body, _ := json.Marshal(vacancy)
 
-	req, err := http.NewRequest("POST", "/api/order", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", "/api/vacancy", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -66,11 +64,11 @@ func TestCreateOrder(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.CreateOrder)
+	handler := http.HandlerFunc(handle.CreateVacancy)
 	mockUseCase.EXPECT().
-		Create(order, context.Background()).
+		Create(vacancy, context.Background()).
 		Times(1).
-		Return(retOrder, nil)
+		Return(retVacancy, nil)
 
 	handler.ServeHTTP(rr, req)
 
@@ -79,16 +77,16 @@ func TestCreateOrder(t *testing.T) {
 			status, http.StatusCreated)
 	}
 
-	expected, _ := json.Marshal(retOrder)
+	expected, _ := json.Marshal(retVacancy)
 	expectedStr := string(expected) + "\n"
 	require.Equal(t, expectedStr, rr.Body.String())
 
 	mockUseCase.EXPECT().
-		Create(order, context.Background()).
+		Create(vacancy, context.Background()).
 		Times(1).
-		Return(retOrder, sql.ErrNoRows)
+		Return(retVacancy, sql.ErrNoRows)
 
-	req, err = http.NewRequest("POST", "/api/order", bytes.NewBuffer(body))
+	req, err = http.NewRequest("POST", "/api/vacancy", bytes.NewBuffer(body))
 	ctx = req.Context()
 	val1 = 1
 	val2 = 2281488
@@ -106,7 +104,7 @@ func TestCreateOrder(t *testing.T) {
 
 	var byte22 string
 	byte22 = "kek"
-	req, err = http.NewRequest("POST", "/api/order", bytes.NewBuffer([]byte(byte22)))
+	req, err = http.NewRequest("POST", "/api/vacancy", bytes.NewBuffer([]byte(byte22)))
 	ctx = req.Context()
 	val1 = 1
 	val2 = 2281488
@@ -123,7 +121,7 @@ func TestCreateOrder(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestGetActualOrder(t *testing.T) {
+func TestGetActualVacancy(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -133,20 +131,19 @@ func TestGetActualOrder(t *testing.T) {
 
 	handle := NewHandler(mockUseCase)
 
-	retOrder := []models.Order{
+	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			OrderName:   "Сверстать сайт",
+			VacancyName:   "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
-			Deadline:    1617004533,
-			Budget:      1488,
+			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			UserLogin:   "astlok",
+			Login:   "astlok",
 		},
 	}
 
-	req, err := http.NewRequest("GET", "/api/order", nil)
+	req, err := http.NewRequest("GET", "/api/vacancy", nil)
 
 	ctx := req.Context()
 	var val1 uint64
@@ -162,11 +159,11 @@ func TestGetActualOrder(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetActualOrder)
+	handler := http.HandlerFunc(handle.GetActualVacancies)
 	mockUseCase.EXPECT().
-		GetActualOrders(context.Background()).
+		GetActualVacancies(context.Background()).
 		Times(1).
-		Return(retOrder, nil)
+		Return(retVacancy, nil)
 
 	handler.ServeHTTP(rr, req)
 
@@ -175,13 +172,13 @@ func TestGetActualOrder(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	expected, _ := json.Marshal(retOrder)
+	expected, _ := json.Marshal(retVacancy)
 	expectedStr := string(expected) + "\n"
 	require.Equal(t, expectedStr, rr.Body.String())
 	metric.Destroy()
 }
 
-func TestGetActualOrderErr(t *testing.T) {
+func TestGetActualVacancyErr(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -191,20 +188,19 @@ func TestGetActualOrderErr(t *testing.T) {
 
 	handle := NewHandler(mockUseCase)
 
-	retOrder := []models.Order{
+	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			OrderName:   "Сверстать сайт",
+			VacancyName:   "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
-			Deadline:    1617004533,
-			Budget:      1488,
+			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			UserLogin:   "astlok",
+			Login:   "astlok",
 		},
 	}
 
-	req, err := http.NewRequest("GET", "/api/order", nil)
+	req, err := http.NewRequest("GET", "/api/vacancy", nil)
 
 	ctx := req.Context()
 	var val1 uint64
@@ -218,13 +214,17 @@ func TestGetActualOrderErr(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	vars := map[string]string{
+		"id": "1",
+	}
+	req = mux.SetURLVars(req, vars)
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetActualOrder)
+	handler := http.HandlerFunc(handle.GetActualVacancies)
 	mockUseCase.EXPECT().
-		GetActualOrders(context.Background()).
+		GetActualVacancies(context.Background()).
 		Times(1).
-		Return(retOrder, sql.ErrNoRows)
+		Return(retVacancy, sql.ErrNoRows)
 
 	handler.ServeHTTP(rr, req)
 
@@ -235,7 +235,7 @@ func TestGetActualOrderErr(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestGetOrder(t *testing.T) {
+func TestGetVacancy(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -245,18 +245,17 @@ func TestGetOrder(t *testing.T) {
 
 	handle := NewHandler(mockUseCase)
 
-	retOrder := &models.Order{
+	retVacancy := &models.Vacancy{
 		ID:          1,
-		OrderName:   "Сверстать сайт",
+		VacancyName:   "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
-		Deadline:    1617004533,
-		Budget:      1488,
+		Salary:      1488,
 		Description: "Pomogite sdelat API",
-		UserLogin:   "astlok",
+		Login:   "astlok",
 	}
 
-	req, err := http.NewRequest("GET", "/api/order/1", nil)
+	req, err := http.NewRequest("GET", "/api/vacancy/1", nil)
 
 	ctx := req.Context()
 	var val1 uint64
@@ -273,11 +272,11 @@ func TestGetOrder(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetOrder)
+	handler := http.HandlerFunc(handle.GetVacancy)
 	mockUseCase.EXPECT().
 		FindByID(uint64(1), context.Background()).
 		Times(1).
-		Return(retOrder, nil)
+		Return(retVacancy, nil)
 
 	vars := map[string]string{
 		"id": "1",
@@ -291,11 +290,11 @@ func TestGetOrder(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	expected, _ := json.Marshal(retOrder)
+	expected, _ := json.Marshal(retVacancy)
 	expectedStr := string(expected) + "\n"
 	require.Equal(t, expectedStr, rr.Body.String())
 
-	req1, err := http.NewRequest("GET", "/api/order/1", nil)
+	req1, err := http.NewRequest("GET", "/api/vacancy/1", nil)
 
 	ctx2 := req1.Context()
 	val1 = 1
@@ -320,7 +319,7 @@ func TestGetOrder(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestGetOrderErr(t *testing.T) {
+func TestGetVacancyErr(t *testing.T) {
 
 	metric.New()
 
@@ -331,17 +330,16 @@ func TestGetOrderErr(t *testing.T) {
 
 	handle := NewHandler(mockUseCase)
 
-	retOrder := &models.Order{
+	retVacancy := &models.Vacancy{
 		ID:          1,
-		OrderName:   "Сверстать сайт",
+		VacancyName:   "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
-		Deadline:    1617004533,
-		Budget:      1488,
+		Salary:      1488,
 		Description: "Pomogite sdelat API",
-		UserLogin:   "astlok",
+		Login:   "astlok",
 	}
-	req, err := http.NewRequest("GET", "/api/order/1", nil)
+	req, err := http.NewRequest("GET", "/api/vacancy/1", nil)
 
 	ctx := req.Context()
 	var val1 uint64
@@ -358,11 +356,11 @@ func TestGetOrderErr(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetOrder)
+	handler := http.HandlerFunc(handle.GetVacancy)
 	mockUseCase.EXPECT().
 		FindByID(uint64(1), context.Background()).
 		Times(1).
-		Return(retOrder, sql.ErrNoRows)
+		Return(retVacancy, sql.ErrNoRows)
 
 	vars := map[string]string{
 		"id": "1",
@@ -378,7 +376,7 @@ func TestGetOrderErr(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestChangeOrder(t *testing.T) {
+func TestChangeVacancy(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -387,27 +385,25 @@ func TestChangeOrder(t *testing.T) {
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	order := models.Order{
+	vacancy := models.Vacancy{
 		ID:          1,
-		OrderName:   "Сверстать сайт",
+		VacancyName:   "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
-		Deadline:    1617004533,
-		Budget:      1488,
+		Salary:      1488,
 		Description: "Pomogite sdelat API",
 	}
-	retOrder := &models.Order{
+	retVacancy := &models.Vacancy{
 		ID:          1,
-		OrderName:   "Сверстать сайт",
+		VacancyName:   "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
-		Deadline:    1617004533,
-		Budget:      1488,
+		Salary:      1488,
 		Description: "Pomogite sdelat API",
-		UserLogin:   "astlok",
+		Login:   "astlok",
 	}
-	body, _ := json.Marshal(order)
-	req, err := http.NewRequest("GET", "/api/order/1", bytes.NewBuffer(body))
+	body, _ := json.Marshal(vacancy)
+	req, err := http.NewRequest("GET", "/api/vacancy/1", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -424,11 +420,11 @@ func TestChangeOrder(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.ChangeOrder)
+	handler := http.HandlerFunc(handle.ChangeVacancy)
 	mockUseCase.EXPECT().
-		ChangeOrder(order, context.Background()).
+		ChangeVacancy(vacancy, context.Background()).
 		Times(1).
-		Return(*retOrder, nil)
+		Return(*retVacancy, nil)
 
 	vars := map[string]string{
 		"id": "1",
@@ -442,13 +438,13 @@ func TestChangeOrder(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	expected, _ := json.Marshal(retOrder)
+	expected, _ := json.Marshal(retVacancy)
 	expectedStr := string(expected) + "\n"
 	require.Equal(t, expectedStr, rr.Body.String())
 	metric.Destroy()
 }
 
-func TestChangeOrderBadJson(t *testing.T) {
+func TestChangeVacancyBadJson(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -459,7 +455,7 @@ func TestChangeOrderBadJson(t *testing.T) {
 	handle := NewHandler(mockUseCase)
 
 	byte22 := "kek"
-	req, err := http.NewRequest("GET", "/api/order/1", bytes.NewBuffer([]byte(byte22)))
+	req, err := http.NewRequest("GET", "/api/vacancy/1", bytes.NewBuffer([]byte(byte22)))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -476,11 +472,8 @@ func TestChangeOrderBadJson(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.ChangeOrder)
-	//mockUseCase.EXPECT().
-	//	ChangeOrder(order, context.Background()).
-	//	Times(1).
-	//	Return(*retOrder, nil)
+	handler := http.HandlerFunc(handle.ChangeVacancy)
+
 
 	vars := map[string]string{
 		"id": "1",
@@ -494,13 +487,11 @@ func TestChangeOrderBadJson(t *testing.T) {
 			status, http.StatusInternalServerError)
 	}
 
-	//expected, _ := json.Marshal(retOrder)
-	//expectedStr := string(expected) + "\n"
-	//require.Equal(t, expectedStr, rr.Body.String())
+
 	metric.Destroy()
 }
 
-func TestChangeOrderErr(t *testing.T) {
+func TestChangeVacancyErr(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -509,27 +500,25 @@ func TestChangeOrderErr(t *testing.T) {
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	order := models.Order{
+	vacancy := models.Vacancy{
 		ID:          1,
-		OrderName:   "Сверстать сайт",
+		VacancyName:   "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
-		Deadline:    1617004533,
-		Budget:      1488,
+		Salary:      1488,
 		Description: "Pomogite sdelat API",
 	}
-	retOrder := &models.Order{
+	retVacancy := &models.Vacancy{
 		ID:          1,
-		OrderName:   "Сверстать сайт",
+		VacancyName:   "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
-		Deadline:    1617004533,
-		Budget:      1488,
+		Salary:      1488,
 		Description: "Pomogite sdelat API",
-		UserLogin:   "astlok",
+		Login:   "astlok",
 	}
-	body, _ := json.Marshal(order)
-	req, err := http.NewRequest("GET", "/api/order/1", bytes.NewBuffer(body))
+	body, _ := json.Marshal(vacancy)
+	req, err := http.NewRequest("GET", "/api/vacancy/1", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -546,11 +535,11 @@ func TestChangeOrderErr(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.ChangeOrder)
+	handler := http.HandlerFunc(handle.ChangeVacancy)
 	mockUseCase.EXPECT().
-		ChangeOrder(order, context.Background()).
+		ChangeVacancy(vacancy, context.Background()).
 		Times(1).
-		Return(*retOrder, sql.ErrNoRows)
+		Return(*retVacancy, sql.ErrNoRows)
 
 	vars := map[string]string{
 		"id": "1",
@@ -566,7 +555,7 @@ func TestChangeOrderErr(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestChangeOrderErrParse(t *testing.T) {
+func TestChangeVacancyErrParse(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -575,17 +564,16 @@ func TestChangeOrderErrParse(t *testing.T) {
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	order := models.Order{
+	vacancy := models.Vacancy{
 		ID:          1,
-		OrderName:   "Сверстать сайт",
+		VacancyName:   "Сверстать сайт",
 		Category:    "Back",
 		CustomerID:  1,
-		Deadline:    1617004533,
-		Budget:      1488,
+		Salary:      1488,
 		Description: "Pomogite sdelat API",
 	}
-	body, _ := json.Marshal(order)
-	req, err := http.NewRequest("GET", "/api/order/1", bytes.NewBuffer(body))
+	body, _ := json.Marshal(vacancy)
+	req, err := http.NewRequest("GET", "/api/vacancy/1", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -602,7 +590,7 @@ func TestChangeOrderErrParse(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.ChangeOrder)
+	handler := http.HandlerFunc(handle.ChangeVacancy)
 
 	vars := map[string]string{
 		"kek": "1",
@@ -618,7 +606,7 @@ func TestChangeOrderErrParse(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestDeleteOrder(t *testing.T) {
+func TestDeleteVacancy(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -627,7 +615,7 @@ func TestDeleteOrder(t *testing.T) {
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("GET", "/api/order/1", nil)
+	req, err := http.NewRequest("GET", "/api/vacancy/1", nil)
 
 	ctx := req.Context()
 	var val1 uint64
@@ -644,9 +632,9 @@ func TestDeleteOrder(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.DeleteOrder)
+	handler := http.HandlerFunc(handle.DeleteVacancy)
 	mockUseCase.EXPECT().
-		DeleteOrder(uint64(1), context.Background()).
+		DeleteVacancy(uint64(1), context.Background()).
 		Times(1).
 		Return(nil)
 
@@ -665,7 +653,7 @@ func TestDeleteOrder(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestDeleteOrderErrVar(t *testing.T) {
+func TestDeleteVacancyErrVar(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -674,7 +662,7 @@ func TestDeleteOrderErrVar(t *testing.T) {
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("GET", "/api/order/1", nil)
+	req, err := http.NewRequest("GET", "/api/vacancy/1", nil)
 
 	ctx := req.Context()
 	var val1 uint64
@@ -691,7 +679,7 @@ func TestDeleteOrderErrVar(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.DeleteOrder)
+	handler := http.HandlerFunc(handle.DeleteVacancy)
 
 	vars := map[string]string{
 		"kek": "1",
@@ -708,7 +696,7 @@ func TestDeleteOrderErrVar(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestDeleteOrderErr(t *testing.T) {
+func TestDeleteVacancyErr(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -717,7 +705,7 @@ func TestDeleteOrderErr(t *testing.T) {
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("GET", "/api/order/1", nil)
+	req, err := http.NewRequest("GET", "/api/vacancy/1", nil)
 
 	ctx := req.Context()
 	var val1 uint64
@@ -734,9 +722,9 @@ func TestDeleteOrderErr(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.DeleteOrder)
+	handler := http.HandlerFunc(handle.DeleteVacancy)
 	mockUseCase.EXPECT().
-		DeleteOrder(uint64(1), context.Background()).
+		DeleteVacancy(uint64(1), context.Background()).
 		Times(1).
 		Return(sql.ErrNoRows)
 
@@ -758,19 +746,19 @@ func TestDeleteOrderErr(t *testing.T) {
 func TestSelectEx(t *testing.T) {
 	metric.New()
 
-	order := models.Order{
+	vacancy := models.Vacancy{
 		ID:         1,
 		ExecutorID: 1,
 	}
 
-	body, _ := json.Marshal(order)
+	body, _ := json.Marshal(vacancy)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("POST", "/api/order/1/select", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", "/api/vacancy/1/select", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -789,7 +777,7 @@ func TestSelectEx(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.SelectExecutor)
 	mockUseCase.EXPECT().
-		SelectExecutor(order, context.Background()).
+		SelectExecutor(vacancy, context.Background()).
 		Times(1).
 		Return(nil)
 
@@ -817,7 +805,7 @@ func TestSelectExErrJson(t *testing.T) {
 	mockUseCase := mock.NewMockUseCase(ctrl)
 	byte22 := "kek"
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("POST", "/api/order/1/select", bytes.NewBuffer([]byte(byte22)))
+	req, err := http.NewRequest("POST", "/api/vacancy/1/select", bytes.NewBuffer([]byte(byte22)))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -853,19 +841,19 @@ func TestSelectExErrJson(t *testing.T) {
 func TestSelectBarVar(t *testing.T) {
 	metric.New()
 
-	order := models.Order{
+	vacancy := models.Vacancy{
 		ID:         1,
 		ExecutorID: 1,
 	}
 
-	body, _ := json.Marshal(order)
+	body, _ := json.Marshal(vacancy)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("POST", "/api/order/1/select", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", "/api/vacancy/1/select", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -902,19 +890,19 @@ func TestSelectBarVar(t *testing.T) {
 func TestSelectExErr(t *testing.T) {
 	metric.New()
 
-	order := models.Order{
+	vacancy := models.Vacancy{
 		ID:         1,
 		ExecutorID: 1,
 	}
 
-	body, _ := json.Marshal(order)
+	body, _ := json.Marshal(vacancy)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("POST", "/api/order/1/select", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", "/api/vacancy/1/select", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -933,7 +921,7 @@ func TestSelectExErr(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.SelectExecutor)
 	mockUseCase.EXPECT().
-		SelectExecutor(order, context.Background()).
+		SelectExecutor(vacancy, context.Background()).
 		Times(1).
 		Return(sql.ErrNoRows)
 
@@ -955,18 +943,18 @@ func TestSelectExErr(t *testing.T) {
 func TestDeleteExecutor(t *testing.T) {
 	metric.New()
 
-	order := models.Order{
+	vacancy := models.Vacancy{
 		ID: 1,
 	}
 
-	body, _ := json.Marshal(order)
+	body, _ := json.Marshal(vacancy)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("DELETE", "/api/order/1/select", bytes.NewBuffer(body))
+	req, err := http.NewRequest("DELETE", "/api/vacancy/1/select", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -985,7 +973,7 @@ func TestDeleteExecutor(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.DeleteExecutor)
 	mockUseCase.EXPECT().
-		DeleteExecutor(order, context.Background()).
+		DeleteExecutor(vacancy, context.Background()).
 		Times(1).
 		Return(nil)
 
@@ -1013,7 +1001,7 @@ func TestDeleteExecutorErrVar(t *testing.T) {
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("POST", "/api/order/1/select", nil)
+	req, err := http.NewRequest("POST", "/api/vacancy/1/select", nil)
 
 	ctx := req.Context()
 	var val1 uint64
@@ -1050,18 +1038,18 @@ func TestDeleteExecutorErrVar(t *testing.T) {
 func TestDeleteExecutorErr(t *testing.T) {
 	metric.New()
 
-	order := models.Order{
+	vacancy := models.Vacancy{
 		ID: 1,
 	}
 
-	body, _ := json.Marshal(order)
+	body, _ := json.Marshal(vacancy)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("DELETE", "/api/order/1/select", bytes.NewBuffer(body))
+	req, err := http.NewRequest("DELETE", "/api/vacancy/1/select", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -1080,7 +1068,7 @@ func TestDeleteExecutorErr(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.DeleteExecutor)
 	mockUseCase.EXPECT().
-		DeleteExecutor(order, context.Background()).
+		DeleteExecutor(vacancy, context.Background()).
 		Times(1).
 		Return(sql.ErrNoRows)
 
@@ -1099,34 +1087,33 @@ func TestDeleteExecutorErr(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestGetAllOrders(t *testing.T) {
+func TestGetAllVacancys(t *testing.T) {
 	metric.New()
 
-	order := models.Order{
+	vacancy := models.Vacancy{
 		ID: 1,
 	}
 
-	retOrder := []models.Order{
+	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			OrderName:   "Сверстать сайт",
+			VacancyName:   "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
-			Deadline:    1617004533,
-			Budget:      1488,
+			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			UserLogin:   "astlok",
+			Login:   "astlok",
 		},
 	}
 
-	body, _ := json.Marshal(order)
+	body, _ := json.Marshal(vacancy)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("GET", "/api/order/profile/1", bytes.NewBuffer(body))
+	req, err := http.NewRequest("GET", "/api/vacancy/profile/1", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -1143,11 +1130,11 @@ func TestGetAllOrders(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetAllUserOrders)
+	handler := http.HandlerFunc(handle.GetAllUserVacancies)
 	mockUseCase.EXPECT().
 		FindByUserID(uint64(1), context.Background()).
 		Times(1).
-		Return(retOrder, nil)
+		Return(retVacancy, nil)
 
 	vars := map[string]string{
 		"id": "1",
@@ -1164,21 +1151,21 @@ func TestGetAllOrders(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestGetAllOrdersErrVar(t *testing.T) {
+func TestGetAllVacancysErrVar(t *testing.T) {
 	metric.New()
 
-	order := models.Order{
+	vacancy := models.Vacancy{
 		ID: 1,
 	}
 
-	body, _ := json.Marshal(order)
+	body, _ := json.Marshal(vacancy)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("GET", "/api/order/profile/1", bytes.NewBuffer(body))
+	req, err := http.NewRequest("GET", "/api/vacancy/profile/1", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -1195,7 +1182,7 @@ func TestGetAllOrdersErrVar(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetAllUserOrders)
+	handler := http.HandlerFunc(handle.GetAllUserVacancies)
 
 	vars := map[string]string{
 		"kek": "1",
@@ -1212,34 +1199,33 @@ func TestGetAllOrdersErrVar(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestGetAllOrdersErr(t *testing.T) {
+func TestGetAllVacancysErr(t *testing.T) {
 	metric.New()
 
-	order := models.Order{
+	vacancy := models.Vacancy{
 		ID: 1,
 	}
 
-	retOrder := []models.Order{
+	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			OrderName:   "Сверстать сайт",
+			VacancyName:   "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
-			Deadline:    1617004533,
-			Budget:      1488,
+			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			UserLogin:   "astlok",
+			Login:   "astlok",
 		},
 	}
 
-	body, _ := json.Marshal(order)
+	body, _ := json.Marshal(vacancy)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("GET", "/api/order/profile/1", bytes.NewBuffer(body))
+	req, err := http.NewRequest("GET", "/api/vacancy/profile/1", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -1256,11 +1242,11 @@ func TestGetAllOrdersErr(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetAllUserOrders)
+	handler := http.HandlerFunc(handle.GetAllUserVacancies)
 	mockUseCase.EXPECT().
 		FindByUserID(uint64(1), context.Background()).
 		Times(1).
-		Return(retOrder, sql.ErrNoRows)
+		Return(retVacancy, sql.ErrNoRows)
 
 	vars := map[string]string{
 		"id": "1",
@@ -1277,7 +1263,7 @@ func TestGetAllOrdersErr(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestCloseOrder(t *testing.T) {
+func TestCloseVacancy(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -1286,7 +1272,7 @@ func TestCloseOrder(t *testing.T) {
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("DELETE", "/api/order/1/close", nil)
+	req, err := http.NewRequest("DELETE", "/api/vacancy/1/close", nil)
 
 	ctx := req.Context()
 	var val1 uint64
@@ -1303,9 +1289,9 @@ func TestCloseOrder(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.CloseOrder)
+	handler := http.HandlerFunc(handle.CloseVacancy)
 	mockUseCase.EXPECT().
-		CloseOrder(uint64(1), context.Background()).
+		CloseVacancy(uint64(1), context.Background()).
 		Times(1).
 		Return(nil)
 
@@ -1324,7 +1310,7 @@ func TestCloseOrder(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestCloseOrderErr(t *testing.T) {
+func TestCloseVacancyErr(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -1333,7 +1319,7 @@ func TestCloseOrderErr(t *testing.T) {
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("DELETE", "/api/order/1/close", nil)
+	req, err := http.NewRequest("DELETE", "/api/vacancy/1/close", nil)
 
 	ctx := req.Context()
 	var val1 uint64
@@ -1350,9 +1336,9 @@ func TestCloseOrderErr(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.CloseOrder)
+	handler := http.HandlerFunc(handle.CloseVacancy)
 	mockUseCase.EXPECT().
-		CloseOrder(uint64(1), context.Background()).
+		CloseVacancy(uint64(1), context.Background()).
 		Times(1).
 		Return(sql.ErrNoRows)
 
@@ -1371,7 +1357,7 @@ func TestCloseOrderErr(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestCloseOrderErrVar(t *testing.T) {
+func TestCloseVacancyErrVar(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -1380,7 +1366,7 @@ func TestCloseOrderErrVar(t *testing.T) {
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
 	handle := NewHandler(mockUseCase)
-	req, err := http.NewRequest("DELETE", "/api/order/1/close", nil)
+	req, err := http.NewRequest("DELETE", "/api/vacancy/1/close", nil)
 
 	ctx := req.Context()
 	var val1 uint64
@@ -1397,7 +1383,7 @@ func TestCloseOrderErrVar(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.CloseOrder)
+	handler := http.HandlerFunc(handle.CloseVacancy)
 
 	vars := map[string]string{
 		"kek": "1",
@@ -1414,7 +1400,7 @@ func TestCloseOrderErrVar(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestGetAllArchiveUserOrders(t *testing.T) {
+func TestGetAllArchiveUserVacancys(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -1424,20 +1410,19 @@ func TestGetAllArchiveUserOrders(t *testing.T) {
 
 	handle := NewHandler(mockUseCase)
 
-	retOrder := []models.Order{
+	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			OrderName:   "Сверстать сайт",
+			VacancyName:   "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
-			Deadline:    1617004533,
-			Budget:      1488,
+			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			UserLogin:   "astlok",
+			Login:   "astlok",
 		},
 	}
 
-	req, err := http.NewRequest("GET", "/api/order/profile/1/archive", nil)
+	req, err := http.NewRequest("GET", "/api/vacancy/profile/1/archive", nil)
 	vars := map[string]string{
 		"id": "1",
 	}
@@ -1449,7 +1434,6 @@ func TestGetAllArchiveUserOrders(t *testing.T) {
 	val2 = 2281488
 	ctx = context.WithValue(ctx, ctxUserID, val1)
 	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
-	ctx = context.WithValue(ctx, ctxExecutor, true)
 	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 	req = req.WithContext(ctx)
 	if err != nil {
@@ -1457,11 +1441,11 @@ func TestGetAllArchiveUserOrders(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetAllArchiveUserOrders)
+	handler := http.HandlerFunc(handle.GetAllArchiveUserVacancies)
 	mockUseCase.EXPECT().
-		GetArchiveOrders(models.UserBasicInfo{ID: 1, Executor: true}, context.Background()).
+		GetArchiveVacancies(context.Background()).
 		Times(1).
-		Return(retOrder, nil)
+		Return(retVacancy, nil)
 
 	handler.ServeHTTP(rr, req)
 
@@ -1470,13 +1454,13 @@ func TestGetAllArchiveUserOrders(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	expected, _ := json.Marshal(retOrder)
+	expected, _ := json.Marshal(retVacancy)
 	expectedStr := string(expected) + "\n"
 	require.Equal(t, expectedStr, rr.Body.String())
 	metric.Destroy()
 }
 
-func TestGetAllArchiveUserOrdersErr(t *testing.T) {
+func TestGetAllArchiveUserVacancysErr(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -1486,20 +1470,19 @@ func TestGetAllArchiveUserOrdersErr(t *testing.T) {
 
 	handle := NewHandler(mockUseCase)
 
-	retOrder := []models.Order{
+	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			OrderName:   "Сверстать сайт",
+			VacancyName:   "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
-			Deadline:    1617004533,
-			Budget:      1488,
+			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			UserLogin:   "astlok",
+			Login:   "astlok",
 		},
 	}
 
-	req, err := http.NewRequest("GET", "/api/order/profile/1/archive", nil)
+	req, err := http.NewRequest("GET", "/api/vacancy/profile/1/archive", nil)
 	vars := map[string]string{
 		"id": "1",
 	}
@@ -1511,7 +1494,6 @@ func TestGetAllArchiveUserOrdersErr(t *testing.T) {
 	val2 = 2281488
 	ctx = context.WithValue(ctx, ctxUserID, val1)
 	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
-	ctx = context.WithValue(ctx, ctxExecutor, true)
 	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 	req = req.WithContext(ctx)
 	if err != nil {
@@ -1519,11 +1501,11 @@ func TestGetAllArchiveUserOrdersErr(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetAllArchiveUserOrders)
+	handler := http.HandlerFunc(handle.GetAllArchiveUserVacancies)
 	mockUseCase.EXPECT().
-		GetArchiveOrders(models.UserBasicInfo{ID: 1, Executor: true}, context.Background()).
+		GetArchiveVacancies(context.Background()).
 		Times(1).
-		Return(retOrder, sql.ErrNoRows)
+		Return(retVacancy, sql.ErrNoRows)
 
 	handler.ServeHTTP(rr, req)
 
@@ -1535,7 +1517,7 @@ func TestGetAllArchiveUserOrdersErr(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestSearchOrder(t *testing.T) {
+func TestSearchVacancy(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -1545,25 +1527,24 @@ func TestSearchOrder(t *testing.T) {
 
 	handle := NewHandler(mockUseCase)
 
-	retOrder := []models.Order{
+	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			OrderName:   "Сверстать сайт",
+			VacancyName:   "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
-			Deadline:    1617004533,
-			Budget:      1488,
+			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			UserLogin:   "astlok",
+			Login:   "astlok",
 		},
 	}
 
-	keyword := models.OrderSearch{
+	keyword := models.VacancySearch{
 		Keyword: "kek",
 	}
 
 	body, _ := json.Marshal(keyword)
-	req, err := http.NewRequest("GET", "/api/order/profile/1/archive", bytes.NewBuffer(body))
+	req, err := http.NewRequest("GET", "/api/vacancy/profile/1/archive", bytes.NewBuffer(body))
 	vars := map[string]string{
 		"id": "1",
 	}
@@ -1575,7 +1556,6 @@ func TestSearchOrder(t *testing.T) {
 	val2 = 2281488
 	ctx = context.WithValue(ctx, ctxUserID, val1)
 	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
-	ctx = context.WithValue(ctx, ctxExecutor, true)
 	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 	req = req.WithContext(ctx)
 	if err != nil {
@@ -1583,11 +1563,11 @@ func TestSearchOrder(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.SearchOrder)
+	handler := http.HandlerFunc(handle.SearchVacancy)
 	mockUseCase.EXPECT().
-		SearchOrders("kek", context.Background()).
+		SearchVacancy("kek", context.Background()).
 		Times(1).
-		Return(retOrder, nil)
+		Return(retVacancy, nil)
 
 	handler.ServeHTTP(rr, req)
 
@@ -1596,13 +1576,13 @@ func TestSearchOrder(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	expected, _ := json.Marshal(retOrder)
+	expected, _ := json.Marshal(retVacancy)
 	expectedStr := string(expected) + "\n"
 	require.Equal(t, expectedStr, rr.Body.String())
 	metric.Destroy()
 }
 
-func TestSearchOrderErr(t *testing.T) {
+func TestSearchVacancyErr(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -1612,25 +1592,24 @@ func TestSearchOrderErr(t *testing.T) {
 
 	handle := NewHandler(mockUseCase)
 
-	retOrder := []models.Order{
+	retVacancy := []models.Vacancy{
 		{
 			ID:          1,
-			OrderName:   "Сверстать сайт",
+			VacancyName:   "Сверстать сайт",
 			Category:    "Back",
 			CustomerID:  1,
-			Deadline:    1617004533,
-			Budget:      1488,
+			Salary:      1488,
 			Description: "Pomogite sdelat API",
-			UserLogin:   "astlok",
+			Login:   "astlok",
 		},
 	}
 
-	keyword := models.OrderSearch{
+	keyword := models.VacancySearch{
 		Keyword: "kek",
 	}
 
 	body, _ := json.Marshal(keyword)
-	req, err := http.NewRequest("GET", "/api/order/profile/1/archive", bytes.NewBuffer(body))
+	req, err := http.NewRequest("GET", "/api/vacancy/profile/1/archive", bytes.NewBuffer(body))
 	vars := map[string]string{
 		"id": "1",
 	}
@@ -1642,7 +1621,6 @@ func TestSearchOrderErr(t *testing.T) {
 	val2 = 2281488
 	ctx = context.WithValue(ctx, ctxUserID, val1)
 	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
-	ctx = context.WithValue(ctx, ctxExecutor, true)
 	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 	req = req.WithContext(ctx)
 	if err != nil {
@@ -1650,11 +1628,11 @@ func TestSearchOrderErr(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.SearchOrder)
+	handler := http.HandlerFunc(handle.SearchVacancy)
 	mockUseCase.EXPECT().
-		SearchOrders("kek", context.Background()).
+		SearchVacancy("kek", context.Background()).
 		Times(1).
-		Return(retOrder, sql.ErrNoRows)
+		Return(retVacancy, sql.ErrNoRows)
 
 	handler.ServeHTTP(rr, req)
 
@@ -1666,7 +1644,7 @@ func TestSearchOrderErr(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestSearchOrderJsonErr(t *testing.T) {
+func TestSearchVacancyJsonErr(t *testing.T) {
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -1677,7 +1655,7 @@ func TestSearchOrderJsonErr(t *testing.T) {
 	handle := NewHandler(mockUseCase)
 
 	byte22 := "meem"
-	req, err := http.NewRequest("GET", "/api/order/profile/1/archive", bytes.NewBuffer([]byte(byte22)))
+	req, err := http.NewRequest("GET", "/api/vacancy/profile/1/archive", bytes.NewBuffer([]byte(byte22)))
 	vars := map[string]string{
 		"id": "1",
 	}
@@ -1689,7 +1667,6 @@ func TestSearchOrderJsonErr(t *testing.T) {
 	val2 = 2281488
 	ctx = context.WithValue(ctx, ctxUserID, val1)
 	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
-	ctx = context.WithValue(ctx, ctxExecutor, true)
 	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 	req = req.WithContext(ctx)
 	if err != nil {
@@ -1697,7 +1674,7 @@ func TestSearchOrderJsonErr(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.SearchOrder)
+	handler := http.HandlerFunc(handle.SearchVacancy)
 
 	handler.ServeHTTP(rr, req)
 
@@ -1707,3 +1684,4 @@ func TestSearchOrderJsonErr(t *testing.T) {
 	}
 	metric.Destroy()
 }
+

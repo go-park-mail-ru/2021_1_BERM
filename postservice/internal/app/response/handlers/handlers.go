@@ -1,4 +1,4 @@
-package handlers
+package response
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"post/internal/app/models"
-	responseUseCase "post/internal/app/response/usecase"
+	responseUseCase "post/internal/app/response"
 	"post/pkg/httputils"
 	"strconv"
 )

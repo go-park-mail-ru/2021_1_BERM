@@ -130,12 +130,11 @@ func main() {
 	responseUseCase := responseUCase.NewUseCase(responseRepository, userRepo)
 
 	orderHandler := orderHandlers.NewHandler(orderUseCase)
-	vacancyHandler := vacancyHandlers.NewHandler(*vacancyUseCase)
-	responseHandler := responseHandlers.NewHandler(*responseUseCase)
+	vacancyHandler := vacancyHandlers.NewHandler(vacancyUseCase)
+	responseHandler := responseHandlers.NewHandler(responseUseCase)
 
 	router := mux.NewRouter()
 	router.Methods(http.MethodGet).Path("/metrics").Handler(promhttp.Handler())
-
 
 	csrfMiddleware := middleware.CSRFMiddleware(config.HTTPS)
 

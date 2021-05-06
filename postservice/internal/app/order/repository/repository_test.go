@@ -1,25 +1,25 @@
-package postgresstore
+package order
 
 import (
-	"FL_2/model"
+	"context"
 	"fmt"
 	sqlxmock "github.com/zhashkevych/go-sqlxmock"
+	"post/internal/app/models"
 	"reflect"
 	"testing"
 )
 
-func TestOrderCreate(t *testing.T) {
+func TestRepository_Create(t *testing.T) {
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("cant create mock: %s", err)
 	}
 	defer db.Close()
 
-	store := &Store{
-		Db: db,
-	}
 
-	restOrder := model.Order{
+	repo := NewRepo(db)
+
+	restOrder := models.Order{
 		CustomerID:  1,
 		ExecutorID:  1,
 		OrderName:   "Vasya",
@@ -32,7 +32,7 @@ func TestOrderCreate(t *testing.T) {
 		NewRows([]string{"orderID"}).AddRow(1)
 
 	mock.
-		ExpectQuery("INSERT INTO ff.orders").
+		ExpectQuery("INSERT INTO post.orders").
 		WithArgs(restOrder.CustomerID,
 			restOrder.ExecutorID,
 			restOrder.OrderName,
@@ -42,7 +42,7 @@ func TestOrderCreate(t *testing.T) {
 			restOrder.Description).
 		WillReturnRows(rows)
 
-	id, err := store.Order().Create(restOrder)
+	id, err := repo.Create(restOrder, context.Background())
 	if err != nil {
 		t.Errorf("unexpected err: %s", err)
 		return
@@ -57,7 +57,7 @@ func TestOrderCreate(t *testing.T) {
 	}
 
 	mock.
-		ExpectQuery("INSERT INTO ff.orders").
+		ExpectQuery("INSERT INTO post.orders").
 		WithArgs(restOrder.CustomerID,
 			restOrder.ExecutorID,
 			restOrder.OrderName,
@@ -67,7 +67,7 @@ func TestOrderCreate(t *testing.T) {
 			restOrder.Description).
 		WillReturnError(fmt.Errorf("db_error"))
 
-	_, err = store.Order().Create(restOrder)
+	_, err = repo.Create(restOrder, context.Background())
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 		return
@@ -78,18 +78,16 @@ func TestOrderCreate(t *testing.T) {
 	}
 }
 
-func TestOrderFindByID(t *testing.T) {
+func TestRepository_FindByID(t *testing.T) {
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("cant create mock: %s", err)
 	}
 	defer db.Close()
 
-	store := &Store{
-		Db: db,
-	}
+	store := NewRepo(db)
 
-	restOrder := &model.Order{
+	restOrder := &models.Order{
 		ID:          1,
 		CustomerID:  1,
 		ExecutorID:  1,
@@ -108,7 +106,7 @@ func TestOrderFindByID(t *testing.T) {
 		WithArgs(restOrder.ID).
 		WillReturnRows(rows)
 
-	order, err := store.Order().FindByID(restOrder.ID)
+	order, err := store.FindByID(restOrder.ID, context.Background())
 
 	if err != nil {
 		t.Errorf("unexpected err: %s", err)
@@ -128,7 +126,7 @@ func TestOrderFindByID(t *testing.T) {
 		WithArgs(restOrder.ID).
 		WillReturnError(fmt.Errorf("db_error"))
 
-	_, err = store.Order().FindByID(restOrder.ID)
+	_, err = store.FindByID(restOrder.ID, context.Background())
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 		return
@@ -139,18 +137,16 @@ func TestOrderFindByID(t *testing.T) {
 	}
 }
 
-func TestOrderFindByExecutorID(t *testing.T) {
+func TestRepository_FindByExecutorID(t *testing.T) {
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("cant create mock: %s", err)
 	}
 	defer db.Close()
 
-	store := &Store{
-		Db: db,
-	}
+	store := NewRepo(db)
 
-	restOrder := []model.Order{
+	restOrder := []models.Order{
 		{ID: 1,
 			CustomerID:  1,
 			ExecutorID:  1,
@@ -169,7 +165,7 @@ func TestOrderFindByExecutorID(t *testing.T) {
 		WithArgs(restOrder[0].ExecutorID).
 		WillReturnRows(rows)
 
-	order, err := store.Order().FindByExecutorID(restOrder[0].ExecutorID)
+	order, err := store.FindByExecutorID(restOrder[0].ExecutorID, context.Background())
 
 	if err != nil {
 		t.Errorf("unexpected err: %s", err)
@@ -188,7 +184,7 @@ func TestOrderFindByExecutorID(t *testing.T) {
 		WithArgs(restOrder[0].ExecutorID).
 		WillReturnError(fmt.Errorf("db_error"))
 
-	_, err = store.Order().FindByExecutorID(restOrder[0].ExecutorID)
+	_, err = store.FindByExecutorID(restOrder[0].ExecutorID, context.Background())
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 		return
@@ -199,18 +195,16 @@ func TestOrderFindByExecutorID(t *testing.T) {
 	}
 }
 
-func TestOrderFindByCustomerID(t *testing.T) {
+func TestRepository_FindByCustomerID(t *testing.T) {
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("cant create mock: %s", err)
 	}
 	defer db.Close()
 
-	store := &Store{
-		Db: db,
-	}
+	store := NewRepo(db)
 
-	restOrder := []model.Order{
+	restOrder := []models.Order{
 		{ID: 1,
 			CustomerID:  1,
 			ExecutorID:  1,
@@ -229,7 +223,7 @@ func TestOrderFindByCustomerID(t *testing.T) {
 		WithArgs(restOrder[0].CustomerID).
 		WillReturnRows(rows)
 
-	order, err := store.Order().FindByCustomerID(restOrder[0].CustomerID)
+	order, err := store.FindByCustomerID(restOrder[0].CustomerID, context.Background())
 
 	if err != nil {
 		t.Errorf("unexpected err: %s", err)
@@ -248,7 +242,7 @@ func TestOrderFindByCustomerID(t *testing.T) {
 		WithArgs(restOrder[0].CustomerID).
 		WillReturnError(fmt.Errorf("db_error"))
 
-	_, err = store.Order().FindByCustomerID(restOrder[0].CustomerID)
+	_, err = store.FindByCustomerID(restOrder[0].CustomerID, context.Background())
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 		return
@@ -259,18 +253,16 @@ func TestOrderFindByCustomerID(t *testing.T) {
 	}
 }
 
-func TestOrderGetActualOrders(t *testing.T) {
+func TestRepository_GetActualOrders(t *testing.T) {
 	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("cant create mock: %s", err)
 	}
 	defer db.Close()
 
-	store := &Store{
-		Db: db,
-	}
+	store := NewRepo(db)
 
-	restOrder := []model.Order{
+	restOrder := []models.Order{
 		{ID: 1,
 			CustomerID:  1,
 			ExecutorID:  1,
@@ -288,7 +280,7 @@ func TestOrderGetActualOrders(t *testing.T) {
 		ExpectQuery("SELECT").
 		WillReturnRows(rows)
 
-	order, err := store.Order().GetActualOrders()
+	order, err := store.GetActualOrders(context.Background())
 
 	if err != nil {
 		t.Errorf("unexpected err: %s", err)
@@ -306,7 +298,7 @@ func TestOrderGetActualOrders(t *testing.T) {
 		ExpectQuery("SELECT").
 		WillReturnError(fmt.Errorf("db_error"))
 
-	_, err = store.Order().GetActualOrders()
+	_, err = store.GetActualOrders(context.Background())
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 		return

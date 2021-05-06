@@ -1,11 +1,12 @@
-package postgresstore
+package user
 
 import (
-	"FL_2/model"
+	"context"
 	"fmt"
 	sqlxmock "github.com/zhashkevych/go-sqlxmock"
 	"reflect"
 	"testing"
+	"user/internal/app/models"
 )
 
 func TestUserCreate(t *testing.T) {
@@ -15,11 +16,9 @@ func TestUserCreate(t *testing.T) {
 	}
 	defer db.Close()
 
-	store := &Store{
-		Db: db,
-	}
+	store := Repository{Db: db}
 
-	testUser := model.User{
+	testUser := models.NewUser{
 		Email:           "kek@me.ru",
 		EncryptPassword: []byte("123"),
 		Login:           "Vasya",
@@ -31,7 +30,7 @@ func TestUserCreate(t *testing.T) {
 		NewRows([]string{"orderID"}).AddRow(1)
 
 	mock.
-		ExpectQuery("INSERT INTO ff.users").
+		ExpectQuery("INSERT INTO userservice.users").
 		WithArgs(testUser.Email,
 			testUser.EncryptPassword,
 			testUser.Login,
@@ -40,7 +39,7 @@ func TestUserCreate(t *testing.T) {
 			testUser.Executor).
 		WillReturnRows(rows)
 
-	id, err := store.User().AddUser(testUser)
+	id, err := store.Create(&testUser, context.Background())
 	if err != nil {
 		t.Errorf("unexpected err: %s", err)
 		return
@@ -55,7 +54,7 @@ func TestUserCreate(t *testing.T) {
 	}
 
 	mock.
-		ExpectQuery("INSERT INTO ff.users").
+		ExpectQuery("INSERT INTO userservice.users").
 		WithArgs(testUser.Email,
 			testUser.EncryptPassword,
 			testUser.Login,
@@ -64,7 +63,7 @@ func TestUserCreate(t *testing.T) {
 			testUser.Executor).
 		WillReturnError(fmt.Errorf("db_error"))
 
-	_, err = store.User().AddUser(testUser)
+	_, err = store.Create(&testUser, context.Background())
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 		return
@@ -82,18 +81,16 @@ func TestFindUserByID(t *testing.T) {
 	}
 	defer db.Close()
 
-	store := &Store{
-		Db: db,
-	}
+	store := Repository{Db: db}
 
-	testUser := &model.User{
-		ID:              1,
-		Email:           "kek@me.ru",
-		EncryptPassword: []byte("123"),
-		Login:           "Vasya",
-		NameSurname:     "Vasya Pupkin",
-		About:           "Ya Vasya",
-		Executor:        true,
+	testUser := &models.UserInfo{
+		ID:          1,
+		Email:       "kek@me.ru",
+		Password:    []byte("123"),
+		Login:       "Vasya",
+		NameSurname: "Vasya Pupkin",
+		About:       "Ya Vasya",
+		Executor:    true,
 	}
 	rows := sqlxmock.
 		NewRows([]string{"id", "email", "password", "login", "name_surname", "about", "executor"})
@@ -104,7 +101,7 @@ func TestFindUserByID(t *testing.T) {
 		WithArgs(testUser.ID).
 		WillReturnRows(rows)
 
-	user, err := store.User().FindUserByID(testUser.ID)
+	user, err := store.FindUserByID(testUser.ID, context.Background())
 
 	if err != nil {
 		t.Errorf("unexpected err: %s", err)
@@ -124,7 +121,7 @@ func TestFindUserByID(t *testing.T) {
 		WithArgs(testUser.ID).
 		WillReturnError(fmt.Errorf("db_error"))
 
-	_, err = store.User().FindUserByID(testUser.ID)
+	_, err = store.FindUserByID(testUser.ID, context.Background())
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 		return
@@ -142,18 +139,16 @@ func TestFindUserByEmail(t *testing.T) {
 	}
 	defer db.Close()
 
-	store := &Store{
-		Db: db,
-	}
+	store := Repository{Db: db}
 
-	testUser := &model.User{
-		ID:              1,
-		Email:           "kek@me.ru",
-		EncryptPassword: []byte("123"),
-		Login:           "Vasya",
-		NameSurname:     "Vasya Pupkin",
-		About:           "Ya Vasya",
-		Executor:        true,
+	testUser := &models.UserInfo{
+		ID:          1,
+		Email:       "kek@me.ru",
+		Password:    []byte("123"),
+		Login:       "Vasya",
+		NameSurname: "Vasya Pupkin",
+		About:       "Ya Vasya",
+		Executor:    true,
 	}
 	rows := sqlxmock.
 		NewRows([]string{"id", "email", "password", "login", "name_surname", "about", "executor"})
@@ -164,7 +159,7 @@ func TestFindUserByEmail(t *testing.T) {
 		WithArgs(testUser.Email).
 		WillReturnRows(rows)
 
-	user, err := store.User().FindUserByEmail(testUser.Email)
+	user, err := store.FindUserByEmail(testUser.Email, context.Background())
 
 	if err != nil {
 		t.Errorf("unexpected err: %s", err)
@@ -184,62 +179,7 @@ func TestFindUserByEmail(t *testing.T) {
 		WithArgs(testUser.Email).
 		WillReturnError(fmt.Errorf("db_error"))
 
-	_, err = store.User().FindUserByEmail(testUser.Email)
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
-		return
-	}
-	if err == nil {
-		t.Errorf("expected error, got nil")
-		return
-	}
-}
-
-func TestFindSpecializeByName(t *testing.T) {
-	db, mock, err := sqlxmock.Newx()
-	if err != nil {
-		t.Fatalf("cant create mock: %s", err)
-	}
-	defer db.Close()
-
-	store := &Store{
-		Db: db,
-	}
-
-	testSpec := model.Specialize{
-		ID:   1,
-		Name: "Back",
-	}
-	rows := sqlxmock.
-		NewRows([]string{"id", "specialize_name"})
-	rows.AddRow(1, "Back")
-
-	mock.
-		ExpectQuery("SELECT").
-		WithArgs(testSpec.Name).
-		WillReturnRows(rows)
-
-	spec, err := store.User().FindSpecializeByName(testSpec.Name)
-
-	if err != nil {
-		t.Errorf("unexpected err: %s", err)
-		return
-	}
-	if !reflect.DeepEqual(spec, testSpec) {
-		t.Errorf("results not match, want %v, have %v", spec, testSpec)
-		return
-	}
-
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
-	}
-
-	mock.
-		ExpectQuery("SELECT").
-		WithArgs(testSpec.Name).
-		WillReturnError(fmt.Errorf("db_error"))
-
-	_, err = store.User().FindSpecializeByName(testSpec.Name)
+	_, err = store.FindUserByEmail(testUser.Email, context.Background())
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 		return
