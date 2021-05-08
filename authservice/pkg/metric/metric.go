@@ -1,7 +1,6 @@
 package metric
 
 import (
-	"context"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
@@ -40,10 +39,7 @@ func New() {
 	prometheus.MustRegister(hits, errors, Timings)
 }
 
-func CrateRequestTiming(ctx context.Context, r *http.Request) {
-	timeStart := ctx.Value(ctxKeyStartReqTime).(*prometheus.Timer)
-	timeStart.ObserveDuration()
-}
+
 
 func CrateRequestHits(status int, r *http.Request) {
 	route := mux.CurrentRoute(r)
