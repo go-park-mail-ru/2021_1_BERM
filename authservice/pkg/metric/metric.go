@@ -6,7 +6,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 const ctxKeyStartReqTime uint8 = 5
@@ -14,13 +13,13 @@ const ctxKeyStartReqTime uint8 = 5
 var (
 	hits    *prometheus.CounterVec
 	errors  *prometheus.CounterVec
-	timings *prometheus.SummaryVec
+	Timings *prometheus.SummaryVec
 )
 
 func Destroy() {
 	prometheus.Unregister(hits)
 	prometheus.Unregister(errors)
-	prometheus.Unregister(timings)
+	prometheus.Unregister(Timings)
 }
 
 func New() {
@@ -31,17 +30,15 @@ func New() {
 		Name: "errors",
 	}, []string{"error"})
 
-	timings = prometheus.NewSummaryVec(prometheus.SummaryOpts{
+	Timings = prometheus.NewSummaryVec(prometheus.SummaryOpts{
 		Name: "timings",
 	}, []string{"method", "URL"})
-	prometheus.MustRegister(hits, errors, timings)
+	prometheus.MustRegister(hits, errors, Timings)
 }
 
 func CrateRequestTiming(ctx context.Context, r *http.Request) {
-	timeStart := ctx.Value(ctxKeyStartReqTime).(time.Time)
-	route := mux.CurrentRoute(r)
-	path, _ := route.GetPathTemplate()
-	timings.WithLabelValues(r.Method, path).Observe(time.Since(timeStart).Hours())
+	timeStart := ctx.Value(ctxKeyStartReqTime).(*prometheus.Timer)
+	timeStart.ObserveDuration()
 }
 
 func CrateRequestHits(status int, r *http.Request) {

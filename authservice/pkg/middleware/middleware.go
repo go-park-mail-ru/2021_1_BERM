@@ -2,13 +2,15 @@ package middleware
 
 import (
 	"authorizationservice/pkg/logger"
+	"authorizationservice/pkg/metric"
 	"authorizationservice/pkg/utils"
 	"context"
 	"github.com/gorilla/csrf"
+	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/cors"
 	"math/rand"
 	"net/http"
-	"time"
 )
 
 const (
@@ -20,10 +22,15 @@ func LoggingRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqID := rand.Uint64()
 		logger.LoggingRequest(reqID, r.URL, r.Method)
-		ctx := context.WithValue(r.Context(), ctxKeyStartReqTime, time.Now())
+		route := mux.CurrentRoute(r)
+		path, _ := route.GetPathTemplate()
+		tm := metric.Timings.WithLabelValues(r.Method, path)
+		ctx := context.WithValue(r.Context(), ctxKeyStartReqTime, prometheus.NewTimer(tm))
 		next.ServeHTTP(w, r.WithContext(context.WithValue(ctx, ctxKeyReqID, reqID)))
 	})
 }
+
+
 func CorsMiddleware(origin []string) *cors.Cors {
 	return cors.New(cors.Options{
 		AllowedOrigins:   origin,
