@@ -25,8 +25,9 @@ func LoggingRequest(next http.Handler) http.Handler {
 		route := mux.CurrentRoute(r)
 		path, _ := route.GetPathTemplate()
 		tm := metric.Timings.WithLabelValues(r.Method, path)
-		ctx := context.WithValue(r.Context(), ctxKeyStartReqTime, prometheus.NewTimer(tm))
-		next.ServeHTTP(w, r.WithContext(context.WithValue(ctx, ctxKeyReqID, reqID)))
+		t := prometheus.NewTimer(tm)
+		defer t.ObserveDuration()
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyReqID, reqID)))
 	})
 }
 

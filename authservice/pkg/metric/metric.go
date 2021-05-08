@@ -30,9 +30,13 @@ func New() {
 		Name: "errors",
 	}, []string{"error"})
 
-	Timings = prometheus.NewSummaryVec(prometheus.SummaryOpts{
-		Name: "timings",
-	}, []string{"method", "URL"})
+	Timings = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name:       "timings",
+			Help:       "Timer running action",
+			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+		},
+		[]string{"method", "URL"})
 	prometheus.MustRegister(hits, errors, Timings)
 }
 

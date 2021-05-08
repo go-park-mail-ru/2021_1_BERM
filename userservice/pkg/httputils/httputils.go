@@ -23,7 +23,6 @@ func Respond(w http.ResponseWriter, r *http.Request, requestId uint64, code int,
 		}
 	}
 	metric.CrateRequestHits(code, r)
-	metric.CrateRequestTiming(r.Context(), r)
 	logger.LoggingResponse(requestId, code)
 }
 
