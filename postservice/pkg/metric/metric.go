@@ -12,7 +12,7 @@ const ctxKeyStartReqTime uint8 = 5
 var (
 	hits    *prometheus.CounterVec
 	errors  *prometheus.CounterVec
-	Timings *prometheus.SummaryVec
+	Timings *prometheus.HistogramVec
 )
 
 func Destroy() {
@@ -29,13 +29,11 @@ func New() {
 		Name: "errors",
 	}, []string{"error"})
 
-	Timings = prometheus.NewSummaryVec(
-		prometheus.SummaryOpts{
-			Name:       "timings",
-			Help:       "Timer running action",
-			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
-		},
-		[]string{"method", "URL"})
+	Timings = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "timings",
+		Buckets: []float64{0.01, 0.02, 0.03, 0.04, 0.05, 0.1,
+			0.15, 0.2, 0.4, 0.6, 0.8, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 15, 20},
+	}, []string{"method", "URL"})
 	prometheus.MustRegister(hits, errors, Timings)
 }
 

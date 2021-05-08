@@ -24,13 +24,11 @@ func LoggingRequest(next http.Handler) http.Handler {
 		logger.LoggingRequest(reqID, r.URL, r.Method)
 		route := mux.CurrentRoute(r)
 		path, _ := route.GetPathTemplate()
-		tm := metric.Timings.WithLabelValues(r.Method, path)
-		t := prometheus.NewTimer(tm);
-		defer t.ObserveDuration()
+		timer := prometheus.NewTimer(metric.Timings.WithLabelValues(r.Method, path))
+		defer timer.ObserveDuration()
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyReqID, reqID)))
 	})
 }
-
 func CorsMiddleware(origin []string) *cors.Cors {
 	return cors.New(cors.Options{
 		AllowedOrigins:   origin,
