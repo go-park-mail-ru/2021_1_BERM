@@ -14,7 +14,7 @@ const ctxKeyStartReqTime uint8 = 5
 var (
 	hits    *prometheus.CounterVec
 	errors  *prometheus.CounterVec
-	timings *prometheus.CounterVec
+	timings *prometheus.SummaryVec
 )
 
 func Destroy() {
@@ -30,9 +30,10 @@ func New() {
 	errors = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "errors",
 	}, []string{"error"})
-	timings = prometheus.NewCounterVec(prometheus.CounterOpts{
+
+	timings = prometheus.NewSummaryVec(prometheus.SummaryOpts{
 		Name: "timings",
-	}, []string{"method", "URL", "time"})
+	}, []string{"method", "URL"})
 	prometheus.MustRegister(hits, errors, timings)
 }
 
@@ -40,7 +41,7 @@ func CrateRequestTiming(ctx context.Context, r *http.Request) {
 	timeStart := ctx.Value(ctxKeyStartReqTime).(time.Time)
 	route := mux.CurrentRoute(r)
 	path, _ := route.GetPathTemplate()
-	timings.WithLabelValues(r.Method, path, time.Since(timeStart).String()).Inc()
+	timings.WithLabelValues(r.Method, path).Observe(time.Since(timeStart).Hours())
 }
 
 func CrateRequestHits(status int, r *http.Request) {
