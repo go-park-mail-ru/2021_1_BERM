@@ -2,6 +2,7 @@ package metric
 
 import (
 	"context"
+	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
 	"strconv"
@@ -37,11 +38,15 @@ func New() {
 
 func CrateRequestTiming(ctx context.Context, r *http.Request) {
 	timeStart := ctx.Value(ctxKeyStartReqTime).(time.Time)
-	timings.WithLabelValues(r.Method, r.URL.String(), time.Since(timeStart).String()).Inc()
+	route := mux.CurrentRoute(r)
+	path, _ := route.GetPathTemplate()
+	timings.WithLabelValues(r.Method, path, time.Since(timeStart).String()).Inc()
 }
 
 func CrateRequestHits(status int, r *http.Request) {
-	hits.WithLabelValues(strconv.Itoa(status), r.URL.Path).Inc()
+	route := mux.CurrentRoute(r)
+	path, _ := route.GetPathTemplate()
+	hits.WithLabelValues(strconv.Itoa(status), path).Inc()
 }
 
 func CrateRequestError(err error) {
