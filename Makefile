@@ -36,7 +36,7 @@ db:
 .PHONY: tar
 tar:
 	killall -9 tarantool
-	cd db && rm *.snap && rm *.xlog
+	cd db && rm *.snap && rm *.xlog && tarantool fl_store.lua
 .PHONY: test-cover-html
 PACKAGES = $(shell find ./ -type d -not -path '*/\.*')
 
