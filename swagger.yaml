@@ -848,6 +848,10 @@ definitions:
         type: string
         example: "findreelancer.ru/images/kek.jpeg"
         readOnly: true
+      is_archived:
+        type: boolean
+        example: true
+        readOnly: true
   OrderChange:
     type: object
     properties:
@@ -969,6 +973,10 @@ definitions:
       user_img:
         type: string
         example: "findreelancer.ru/images/kek.jpeg"
+        readOnly: true
+      is_archived:
+        type: boolean
+        example: true
         readOnly: true
   Vacancies:
     type: array

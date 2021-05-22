@@ -38,6 +38,7 @@ CREATE TABLE userservice.reviews
     order_id    INTEGER            NOT NULL,
     description VARCHAR            NOT NULL,
     score       INTEGER            NOT NULL,
+    UNIQUE (user_id, to_user_id, order_id),
     FOREIGN KEY (user_id)
         REFERENCES userservice.users (id),
     FOREIGN KEY (to_user_id)

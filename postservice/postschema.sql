@@ -3,48 +3,54 @@ CREATE SCHEMA post;
 
 CREATE TABLE post.orders
 (
-    id          SERIAL PRIMARY KEY NOT NULL,
-    customer_id INTEGER            NOT NULL,
+    id          SERIAL PRIMARY KEY    NOT NULL,
+    customer_id INTEGER               NOT NULL,
     executor_id INTEGER,
-    order_name  VARCHAR            NOT NULL,
-    category    VARCHAR            NOT NULL,
-    budget      BIGINT             NOT NULL,
-    deadline    BIGINT             NOT NULL,
-    description VARCHAR            NOT NULL
+    order_name  VARCHAR               NOT NULL,
+    category    VARCHAR               NOT NULL,
+    budget      BIGINT                NOT NULL,
+    deadline    BIGINT                NOT NULL,
+    description VARCHAR               NOT NULL,
+    is_archived BOOLEAN DEFAULT FALSE NOT NULL
 );
 
 CREATE TABLE post.archive_orders
 (
-    id          INTEGER PRIMARY KEY NOT NULL,
-    customer_id INTEGER            NOT NULL,
+    id          INTEGER PRIMARY KEY   NOT NULL,
+    customer_id INTEGER               NOT NULL,
     executor_id INTEGER,
-    order_name  VARCHAR            NOT NULL,
-    category    VARCHAR            NOT NULL,
-    budget      BIGINT             NOT NULL,
-    deadline    BIGINT             NOT NULL,
-    description VARCHAR            NOT NULL
+    order_name  VARCHAR               NOT NULL,
+    category    VARCHAR               NOT NULL,
+    budget      BIGINT                NOT NULL,
+    deadline    BIGINT                NOT NULL,
+    description VARCHAR               NOT NULL,
+    is_archived BOOLEAN DEFAULT FALSE NOT NULL
 );
 
 CREATE TABLE post.vacancy
 (
-    id           SERIAL PRIMARY KEY NOT NULL,
-    customer_id  INTEGER            NOT NULL,
+    id           SERIAL PRIMARY KEY    NOT NULL,
+    customer_id  INTEGER               NOT NULL,
     executor_id  INTEGER DEFAULT 0,
-    category     VARCHAR            NOT NULL,
-    vacancy_name VARCHAR            NOT NULL,
-    description  VARCHAR            NOT NULL,
-    salary       BIGINT             NOT NULL
+    category     VARCHAR               NOT NULL,
+    vacancy_name VARCHAR               NOT NULL,
+    description  VARCHAR               NOT NULL,
+    salary       BIGINT                NOT NULL,
+    is_archived  BOOLEAN DEFAULT FALSE NOT NULL
+
 );
 
 CREATE TABLE post.archive_vacancy
 (
-    id           SERIAL PRIMARY KEY NOT NULL,
-    customer_id  INTEGER            NOT NULL,
+    id           SERIAL PRIMARY KEY    NOT NULL,
+    customer_id  INTEGER               NOT NULL,
     executor_id  INTEGER DEFAULT 0,
-    category     VARCHAR            NOT NULL,
-    vacancy_name VARCHAR            NOT NULL,
-    description  VARCHAR            NOT NULL,
-    salary       BIGINT             NOT NULL
+    category     VARCHAR               NOT NULL,
+    vacancy_name VARCHAR               NOT NULL,
+    description  VARCHAR               NOT NULL,
+    salary       BIGINT                NOT NULL,
+    is_archived  BOOLEAN DEFAULT FALSE NOT NULL
+
 );
 
 CREATE TABLE post.responses

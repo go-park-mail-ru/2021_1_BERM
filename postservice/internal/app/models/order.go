@@ -11,6 +11,7 @@ type Order struct {
 	Category    string `json:"category,omitempty" db:"category"`
 	UserLogin   string `json:"user_login,omitempty"`
 	UserImg     string `json:"user_img,omitempty"`
+	IsArchived  bool   `json:"is_archived" db:"is_archived"`
 }
 
 type OrderSearch struct {

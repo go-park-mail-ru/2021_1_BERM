@@ -67,7 +67,8 @@ const (
                    category, 
                    budget, 
                    deadline,
-                   description
+                   description,
+                   is_archived
 		)
         VALUES (
             $1, 
@@ -77,7 +78,8 @@ const (
             $5,
 			$6,
             $7,
-            $8
+            $8,
+        	$9
                 ) RETURNING id`
 
 	searchOrdersInTitle = "SELECT * FROM post.orders WHERE to_tsvector(order_name) @@ to_tsquery($1)"
@@ -206,6 +208,7 @@ func (r *Repository) UpdateExecutor(order models.Order, ctx context.Context) err
 }
 
 func (r *Repository) CreateArchive(order models.Order, ctx context.Context) error {
+	order.IsArchived = true
 	_, err := r.db.Query(
 		insertArchiveOrder,
 		order.ID,
@@ -215,7 +218,8 @@ func (r *Repository) CreateArchive(order models.Order, ctx context.Context) erro
 		order.Category,
 		order.Budget,
 		order.Deadline,
-		order.Description)
+		order.Description,
+		order.IsArchived)
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)
 		return errors.Wrap(customErr, err.Error())
