@@ -62,13 +62,11 @@ func (h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
 		return
 	}
 	o, err := h.useCase.FindByID(id, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
 		return
 	}
 	httputils.Respond(w, r, reqID, http.StatusOK, o)
@@ -192,14 +190,12 @@ func (h *Handlers) CloseOrder(w http.ResponseWriter, r *http.Request) {
 	orderID, err := strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
 		return
 	}
 
 	err = h.useCase.CloseOrder(orderID, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
 		return
 	}
 	var emptyInterface interface{}

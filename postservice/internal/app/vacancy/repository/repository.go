@@ -49,9 +49,10 @@ const (
 						  vacancy_name,
 						  description, 
 						  salary,
-						  customer_id
+						  customer_id,
+                          is_archived
 	                  )
-	       VALUES ($1, $2, $3,$4, $5) RETURNING id`
+	       VALUES ($1, $2, $3,$4, $5, $6) RETURNING id`
 
 	searchVacanciesInTitle = "SELECT * FROM post.vacancy WHERE to_tsvector(vacancy_name) @@ to_tsquery($1)"
 
@@ -176,13 +177,15 @@ func (r *Repository) UpdateExecutor(vacancy models.Vacancy, ctx context.Context)
 
 func (r *Repository) CreateArchive(vacancy models.Vacancy, ctx context.Context) (uint64, error) {
 	var vacancyID uint64
+	vacancy.IsArchived = true
 	err := r.db.QueryRow(
 		insertArchiveVacancy,
 		vacancy.Category,
 		vacancy.VacancyName,
 		vacancy.Description,
 		vacancy.Salary,
-		vacancy.CustomerID).Scan(&vacancyID)
+		vacancy.CustomerID,
+		vacancy.IsArchived).Scan(&vacancyID)
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)
 		return 0, errors.Wrap(customErr, err.Error())

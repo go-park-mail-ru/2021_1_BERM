@@ -79,12 +79,12 @@ func (useCase *UseCase) Verification(email string, password string, ctx context.
 }
 
 func (useCase *UseCase) GetById(ID uint64, ctx context.Context) (*models.UserInfo, error) {
-	user, err := useCase.userRepository.FindUserByID(ID, ctx)
+	userInfo, err := useCase.userRepository.FindUserByID(ID, ctx)
 	if err != nil {
 		return nil, err
 	}
-	if user.Executor {
-		user.Specializes, err = useCase.specializeRepository.FindByUserID(user.ID, ctx)
+	if userInfo.Executor {
+		userInfo.Specializes, err = useCase.specializeRepository.FindByUserID(userInfo.ID, ctx)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error in specialize repository.")
 		}
@@ -93,9 +93,9 @@ func (useCase *UseCase) GetById(ID uint64, ctx context.Context) (*models.UserInf
 	if err != nil {
 		return nil, err
 	}
-	user.Rating = userReviewInfo.Rating
-	user.ReviewCount = userReviewInfo.ReviewCount
-	return user, nil
+	userInfo.Rating = userReviewInfo.Rating
+	userInfo.ReviewCount = userReviewInfo.ReviewCount
+	return userInfo, nil
 }
 
 func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (*models.UserBasicInfo, error) {
