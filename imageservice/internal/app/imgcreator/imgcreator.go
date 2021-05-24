@@ -10,6 +10,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"image"
 	"image/jpeg"
+	"log"
 	"net"
 	"os"
 	"strings"
@@ -54,6 +55,7 @@ func (i *ImgCreator) CreateImg(imgBase64 string) (string, error) {
 		return "", err
 	}
 
+	log.Println(os.Getenv("KEY"))
 	key, err := ssh.ParsePrivateKey([]byte(os.Getenv("KEY")))
 	if err != nil {
 		return "", err
