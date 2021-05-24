@@ -2,9 +2,9 @@ require 'strict'.on()
 
 box.cfg {
     listen = 3001,
-    background = true,
-    log = '1.log',
-    pid_file = '1.pid'
+--     background = true,
+--     log = '1.log',
+--     pid_file = '1.pid'
 }
 
 box.schema.user.grant('guest', 'read,write,execute', 'universe', nil, {
