@@ -15,6 +15,7 @@ const (
 	ctxKeySession uint8 = iota
 	ctxKeyReqID   uint8 = 1
 	ctxUserID     uint8 = 2
+	ctxExecutor   uint8 = 3
 )
 
 type Handlers struct {
@@ -208,8 +209,14 @@ func (h *Handlers) CloseVacancy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetAllArchiveUserVacancies(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userInfo := models.UserBasicInfo{}
+	var err error
+	userInfo.ID, err = strconv.ParseUint(params["id"], 10, 64)
+	userInfo.Executor = r.Context().Value(ctxExecutor).(bool)
+
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	v, err := h.useCase.GetArchiveVacancies(context.Background())
+	v, err := h.useCase.GetArchiveVacancies(userInfo, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 

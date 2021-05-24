@@ -19,4 +19,6 @@ type Repository interface {
 	GetArchiveVacancies(ctx context.Context) ([]models.Vacancy, error)
 	SearchVacancy(keyword string, ctx context.Context) ([]models.Vacancy, error)
 	FindArchiveByID(id uint64, ctx context.Context) (*models.Vacancy, error)
+	GetArchiveVacanciesByExecutorID(executorID uint64, ctx context.Context) ([]models.Vacancy, error)
+	GetArchiveVacanciesByCustomerID(customerID uint64, ctx context.Context) ([]models.Vacancy, error)
 }

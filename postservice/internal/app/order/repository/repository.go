@@ -236,9 +236,9 @@ func (r *Repository) GetArchiveOrdersByExecutorID(executorID uint64, ctx context
 	return orders, nil
 }
 
-func (r *Repository) GetArchiveOrdersByCustomerID(executorID uint64, ctx context.Context) ([]models.Order, error) {
+func (r *Repository) GetArchiveOrdersByCustomerID(customerID uint64, ctx context.Context) ([]models.Order, error) {
 	var orders []models.Order
-	if err := r.db.Select(&orders, selectArchiveOrdersByCustomerID, executorID); err != nil {
+	if err := r.db.Select(&orders, selectArchiveOrdersByCustomerID, customerID); err != nil {
 		customErr := errortools.SqlErrorChoice(err)
 		return nil, errors.Wrap(customErr, err.Error())
 	}

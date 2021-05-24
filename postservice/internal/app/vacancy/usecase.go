@@ -16,6 +16,6 @@ type UseCase interface {
 	SelectExecutor(vacancy models.Vacancy, ctx context.Context) error
 	DeleteExecutor(vacancy models.Vacancy, ctx context.Context) error
 	CloseVacancy(vacancyID uint64, ctx context.Context) error
-	GetArchiveVacancies(ctx context.Context) ([]models.Vacancy, error)
+	GetArchiveVacancies(info models.UserBasicInfo, ctx context.Context) ([]models.Vacancy, error)
 	SearchVacancy(keyword string, ctx context.Context) ([]models.Vacancy, error)
 }

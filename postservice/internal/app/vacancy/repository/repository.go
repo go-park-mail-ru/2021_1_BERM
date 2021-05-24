@@ -60,6 +60,11 @@ const (
 	searchVacanciesInText = "SELECT * FROM post.vacancy WHERE to_tsvector(description) @@ to_tsquery($1)"
 
 	selectArchiveVacancyByID = "SELECT * FROM post.archive_vacancy WHERE id=$1"
+
+	selectArchiveVacanciesByExecutorID = "SELECT * FROM post.archive_vacancy WHERE executor_id=$1"
+
+	selectArchiveVacanciesByCustomerID = "SELECT * FROM post.archive_vacancy WHERE customer_id=$1"
+
 )
 
 type Repository struct {
@@ -237,4 +242,20 @@ func (r *Repository) FindArchiveByID(id uint64, ctx context.Context) (*models.Va
 	return &vacancy, nil
 }
 
+func (r *Repository) GetArchiveVacanciesByExecutorID(executorID uint64, ctx context.Context) ([]models.Vacancy, error) {
+	var vacancies []models.Vacancy
+	if err := r.db.Select(&vacancies, selectArchiveVacanciesByExecutorID, executorID); err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
+	}
+	return vacancies, nil
+}
 
+func (r *Repository) GetArchiveVacanciesByCustomerID(customerID uint64, ctx context.Context) ([]models.Vacancy, error) {
+	var vacancies []models.Vacancy
+	if err := r.db.Select(&vacancies, selectArchiveVacanciesByCustomerID, customerID); err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
+	}
+	return vacancies, nil
+}
