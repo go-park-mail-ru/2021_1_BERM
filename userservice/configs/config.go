@@ -9,6 +9,7 @@ type Config struct {
 	HTTPS       bool     `toml:"https"`
 	DSN         string   `toml:"dsn"`
 	LogFile     string   `toml:"log_file"`
+	Host        string   `toml:"host"`
 }
 
 func NewConfig() *Config {

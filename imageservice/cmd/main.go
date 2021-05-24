@@ -68,7 +68,7 @@ func main() {
 	defer closer.Close()
 
 	// grpc connect to UserService
-	conn, err := grpc.Dial("localhost:8081", grpc.WithInsecure(), grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)))
+	conn, err := grpc.Dial(config.Host + ":8081", grpc.WithInsecure(), grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)))
 	if err != nil {
 		log.Fatal(err)
 	}

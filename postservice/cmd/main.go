@@ -96,7 +96,7 @@ func main() {
 
 	// connect to user service
 	conn, err := grpc.Dial(
-		"localhost:8081",
+		config.Host + ":8081",
 		grpc.WithInsecure(),
 		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
 	)
@@ -108,7 +108,7 @@ func main() {
 
 	// connect to auth service
 	grpcConn, err := grpc.Dial(
-		":8085",
+		config.Host + ":8085",
 		grpc.WithInsecure(),
 		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
 	)
