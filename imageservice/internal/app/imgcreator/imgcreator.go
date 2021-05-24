@@ -55,8 +55,8 @@ func (i *ImgCreator) CreateImg(imgBase64 string) (string, error) {
 		return "", err
 	}
 
-	log.Println(os.Getenv("KEY"))
-	key, err := ssh.ParsePrivateKey([]byte(os.Getenv("KEY")))
+	log.Println(os.Getenv("KEY_SSH"))
+	key, err := ssh.ParsePrivateKey([]byte(os.Getenv("KEY_SSH")))
 	if err != nil {
 		return "", err
 	}
