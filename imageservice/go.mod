@@ -7,7 +7,7 @@ require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
-	github.com/golang/mock v1.5.0 // indirect
+	github.com/golang/mock v1.5.0
 	github.com/gorilla/csrf v1.7.0
 	github.com/gorilla/mux v1.8.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
@@ -20,11 +20,12 @@ require (
 	github.com/prometheus/client_golang v1.10.0
 	github.com/rs/cors v1.7.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.0 // indirect
-	github.com/tmc/scp v0.0.0-20170824174625-f7b48647feef // indirect
+	github.com/stretchr/testify v1.7.0
+	github.com/tmc/scp v0.0.0-20170824174625-f7b48647feef
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
 	go.uber.org/atomic v1.7.0 // indirect
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb // indirect
 	golang.org/x/net v0.0.0-20210421230115-4e50805a0758 // indirect
 	golang.org/x/sys v0.0.0-20210423082822-04245dca01da // indirect
