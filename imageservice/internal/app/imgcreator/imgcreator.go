@@ -6,12 +6,8 @@ import (
 	"fmt"
 	"github.com/muesli/smartcrop"
 	"github.com/muesli/smartcrop/nfnt"
-	"github.com/tmc/scp"
-	"golang.org/x/crypto/ssh"
 	"image"
 	"image/jpeg"
-	"log"
-	"net"
 	"os"
 	"strings"
 )
@@ -54,34 +50,6 @@ func (i *ImgCreator) CreateImg(imgBase64 string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	log.Println(os.Getenv("KEY_SSH"))
-	key, err := ssh.ParsePrivateKey([]byte(os.Getenv("KEY_SSH")))
-	if err != nil {
-		return "", err
-	}
-	config := &ssh.ClientConfig{
-		User: "ubuntu",
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(key),
-		},
-		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
-			return nil
-		},
-	}
-	client, err := ssh.Dial("tcp", "findfreelancer.ru:22", config)
-	if err != nil {
-		return "", err
-	}
-	session, err := client.NewSession()
-	if err != nil {
-		return "", err
-	}
-	err = scp.CopyPath("image/" + jpegFilename, "~/image/", session)
-	if err != nil {
-		return "", err
-	}
-	defer session.Close()
 
 	err = jpeg.Encode(f, m, &jpeg.Options{Quality: 75})
 	if err != nil {
