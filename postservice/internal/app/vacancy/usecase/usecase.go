@@ -8,10 +8,12 @@ import (
 	"post/internal/app/models"
 	vacancyRepo "post/internal/app/vacancy"
 	customErr "post/pkg/error"
+	"reflect"
 )
 
 const (
 	vacancyUseCaseError = "Vacancy use case error"
+	ctxParam      uint8 = 3
 )
 
 type UseCase struct {
@@ -66,6 +68,15 @@ func (u *UseCase) GetActualVacancies(ctx context.Context) ([]models.Vacancy, err
 	}
 	if vacancies == nil {
 		return []models.Vacancy{}, nil
+	}
+	suggest := ctx.Value(ctxParam).(string)
+
+	for i, _ := range vacancies{
+		counter := 0
+		if reflect.DeepEqual(vacancies[i], suggest){
+			vacancies[i], vacancies[counter] = vacancies[counter], vacancies[i]
+			counter++
+		}
 	}
 	return vacancies, err
 }

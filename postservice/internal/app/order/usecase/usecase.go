@@ -9,6 +9,7 @@ import (
 	"post/internal/app/models"
 	orderRepo "post/internal/app/order"
 	customErr "post/pkg/error"
+	"reflect"
 )
 
 const (
@@ -131,6 +132,10 @@ func (u *UseCase) DeleteOrder(id uint64, ctx context.Context) error {
 	return nil
 }
 
+const (
+	ctxQueryParams uint8 = 4
+)
+
 func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, error) {
 	orders, err := u.OrderRepo.GetActualOrders(ctx)
 	if err != nil {
@@ -145,6 +150,16 @@ func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, error) {
 	}
 	if orders == nil {
 		return []models.Order{}, nil
+	}
+
+	suggest := ctx.Value(ctxQueryParams).(string)
+
+	for i,_ := range orders{
+		counter := 0
+		if (reflect.DeepEqual(orders[i].Category, suggest)){
+			orders[counter], orders[i] = orders[i], orders[counter]
+			counter++
+		}
 	}
 	return orders, err
 }

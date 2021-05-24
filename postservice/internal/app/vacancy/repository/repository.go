@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	insertVacancy = `INSERT INTO post.vacancy (
+	ctxParam      uint8 = 3
+	insertVacancy       = `INSERT INTO post.vacancy (
 						  category, 
 						  vacancy_name,
 						  description, 
@@ -57,6 +58,18 @@ const (
 	searchVacanciesInTitle = "SELECT * FROM post.vacancy WHERE to_tsvector(vacancy_name) @@ to_tsquery($1)"
 
 	searchVacanciesInText = "SELECT * FROM post.vacancy WHERE to_tsvector(description) @@ to_tsquery($1)"
+	getActualVacancy      = "SELECT * FROM post.vacancy " +
+		"WHERE CASE $1 != 0 THEN salary >= $1 ELSE true END " +
+		"AND CASE $2 != 0  THEN salary <= $2 ELSE true END " +
+		"AND CASE $3 != '~' THEM to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
+		"AND CASE $4 != '~' THEN category = $4 ELSE true END " +
+		"ORDER BY salary LIMIT $5 OFFSET $6"
+	getActualVacancyDesc = "SELECT * FROM post.vacancy " +
+		"WHERE CASE $1 != 0 THEN salary >= $1 ELSE true END " +
+		"AND CASE $2 != 0  THEN salary <= $2 ELSE true END " +
+		"AND CASE $3 != '~' THEM to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
+		"AND CASE $4 != '~' THEN category = $4 ELSE true END " +
+		"ORDER BY salary LIMIT $5 OFFSET $6"
 )
 
 type Repository struct {
@@ -97,9 +110,24 @@ func (r *Repository) FindByID(id uint64, ctx context.Context) (*models.Vacancy, 
 
 func (r *Repository) GetActualVacancies(ctx context.Context) ([]models.Vacancy, error) {
 	var vacancies []models.Vacancy
-	if err := r.db.Select(&vacancies, selectVacancies); err != nil {
-		customErr := errortools.SqlErrorChoice(err)
-		return nil, errors.Wrap(customErr, err.Error())
+	param := ctx.Value(ctxParam).(map[string]interface{})
+	category := param["category"].(string)
+	limit := param["limit"].(int)
+	offset := param["offset"].(int)
+	desk := param["desc"].(bool)
+	salaryFrom := param["salary_from"].(int)
+	salaryTo := param["salary_to"].(int)
+	searchStr := param["search_str"].(string)
+	if (desk){
+		if err := r.db.Select(&vacancies, getActualVacancy, salaryFrom, salaryTo, searchStr, category, limit, offset); err != nil {
+			customErr := errortools.SqlErrorChoice(err)
+			return nil, errors.Wrap(customErr, err.Error())
+		}
+	}else{
+		if err := r.db.Select(&vacancies, getActualVacancyDesc, salaryFrom, salaryTo, searchStr, category, limit, offset); err != nil {
+			customErr := errortools.SqlErrorChoice(err)
+			return nil, errors.Wrap(customErr, err.Error())
+		}
 	}
 	return vacancies, nil
 }

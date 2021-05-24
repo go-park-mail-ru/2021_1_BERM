@@ -15,6 +15,7 @@ const (
 	ctxKeySession uint8 = iota
 	ctxKeyReqID   uint8 = 1
 	ctxUserID     uint8 = 2
+	ctxParam      uint8 = 3
 )
 
 type Handlers struct {
@@ -68,7 +69,53 @@ func (h *Handlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	v, err := h.useCase.GetActualVacancies(context.Background())
+
+	param := make(map[string]interface{})
+	param["search_str"] = r.URL.Query().Get("search_str")
+	if searchStr := r.URL.Query().Get("search_str"); searchStr != "" {
+		param["search_str"] = searchStr
+	} else {
+		param["search_str"] = "~"
+	}
+	if salaryFrom := r.URL.Query().Get("salary_from"); salaryFrom != "" {
+		salaryFromInt, err := strconv.Atoi(salaryFrom)
+		if err == nil {
+			param["salary_from"] = salaryFromInt
+		}
+	} else {
+		param["salary_from"] = 0
+	}
+	if salaryTo := r.URL.Query().Get("salary_to"); salaryTo != "" {
+		salaryToInt, err := strconv.Atoi(salaryTo)
+		if err == nil {
+			param["salary_to"] = salaryToInt
+		}
+	} else {
+		param["salary_to"] = 0
+	}
+
+	if desc := r.URL.Query().Get("desc"); desc != "" {
+		descBool, err := strconv.ParseBool(desc)
+		if err == nil {
+			param["desk"] = descBool
+		}
+	} else {
+		param["desk"] = false
+	}
+
+	if category := r.URL.Query().Get("category"); category != "" {
+		param["category"] = category
+	} else {
+		param["category"] = "~"
+	}
+
+	if suggest := r.URL.Query().Get("suggest"); suggest != "" {
+		param["suggest"] = suggest
+	}else{
+		param["suggest"] = "~"
+	}
+
+	v, err := h.useCase.GetActualVacancies(context.WithValue(r.Context(), ctxParam, param))
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 

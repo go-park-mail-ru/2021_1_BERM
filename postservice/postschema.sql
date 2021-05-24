@@ -40,6 +40,7 @@ CREATE TABLE post.vacancy
 
 );
 
+
 CREATE TABLE post.archive_vacancy
 (
     id           SERIAL PRIMARY KEY    NOT NULL,
@@ -64,3 +65,21 @@ CREATE TABLE post.responses
     vacancy_response BOOLEAN DEFAULT FALSE NOT NULL,
     time             BIGINT                NOT NULL
 );
+
+
+SELECT *
+FROM post.orders
+WHERE CASE budget != 0 THEN budget >= 300 AND budget =< 400 ELSE true END
+AND CASE search_str != "~" THEM to_tsvector(description) @@ to_tsquery(search_str) ELSE true END
+AND CASE category$$ != "~" THEN category = category$$ ELSE true END
+ORDER BY budget
+LIMIT 1 OFFSET 25
+
+SELECT *
+FROM post.orders
+WHERE CASE budget != 0 THEN budget >= 300 AND budget =< 400 ELSE true END
+AND CASE search_str != "~" THEM to_tsvector(description) @@ to_tsquery(search_str) ELSE true END
+AND CASE category$$ != "~" THEN category = category$$ ELSE true END
+ORDER BY budget DESC
+LIMIT 1 OFFSET 25
+
