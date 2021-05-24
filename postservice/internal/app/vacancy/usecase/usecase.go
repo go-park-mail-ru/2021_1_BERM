@@ -42,6 +42,9 @@ func (u *UseCase) Create(vacancy models.Vacancy, ctx context.Context) (*models.V
 
 func (u *UseCase) FindByID(id uint64, ctx context.Context) (*models.Vacancy, error) {
 	vacancy, err := u.VacancyRepo.FindByID(id, ctx)
+	if vacancy == nil {
+		vacancy, err = u.VacancyRepo.FindArchiveByID(id, ctx)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)
 	}

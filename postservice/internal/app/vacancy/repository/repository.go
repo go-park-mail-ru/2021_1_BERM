@@ -45,6 +45,7 @@ const (
 	selectArchiveVacancies = "SELECT * FROM post.archive_vacancy"
 
 	insertArchiveVacancy = `INSERT INTO post.archive_vacancy (
+                          id,
 						  category, 
 						  vacancy_name,
 						  description, 
@@ -57,6 +58,8 @@ const (
 	searchVacanciesInTitle = "SELECT * FROM post.vacancy WHERE to_tsvector(vacancy_name) @@ to_tsquery($1)"
 
 	searchVacanciesInText = "SELECT * FROM post.vacancy WHERE to_tsvector(description) @@ to_tsquery($1)"
+
+	selectArchiveVacancyByID = "SELECT * FROM post.archive_vacancy WHERE id=$1"
 )
 
 type Repository struct {
@@ -180,6 +183,7 @@ func (r *Repository) CreateArchive(vacancy models.Vacancy, ctx context.Context) 
 	vacancy.IsArchived = true
 	err := r.db.QueryRow(
 		insertArchiveVacancy,
+		vacancy.ID,
 		vacancy.Category,
 		vacancy.VacancyName,
 		vacancy.Description,
@@ -220,3 +224,17 @@ func (r *Repository) SearchVacancy(keyword string, ctx context.Context) ([]model
 	}
 	return vacancies, nil
 }
+
+func (r *Repository) FindArchiveByID(id uint64, ctx context.Context) (*models.Vacancy, error) {
+	vacancy := models.Vacancy{}
+	if err := r.db.Get(&vacancy, selectArchiveVacancyByID, id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
+	}
+	return &vacancy, nil
+}
+
+

@@ -42,7 +42,7 @@ CREATE TABLE post.vacancy
 
 CREATE TABLE post.archive_vacancy
 (
-    id           SERIAL PRIMARY KEY    NOT NULL,
+    id           INTEGER PRIMARY KEY   NOT NULL,
     customer_id  INTEGER               NOT NULL,
     executor_id  INTEGER DEFAULT 0,
     category     VARCHAR               NOT NULL,
