@@ -7,25 +7,25 @@ on:
     branches:
       - development
 jobs:
-#  check:
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - uses: actions/checkout@v2
-#
-#      - name: Install Go
-#        uses: actions/setup-go@v2
-#        with:
-#          go-version: 1.16.x
-#
-#      - name: linters
-#        uses: golangci/golangci-lint-action@v2
-#        with:
-#          version: v1.29
-#          args: -E golint -E lll -E prealloc -E unconvert -E unparam -E whitespace -E gomnd -E testpackage  -D deadcode -D varcheck -D unused -D structcheck
-#
-#      - name: tests
-#        run: go test ./...
+  #  check:
+  #    runs-on: ubuntu-latest
+  #
+  #    steps:
+  #      - uses: actions/checkout@v2
+  #
+  #      - name: Install Go
+  #        uses: actions/setup-go@v2
+  #        with:
+  #          go-version: 1.16.x
+  #
+  #      - name: linters
+  #        uses: golangci/golangci-lint-action@v2
+  #        with:
+  #          version: v1.29
+  #          args: -E golint -E lll -E prealloc -E unconvert -E unparam -E whitespace -E gomnd -E testpackage  -D deadcode -D varcheck -D unused -D structcheck
+  #
+  #      - name: tests
+  #        run: go test ./...
 
   build:
     runs-on: ubuntu-latest
@@ -70,6 +70,6 @@ jobs:
             sudo docker rm -f $(sudo docker ps -aq)
             sudo docker run -d -p 3001:3001 astlok/ff:tarantool
             sudo docker run -d -p 8082:8082 -p 8086:8086 astlok/ff:post
-            sudo docker run -d -p 8083:8083 astlok/ff:image -e KEY=${KEY_SSH}
+            sudo docker run -e KEY=${KEY_SSH} -d -p 8083:8083 astlok/ff:image
             sudo docker run -d -p 8080:8080 -p 8081:8081 astlok/ff:user
             sudo docker run -d -p 8084:8084 -p 8085:8085 astlok/ff:auth
