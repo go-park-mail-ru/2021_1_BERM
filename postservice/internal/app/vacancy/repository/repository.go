@@ -62,14 +62,14 @@ const (
 	getActualVacancy      = "SELECT * FROM post.vacancy " +
 		"WHERE CASE WHEN $1 != 0 THEN salary >= $1 ELSE true END " +
 		"AND CASE WHEN $2 != 0  THEN salary <= $2 ELSE true END " +
-		"AND CASE WHEN $3 != '~' THEN to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
+		"AND CASE WHEN $3 != '~' THEN to_tsvector(vacancy_name) @@ to_tsquery($3) ELSE true END " +
 		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY salary LIMIT $5 OFFSET $6"
 
 	getActualVacancyDesc = "SELECT * FROM post.vacancy " +
 		"WHERE CASE WHEN $1 != 0 THEN salary >= $1 ELSE true END " +
 		"AND CASE WHEN $2 != 0  THEN salary <= $2 ELSE true END " +
-		"AND CASE WHEN $3 != '~' THEN to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
+		"AND CASE WHEN $3 != '~' THEN to_tsvector(vacancy_name) @@ to_tsquery($3) ELSE true END " +
 		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY salary DESC LIMIT $5 OFFSET $6"
 )
@@ -120,7 +120,7 @@ func (r *Repository) GetActualVacancies(ctx context.Context) ([]models.Vacancy, 
 	salaryFrom := param["from"].(int)
 	salaryTo := param["to"].(int)
 	searchStr := param["search_str"].(string)
-	if (desk){
+	if desk {
 		if err := r.db.Select(&vacancies, getActualVacancy, salaryFrom, salaryTo, searchStr, category, limit, offset); err != nil {
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())

@@ -97,10 +97,10 @@ func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 	if desc := r.URL.Query().Get("desc"); desc != "" {
 		descBool, err := strconv.ParseBool(desc)
 		if err == nil {
-			param["desk"] = descBool
+			param["desc"] = descBool
 		}
 	} else {
-		param["desk"] = false
+		param["desc"] = false
 	}
 
 	if category := r.URL.Query().Get("category"); category != "" {
@@ -115,7 +115,7 @@ func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 			param["limit"] = limitInt
 		}
 	} else {
-		param["limit"] = 0
+		param["limit"] = 15
 	}
 	if offset := r.URL.Query().Get("offset"); offset != "" {
 		offsetInt, err := strconv.Atoi(offset)
