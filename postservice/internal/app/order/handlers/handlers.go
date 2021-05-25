@@ -75,10 +75,10 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 	if desc := r.URL.Query().Get("desc"); desc != "" {
 		descBool, err := strconv.ParseBool(desc)
 		if err == nil {
-			param["desk"] = descBool
+			param["desc"] = descBool
 		}
 	} else {
-		param["desk"] = false
+		param["desc"] = false
 	}
 
 	if category := r.URL.Query().Get("category"); category != "" {
@@ -93,7 +93,7 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 			param["limit"] = limitInt
 		}
 	} else {
-		param["limit"] = 0
+		param["limit"] = 15
 	}
 	if offset := r.URL.Query().Get("offset"); offset != "" {
 		offsetInt, err := strconv.Atoi(offset)
@@ -103,8 +103,8 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 	} else {
 		param["offset"] = 0
 	}
-	context.WithValue(r.Context(), ctxQueryParams, param)
-	o, err := h.useCase.GetActualOrders(r.Context())
+	ctx := context.WithValue(r.Context(), ctxQueryParams, param)
+	o, err := h.useCase.GetActualOrders(ctx)
 
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)

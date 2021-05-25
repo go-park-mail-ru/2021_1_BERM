@@ -155,7 +155,7 @@ func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, error) {
 
 	userSpec, err := u.UserRepo.GetSpecializeByUserId(ctx, &api.UserRequest{Id: ctx.Value(ctxUserID).(uint64)})
 	if err != nil {
-		return []models.Order{}, nil
+		return []models.Order{}, errors.Wrap(err, orderUseCaseError)
 	}
 
 	counter := 0

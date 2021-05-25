@@ -86,17 +86,17 @@ const (
 
 	searchOrdersInText = "SELECT * FROM post.orders WHERE to_tsvector(description) @@ to_tsquery($1)"
 	getActualOrders    = "SELECT * FROM post.orders " +
-		"WHERE CASE $1 != 0 THEN budget >= $1 ELSE true END " +
-		"AND CASE $2 != 0  THEN budget <= $2 ELSE true END " +
-		"AND CASE $3 != '~' THEM to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
-		"AND CASE $4 != '~' THEN category = $4 ELSE true END " +
+		"WHERE CASE WHEN $1 != 0 THEN budget >= $1 ELSE true END " +
+		"AND CASE WHEN $2 != 0  THEN budget <= $2 ELSE true END " +
+		"AND CASE WHEN $3 != '~' THEN to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
+		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY budget LIMIT $5 OFFSET $6"
 	getActualOrdersDesk   = "SELECT * FROM post.orders " +
-		"WHERE CASE $1 != 0 THEN budget >= $1 ELSE true END " +
-		"AND CASE $2 != 0  THEN budget <= $2 ELSE true END " +
-		"AND CASE $3 != '~' THEM to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
-		"AND CASE $4 != '~' THEN category = $4 ELSE true END " +
-		"ORDER BY DESK budget LIMIT $5 OFFSET $6"
+		"WHERE CASE WHEN $1 != 0 THEN budget >= $1 ELSE true END " +
+		"AND CASE WHEN $2 != 0  THEN budget <= $2 ELSE true END " +
+		"AND CASE WHEN $3 != '~' THEN to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
+		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
+		"ORDER BY budget DESC LIMIT $5 OFFSET $6"
 )
 const (
 	ctxQueryParams uint8 = 4
@@ -205,7 +205,7 @@ func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error
 	budgetFrom := param["from"].(int)
 	budgetTo := param["to"].(int)
 	searchStr := param["search_str"].(string)
-	if (desk){
+	if desk {
 		if err := r.db.Select(&orders, getActualOrdersDesk, budgetFrom, budgetTo, searchStr, category, limit, offset); err != nil {
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
