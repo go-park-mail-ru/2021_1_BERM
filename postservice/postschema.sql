@@ -84,9 +84,9 @@ ORDER BY budget DESC
 LIMIT 1 OFFSET 25;
 
 
--- SELECT * FROM post.orders
--- 		WHERE CASE WHEN 0 != 0 THEN budget >= 0 ELSE true END
--- 		AND CASE WHEN 0 != 0  THEN budget <= 0 ELSE true END
--- 		AND CASE WHEN 'Олег' != '~' THEN to_tsvector(description) @@ to_tsquery('Олег') ELSE true END
--- 		AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END
--- 		ORDER BY budget DESC LIMIT $5 OFFSET $6;
+SELECT *
+FROM userservice.users AS users
+WHERE CASE WHEN 1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= 1 ELSE true END
+  AND CASE WHEN 4.5 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= 4.5 ELSE true END
+  AND CASE WHEN '19r156' != '~' THEN to_tsvector(login) @@ to_tsquery('19r156') ELSE true END
+ORDER BY (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) LIMIT 10 OFFSET 0;

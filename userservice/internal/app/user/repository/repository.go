@@ -78,36 +78,44 @@ func (r *Repository) SetUserImg(ID uint64, img string, ctx context.Context) erro
 	return err
 }
 const(
-	getUsersRating = "SELECT id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating" +
-		"FROM userservice.users AS users" +
-		"INNER JOIN userservice.reviews\nON users.id = reviews.to_user_id" +
-		"WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END" +
-		"AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END" +
-		"AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3)) ELSE true END" +
-		"ORDER BY rating LIMIT $4 OFFSET $5"
-	getUsersRatingDesc = "SELECT id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating" +
-		"FROM userservice.users AS users" +
-		"INNER JOIN userservice.reviews\nON users.id = reviews.to_user_id" +
-		"WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END" +
-		"AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END" +
-		"AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3)) ELSE true END" +
-		"ORDER BY rating DESC LIMIT $4 OFFSET $5"
+	getUsersRating = `SELECT users.id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+		FROM userservice.users AS users
+		INNER JOIN userservice.reviews
+		 ON users.id = reviews.to_user_id
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
+		GROUP BY users.id
+		ORDER BY rating LIMIT $4 OFFSET $5`
+	getUsersRatingDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+		FROM userservice.users AS users
+		INNER JOIN userservice.reviews
+		 ON users.id = reviews.to_user_id
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
+		GROUP BY users.id
+		ORDER BY rating DESC LIMIT $4 OFFSET $5`
 
-	getUsersNick = "SELECT id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating" +
-		"FROM userservice.users AS users" +
-		"INNER JOIN userservice.reviews\nON users.id = reviews.to_user_id" +
-		"WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END" +
-		"AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END" +
-		"AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3)) ELSE true END" +
-		"ORDER BY name_surname DESC LIMIT $4 OFFSET $5"
+	getUsersNick = `SELECT users.id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+		FROM userservice.users AS users
+		INNER JOIN userservice.reviews
+		 ON users.id = reviews.to_user_id
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
+		GROUP BY users.id
+		ORDER BY name_surname DESC LIMIT $4 OFFSET $5`
 
-	getUsersNickDesc = "SELECT id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating" +
-		"FROM userservice.users AS users" +
-		"INNER JOIN userservice.reviews\nON users.id = reviews.to_user_id" +
-		"WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END" +
-		"AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END" +
-		"AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3)) ELSE true END" +
-		"ORDER BY name_surname DESC LIMIT $4 OFFSET $5"
+	getUsersNickDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+		FROM userservice.users AS users
+		INNER JOIN userservice.reviews
+		 ON users.id = reviews.to_user_id
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
+		GROUP BY users.id
+		ORDER BY name_surname DESC LIMIT $4 OFFSET $5`
 
 	ctxParam uint8 = 4;
 )
