@@ -153,13 +153,13 @@ func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, error) {
 		return []models.Order{}, nil
 	}
 
-	userSpec, err := u.UserRepo.GetSpecializeByUserId(ctx, &api.UserRequest{Id: ctx.Value(ctxUserID).(uint64)})
+	user, err := u.UserRepo.GetUserById(ctx, &api.UserRequest{Id: ctx.Value(ctxUserID).(uint64)})
 	if err != nil {
 		return []models.Order{}, errors.Wrap(err, orderUseCaseError)
 	}
 
 	counter := 0
-	for _, spec := range userSpec.Specializes {
+	for _, spec := range user.Specializes{
 		for i, _ := range orders {
 			if reflect.DeepEqual(orders[i].Category, spec) {
 				orders[counter], orders[i] = orders[i], orders[counter]

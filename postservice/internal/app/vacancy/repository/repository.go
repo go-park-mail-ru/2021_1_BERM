@@ -58,18 +58,20 @@ const (
 	searchVacanciesInTitle = "SELECT * FROM post.vacancy WHERE to_tsvector(vacancy_name) @@ to_tsquery($1)"
 
 	searchVacanciesInText = "SELECT * FROM post.vacancy WHERE to_tsvector(description) @@ to_tsquery($1)"
+
 	getActualVacancy      = "SELECT * FROM post.vacancy " +
-		"WHERE CASE $1 != 0 THEN salary >= $1 ELSE true END " +
-		"AND CASE $2 != 0  THEN salary <= $2 ELSE true END " +
-		"AND CASE $3 != '~' THEM to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
-		"AND CASE $4 != '~' THEN category = $4 ELSE true END " +
+		"WHERE CASE WHEN $1 != 0 THEN salary >= $1 ELSE true END " +
+		"AND CASE WHEN $2 != 0  THEN salary <= $2 ELSE true END " +
+		"AND CASE WHEN $3 != '~' THEN to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
+		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY salary LIMIT $5 OFFSET $6"
+
 	getActualVacancyDesc = "SELECT * FROM post.vacancy " +
-		"WHERE CASE $1 != 0 THEN salary >= $1 ELSE true END " +
-		"AND CASE $2 != 0  THEN salary <= $2 ELSE true END " +
-		"AND CASE $3 != '~' THEM to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
-		"AND CASE $4 != '~' THEN category = $4 ELSE true END " +
-		"ORDER BY salary LIMIT $5 OFFSET $6"
+		"WHERE CASE WHEN $1 != 0 THEN salary >= $1 ELSE true END " +
+		"AND CASE WHEN $2 != 0  THEN salary <= $2 ELSE true END " +
+		"AND CASE WHEN $3 != '~' THEN to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
+		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
+		"ORDER BY salary DESC LIMIT $5 OFFSET $6"
 )
 
 type Repository struct {
