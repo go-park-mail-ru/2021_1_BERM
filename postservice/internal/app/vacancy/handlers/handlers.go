@@ -77,21 +77,21 @@ func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 	} else {
 		param["search_str"] = "~"
 	}
-	if salaryFrom := r.URL.Query().Get("salary_from"); salaryFrom != "" {
+	if salaryFrom := r.URL.Query().Get("from"); salaryFrom != "" {
 		salaryFromInt, err := strconv.Atoi(salaryFrom)
 		if err == nil {
-			param["salary_from"] = salaryFromInt
+			param["from"] = salaryFromInt
 		}
 	} else {
-		param["salary_from"] = 0
+		param["from"] = 0
 	}
-	if salaryTo := r.URL.Query().Get("salary_to"); salaryTo != "" {
+	if salaryTo := r.URL.Query().Get("to"); salaryTo != "" {
 		salaryToInt, err := strconv.Atoi(salaryTo)
 		if err == nil {
-			param["salary_to"] = salaryToInt
+			param["to"] = salaryToInt
 		}
 	} else {
-		param["salary_to"] = 0
+		param["to"] = 0
 	}
 
 	if desc := r.URL.Query().Get("desc"); desc != "" {
@@ -109,10 +109,21 @@ func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 		param["category"] = "~"
 	}
 
-	if suggest := r.URL.Query().Get("suggest"); suggest != "" {
-		param["suggest"] = suggest
-	}else{
-		param["suggest"] = "~"
+	if limit := r.URL.Query().Get("limit"); limit != "" {
+		limitInt, err := strconv.Atoi(limit)
+		if err == nil {
+			param["limit"] = limitInt
+		}
+	} else {
+		param["limit"] = 0
+	}
+	if offset := r.URL.Query().Get("offset"); offset != "" {
+		offsetInt, err := strconv.Atoi(offset)
+		if err == nil {
+			param["offset"] = offsetInt
+		}
+	} else {
+		param["offset"] = 0
 	}
 
 	v, err := h.useCase.GetActualVacancies(context.WithValue(r.Context(), ctxParam, param))

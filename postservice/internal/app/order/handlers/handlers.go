@@ -55,21 +55,21 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 	} else {
 		param["search_str"] = "~"
 	}
-	if budgetFrom := r.URL.Query().Get("budget_from"); budgetFrom != "" {
+	if budgetFrom := r.URL.Query().Get("from"); budgetFrom != "" {
 		budgetFromInt, err := strconv.Atoi(budgetFrom)
 		if err == nil {
-			param["budget_from"] = budgetFromInt
+			param["from"] = budgetFromInt
 		}
 	} else {
-		param["budget_from"] = 0
+		param["from"] = 0
 	}
-	if budgetTo := r.URL.Query().Get("budget_to"); budgetTo != "" {
+	if budgetTo := r.URL.Query().Get("to"); budgetTo != "" {
 		budgetToInt, err := strconv.Atoi(budgetTo)
 		if err == nil {
-			param["budget_to"] = budgetToInt
+			param["to"] = budgetToInt
 		}
 	} else {
-		param["budget_to"] = 0
+		param["to"] = 0
 	}
 
 	if desc := r.URL.Query().Get("desc"); desc != "" {
@@ -87,18 +87,12 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 		param["category"] = "~"
 	}
 
-	if suggest := r.URL.Query().Get("suggest"); suggest != "" {
-		param["suggest"] = suggest
-	}else{
-		param["suggest"] = "~"
-	}
-
 	if limit := r.URL.Query().Get("limit"); limit != "" {
 		limitInt, err := strconv.Atoi(limit)
 		if err == nil {
 			param["limit"] = limitInt
 		}
-	}else{
+	} else {
 		param["limit"] = 0
 	}
 	if offset := r.URL.Query().Get("offset"); offset != "" {
@@ -106,7 +100,7 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			param["offset"] = offsetInt
 		}
-	}else{
+	} else {
 		param["offset"] = 0
 	}
 	context.WithValue(r.Context(), ctxQueryParams, param)

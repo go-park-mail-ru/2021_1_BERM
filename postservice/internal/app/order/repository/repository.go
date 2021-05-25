@@ -202,8 +202,8 @@ func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error
 	limit := param["limit"].(int)
 	offset := param["offset"].(int)
 	desk := param["desc"].(bool)
-	budgetFrom := param["budget_from"].(int)
-	budgetTo := param["budget_to"].(int)
+	budgetFrom := param["from"].(int)
+	budgetTo := param["to"].(int)
 	searchStr := param["search_str"].(string)
 	if (desk){
 		if err := r.db.Select(&orders, getActualOrdersDesk, budgetFrom, budgetTo, searchStr, category, limit, offset); err != nil {

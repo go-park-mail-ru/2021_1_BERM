@@ -14,6 +14,7 @@ import (
 
 const (
 	orderUseCaseError = "Order use case error"
+	ctxUserID      uint8 = 2
 )
 
 type UseCase struct {
@@ -152,13 +153,18 @@ func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, error) {
 		return []models.Order{}, nil
 	}
 
-	suggest := ctx.Value(ctxQueryParams).(string)
+	userSpec, err := u.UserRepo.GetSpecializeByUserId(ctx, &api.UserRequest{Id: ctx.Value(ctxUserID).(uint64)})
+	if err != nil {
+		return []models.Order{}, nil
+	}
 
-	for i,_ := range orders{
-		counter := 0
-		if (reflect.DeepEqual(orders[i].Category, suggest)){
-			orders[counter], orders[i] = orders[i], orders[counter]
-			counter++
+	counter := 0
+	for _, spec := range userSpec.Specializes {
+		for i, _ := range orders {
+			if reflect.DeepEqual(orders[i].Category, spec) {
+				orders[counter], orders[i] = orders[i], orders[counter]
+				counter++
+			}
 		}
 	}
 	return orders, err

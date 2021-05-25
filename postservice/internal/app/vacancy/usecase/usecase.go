@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	vacancyUseCaseError = "Vacancy use case error"
-	ctxParam      uint8 = 3
+	vacancyUseCaseError       = "Vacancy use case error"
+	ctxParam            uint8 = 3
+	ctxUserID           uint8 = 2
 )
 
 type UseCase struct {
@@ -69,13 +70,18 @@ func (u *UseCase) GetActualVacancies(ctx context.Context) ([]models.Vacancy, err
 	if vacancies == nil {
 		return []models.Vacancy{}, nil
 	}
-	suggest := ctx.Value(ctxParam).(string)
+	userSpec, err := u.UserRepo.GetSpecializeByUserId(ctx, &api.UserRequest{Id: ctx.Value(ctxUserID).(uint64)})
+	if err != nil {
+		return []models.Vacancy{}, nil
+	}
 
-	for i, _ := range vacancies{
-		counter := 0
-		if reflect.DeepEqual(vacancies[i], suggest){
-			vacancies[i], vacancies[counter] = vacancies[counter], vacancies[i]
-			counter++
+	counter := 0
+	for _, spec := range userSpec.Specializes {
+		for i, _ := range vacancies {
+			if reflect.DeepEqual(vacancies[i], spec) {
+				vacancies[i], vacancies[counter] = vacancies[counter], vacancies[i]
+				counter++
+			}
 		}
 	}
 	return vacancies, err
