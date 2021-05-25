@@ -81,5 +81,12 @@ WHERE CASE budget != 0 THEN budget >= 300 AND budget =< 400 ELSE true END
 AND CASE search_str != "~" THEM to_tsvector(description) @@ to_tsquery(search_str) ELSE true END
 AND CASE category$$ != "~" THEN category = category$$ ELSE true END
 ORDER BY budget DESC
-LIMIT 1 OFFSET 25
+LIMIT 1 OFFSET 25;
 
+
+-- SELECT * FROM post.orders
+-- 		WHERE CASE WHEN 0 != 0 THEN budget >= 0 ELSE true END
+-- 		AND CASE WHEN 0 != 0  THEN budget <= 0 ELSE true END
+-- 		AND CASE WHEN 'Олег' != '~' THEN to_tsvector(description) @@ to_tsquery('Олег') ELSE true END
+-- 		AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END
+-- 		ORDER BY budget DESC LIMIT $5 OFFSET $6;

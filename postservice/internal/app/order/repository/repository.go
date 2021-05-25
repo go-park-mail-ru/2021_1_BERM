@@ -88,13 +88,13 @@ const (
 	getActualOrders    = "SELECT * FROM post.orders " +
 		"WHERE CASE WHEN $1 != 0 THEN budget >= $1 ELSE true END " +
 		"AND CASE WHEN $2 != 0  THEN budget <= $2 ELSE true END " +
-		"AND CASE WHEN $3 != '~' THEN to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
+		"AND CASE WHEN $3 != '~' THEN to_tsvector(order_name) @@ to_tsquery($3) ELSE true END " +
 		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY budget LIMIT $5 OFFSET $6"
 	getActualOrdersDesk   = "SELECT * FROM post.orders " +
 		"WHERE CASE WHEN $1 != 0 THEN budget >= $1 ELSE true END " +
 		"AND CASE WHEN $2 != 0  THEN budget <= $2 ELSE true END " +
-		"AND CASE WHEN $3 != '~' THEN to_tsvector(description) @@ to_tsquery($3) ELSE true END " +
+		"AND CASE WHEN $3 != '~' THEN to_tsvector(order_name) @@ to_tsquery($3) ELSE true END " +
 		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY budget DESC LIMIT $5 OFFSET $6"
 )
