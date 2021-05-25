@@ -45,3 +45,41 @@ CREATE TABLE userservice.reviews
         REFERENCES userservice.users (id)
 
 );
+
+
+
+SELECT id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+FROM userservice.users AS users
+INNER JOIN userservice.reviews
+ON users.id = reviews.to_user_id
+WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+  AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+  AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3)) ELSE true END
+ORDER BY rating LIMIT $5 OFFSET $6
+
+SELECT id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+FROM userservice.users AS users
+         INNER JOIN userservice.reviews
+                    ON users.id = reviews.to_user_id
+WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+  AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+  AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3)) ELSE true END
+ORDER BY rating DESC LIMIT $5 OFFSET $6
+
+SELECT id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+FROM userservice.users AS users
+INNER JOIN userservice.reviews
+ ON users.id = reviews.to_user_id
+WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+  AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id= users.id) <= $2 ELSE true END
+  AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3)) ELSE true END
+ORDER BY name_surname DESC LIMIT $5 OFFSET $6
+
+SELECT id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+FROM userservice.users AS users
+         INNER JOIN userservice.reviews
+                    ON users.id = reviews.to_user_id
+WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+  AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id= users.id) <= $2 ELSE true END
+  AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3)) ELSE true END
+ORDER BY name_surname LIMIT $5 OFFSET $6
