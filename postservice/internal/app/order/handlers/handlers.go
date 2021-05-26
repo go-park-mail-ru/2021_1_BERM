@@ -111,7 +111,10 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, o)
+	orderResponse := make(map[string]interface{})
+	orderResponse["order"] = o
+	orderResponse["size"] = len(o)
+	httputils.Respond(w, r, reqID, http.StatusOK, orderResponse)
 }
 
 func (h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
