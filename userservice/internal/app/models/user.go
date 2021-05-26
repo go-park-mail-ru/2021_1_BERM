@@ -38,7 +38,7 @@ type UserInfo struct {
 	Executor    bool           `json:"executor,omitempty" db:"executor"`
 	Img         string         `json:"img,omitempty" db:"img"`
 	Rating      float64        `json:"rating" db:"rating"`
-	ReviewCount uint64         `json:"reviews_count"`
+	ReviewCount uint64         `json:"reviews_count" db:"reviews_count"`
 }
 
 type UserBasicInfo struct {
