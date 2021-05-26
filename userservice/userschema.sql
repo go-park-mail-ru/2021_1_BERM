@@ -1,3 +1,4 @@
+ALTER USER postgres WITH ENCRYPTED PASSWORD 'admin';
 DROP SCHEMA IF EXISTS userservice CASCADE;
 CREATE SCHEMA userservice;
 

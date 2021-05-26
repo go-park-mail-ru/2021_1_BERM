@@ -1,7 +1,7 @@
 require 'strict'.on()
 
 box.cfg {
-    listen = 3001,
+    listen = 3001
 }
 
 box.schema.user.grant('guest', 'read,write,execute', 'universe', nil, {

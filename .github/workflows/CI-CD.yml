@@ -7,30 +7,66 @@ on:
     branches:
       - development
 jobs:
-  check:
+  #  check:
+  #    runs-on: ubuntu-latest
+  #
+  #    steps:
+  #      - uses: actions/checkout@v2
+  #
+  #      - name: Install Go
+  #        uses: actions/setup-go@v2
+  #        with:
+  #          go-version: 1.16.x
+  #
+  #      - name: linters
+  #        uses: golangci/golangci-lint-action@v2
+  #        with:
+  #          version: v1.29
+  #          args: -E golint -E lll -E prealloc -E unconvert -E unparam -E whitespace -E gomnd -E testpackage  -D deadcode -D varcheck -D unused -D structcheck
+  #
+  #      - name: tests
+  #        run: go test ./...
+
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v1
+      - name: Login to DockerHub Registry
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
+      - name: Build Docker authservice image
+        run: cd authservice && docker build -t astlok/ff:auth .
+      - name: Build Docker postservice image
+        run: cd postservice && docker build -t astlok/ff:post .
+      - name: Build Docker imageservice image
+        run: cd imageservice && docker build -t astlok/ff:image .
+      - name: Build Docker userservice image
+        run: cd userservice && docker build -t astlok/ff:user .
+      - name: Build Docker tarantool image
+        run: cd db && docker build -t astlok/ff:tarantool .
+      - name: Push the authservice
+        run: docker push --all-tags astlok/ff
 
-      - name: Install Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.16.x
-
-      - name: linters
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.29
-          args: -E golint -E lll -E prealloc -E unconvert -E unparam -E whitespace -E gomnd -E testpackage  -D deadcode -D varcheck -D unused -D structcheck
-
-      - name: tests
-        run: go test ./...
-
-      - name: deploy
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: pull docker images
         uses: appleboy/ssh-action@master
         with:
           host: 95.163.212.121
           username: ubuntu
           key: ${{ secrets.KEY }}
-          script: ./deploy_back.sh
+          script: sudo docker pull --all-tags astlok/ff
+      - name: deploy docker image
+        uses: appleboy/ssh-action@master
+        with:
+          host: 95.163.212.121
+          username: ubuntu
+          key: ${{ secrets.KEY }}
+          script: |
+            sudo docker rm -f $(sudo docker ps -aq)
+            sudo docker run -d -p 3001:3001 astlok/ff:tarantool
+            sudo docker run -d -p 8082:8082 -p 8086:8086 astlok/ff:post
+            sudo docker run --volume=/home/ubuntu/image:/image -d -p 8083:8083 astlok/ff:image
+            sudo docker run -d -p 8080:8080 -p 8081:8081 astlok/ff:user
+            sudo docker run -d -p 8084:8084 -p 8085:8085 astlok/ff:auth
