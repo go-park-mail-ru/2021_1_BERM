@@ -215,7 +215,7 @@ func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error
 		var res string
 		for i, s := range search {
 			if i == len(search) - 1 {
-				res = res[0:len(res) - 3]
+				res += " " + s
 				break
 			}
 			res += s + " <->"

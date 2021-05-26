@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+	"strings"
 	"user/internal/app/models"
 	"user/pkg/error/errortools"
 )
@@ -156,6 +157,17 @@ func (r *Repository) GetUsers(ctx context.Context) ([]models.UserInfo, error) {
 	searchStr := param["search_str"].(string)
 	sort := param["sort"].(string)
 	if searchStr != "~" {
+		search := strings.Split(searchStr, " ")
+		var res string
+		for i, s := range search {
+			if i == len(search) - 1 {
+				res += " " + s
+				break
+			}
+			res += s + " <->"
+
+		}
+		searchStr = res
 		searchStr += ":*"
 	}
 	if desc {
