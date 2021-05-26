@@ -144,6 +144,15 @@ func (r *Repository) GetActualVacancies(ctx context.Context) ([]models.Vacancy, 
 	return vacancies, nil
 }
 
+func (r *Repository)GetVacancyNum(ctx context.Context) (uint64, error){
+	var num uint64
+	if err := r.db.Get(&num, "SELECT COUNT(id) FROM post.vacancy"); err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return 0, errors.Wrap(customErr, err.Error())
+	}
+	return num, nil
+}
+
 func (r *Repository) Change(vacancy models.Vacancy, ctx context.Context) error {
 	tx, err := r.db.Beginx()
 	if err != nil {

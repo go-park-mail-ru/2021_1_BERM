@@ -128,7 +128,7 @@ func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 		param["offset"] = 0
 	}
 
-	v, err := h.useCase.GetActualVacancies(context.WithValue(r.Context(), ctxParam, param))
+	v, num, err := h.useCase.GetActualVacancies(context.WithValue(r.Context(), ctxParam, param))
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 
@@ -136,7 +136,7 @@ func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 	}
 	vacancyResponse := make(map[string]interface{})
 	vacancyResponse["vacancy"] = v
-	vacancyResponse["size"] = len(v)
+	vacancyResponse["size"] = num
 	httputils.Respond(w, r, reqID, http.StatusOK, vacancyResponse)
 }
 
