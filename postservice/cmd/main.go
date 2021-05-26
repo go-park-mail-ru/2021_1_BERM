@@ -160,6 +160,7 @@ func main() {
 	order.HandleFunc("/{id}/close", orderHandler.CloseOrder).Methods(http.MethodDelete)
 	order.HandleFunc("/profile/{id:[0-9]+}/archive", orderHandler.GetAllArchiveUserOrders).Methods(http.MethodGet)
 	order.HandleFunc("/search", orderHandler.SearchOrder).Methods(http.MethodPatch)
+	order.HandleFunc("/suggest", orderHandler.SuggestOrderTitle).Methods(http.MethodGet)
 
 	vacancy := apiRoute.PathPrefix("/vacancy").Subrouter()
 	vacancy.Use(csrfMiddleware)

@@ -17,3 +17,7 @@ type Order struct {
 type OrderSearch struct {
 	Keyword string `json:"keyword"`
 }
+
+type SuggestOrderTitle struct {
+	Title string `json:"title"`
+}

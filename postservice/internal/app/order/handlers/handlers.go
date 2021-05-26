@@ -295,3 +295,16 @@ func (h *Handlers) SearchOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	httputils.Respond(w, r, reqID, http.StatusOK, o)
 }
+
+func (h *Handlers) SuggestOrderTitle(w http.ResponseWriter, r *http.Request) {
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	params := mux.Vars(r)
+	suggestWord := params["suggest_word"]
+	suggestTitles, err := h.useCase.SuggestOrderTitle(suggestWord, context.Background())
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, suggestTitles)
+}

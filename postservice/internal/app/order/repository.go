@@ -20,4 +20,5 @@ type Repository interface {
 	GetArchiveOrdersByCustomerID(customerID uint64, ctx context.Context) ([]models.Order, error)
 	SearchOrders(keyword string, ctx context.Context) ([]models.Order, error)
 	FindArchiveByID(id uint64, ctx context.Context) (*models.Order, error)
+	SuggestOrderTitle(suggestWord string,ctx context.Context) ([]models.SuggestOrderTitle, error)
 }

@@ -91,12 +91,16 @@ const (
 		"AND CASE WHEN $3 != '~' THEN to_tsvector(order_name) @@ to_tsquery($3) ELSE true END " +
 		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY budget LIMIT $5 OFFSET $6"
-	getActualOrdersDesk   = "SELECT * FROM post.orders " +
+	getActualOrdersDesk = "SELECT * FROM post.orders " +
 		"WHERE CASE WHEN $1 != 0 THEN budget >= $1 ELSE true END " +
 		"AND CASE WHEN $2 != 0  THEN budget <= $2 ELSE true END " +
 		"AND CASE WHEN $3 != '~' THEN to_tsvector(order_name) @@ to_tsquery($3) ELSE true END " +
 		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY budget DESC LIMIT $5 OFFSET $6"
+
+	selectTittle = `SELECT order_name FROM post.orders WHERE to_tsvector(order_name) @@ to_tsquery($3)`
+
+	selectAllTittle = `SELECT order_name FROM post.orders`
 )
 const (
 	ctxQueryParams uint8 = 4
@@ -210,7 +214,7 @@ func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
 		}
-	}else{
+	} else {
 		if err := r.db.Select(&orders, getActualOrders, budgetFrom, budgetTo, searchStr, category, limit, offset); err != nil {
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
@@ -317,4 +321,20 @@ func (r *Repository) FindArchiveByID(id uint64, ctx context.Context) (*models.Or
 		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return &order, nil
+}
+
+func (r *Repository) SuggestOrderTitle(suggestWord string, ctx context.Context) ([]models.SuggestOrderTitle, error) {
+	suggestTittles := []models.SuggestOrderTitle{}
+	var query string
+	if suggestWord == "" {
+		query = selectAllTittle
+	} else {
+		query = selectTittle
+	}
+	suggestWord += ":*"
+	if err := r.db.Select(&suggestTittles, query, suggestWord); err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
+	}
+	return suggestTittles, nil
 }
