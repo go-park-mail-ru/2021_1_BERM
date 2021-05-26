@@ -147,6 +147,7 @@ func main() {
 	apiRoute.Use(middleware.LoggingRequest)
 	apiRoute.Use(sessionMiddleWare.CheckSession)
 	apiRoute.Use(csrfMiddleware)
+	apiRoute.HandleFunc("/profile/users", userHandler.GetUsers).Methods(http.MethodGet)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.GetUserInfo).Methods(http.MethodGet)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.ChangeProfile).Methods(http.MethodPatch)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Create).Methods(http.MethodPost)

@@ -6,3 +6,7 @@
 *.html
 *.log
 *.pid
+userservice/bin
+authservice/bin
+postservice/bin
+imageservice/bin

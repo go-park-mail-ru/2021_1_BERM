@@ -77,3 +77,82 @@ func (r *Repository) SetUserImg(ID uint64, img string, ctx context.Context) erro
 	}
 	return err
 }
+const(
+	getUsersRating = `SELECT users.id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+		FROM userservice.users AS users
+		INNER JOIN userservice.reviews
+		 ON users.id = reviews.to_user_id
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
+		GROUP BY users.id
+		ORDER BY rating LIMIT $4 OFFSET $5`
+	getUsersRatingDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+		FROM userservice.users AS users
+		INNER JOIN userservice.reviews
+		 ON users.id = reviews.to_user_id
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
+		GROUP BY users.id
+		ORDER BY rating DESC LIMIT $4 OFFSET $5`
+
+	getUsersNick = `SELECT users.id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+		FROM userservice.users AS users
+		INNER JOIN userservice.reviews
+		 ON users.id = reviews.to_user_id
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
+		GROUP BY users.id
+		ORDER BY name_surname DESC LIMIT $4 OFFSET $5`
+
+	getUsersNickDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+		FROM userservice.users AS users
+		INNER JOIN userservice.reviews
+		 ON users.id = reviews.to_user_id
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
+		GROUP BY users.id
+		ORDER BY name_surname DESC LIMIT $4 OFFSET $5`
+
+	ctxParam uint8 = 4;
+)
+func (r *Repository)GetUsers(ctx context.Context) ([]models.UserInfo, error){
+	var userInfo []models.UserInfo
+	param := ctx.Value(ctxParam).(map[string]interface{})
+	limit := param["limit"].(int)
+	offset := param["offset"].(int)
+	desc := param["desc"].(bool)
+	from := param["from"].(int)
+	to := param["to"].(int)
+	searchStr := param["search_str"].(string)
+	sort := param["sort"].(string)
+	if desc {
+		if sort == "rating" {
+			if err := r.Db.Select(&userInfo, getUsersRatingDesc, from, to, searchStr,  limit, offset); err != nil {
+				customErr := errortools.SqlErrorChoice(err)
+				return nil, errors.Wrap(customErr, err.Error())
+			}
+		}else{
+			if err := r.Db.Select(&userInfo, getUsersNickDesc, from, to, searchStr,limit, offset); err != nil {
+				customErr := errortools.SqlErrorChoice(err)
+				return nil, errors.Wrap(customErr, err.Error())
+			}
+		}
+	}else{
+		if sort == "rating" {
+			if err := r.Db.Select(&userInfo, getUsersRating, from, to, searchStr,  limit,offset); err != nil {
+				customErr := errortools.SqlErrorChoice(err)
+				return nil, errors.Wrap(customErr, err.Error())
+			}
+		}else{
+			if err := r.Db.Select(&userInfo, getUsersNick, from, to, searchStr, limit, offset); err != nil {
+				customErr := errortools.SqlErrorChoice(err)
+				return nil, errors.Wrap(customErr, err.Error())
+			}
+		}
+	}
+	return userInfo, nil
+}

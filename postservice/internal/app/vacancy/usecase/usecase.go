@@ -8,10 +8,13 @@ import (
 	"post/internal/app/models"
 	vacancyRepo "post/internal/app/vacancy"
 	customErr "post/pkg/error"
+	"reflect"
 )
 
 const (
-	vacancyUseCaseError = "Vacancy use case error"
+	vacancyUseCaseError       = "Vacancy use case error"
+	ctxParam            uint8 = 3
+	ctxUserID           uint8 = 2
 )
 
 type UseCase struct {
@@ -69,6 +72,20 @@ func (u *UseCase) GetActualVacancies(ctx context.Context) ([]models.Vacancy, err
 	}
 	if vacancies == nil {
 		return []models.Vacancy{}, nil
+	}
+	user, err := u.UserRepo.GetUserById(ctx, &api.UserRequest{Id: ctx.Value(ctxUserID).(uint64)})
+	if err != nil {
+		return []models.Vacancy{}, nil
+	}
+
+	counter := 0
+	for _, spec := range user.Specializes {
+		for i, _ := range vacancies {
+			if reflect.DeepEqual(vacancies[i], spec) {
+				vacancies[i], vacancies[counter] = vacancies[counter], vacancies[i]
+				counter++
+			}
+		}
 	}
 	return vacancies, err
 }
