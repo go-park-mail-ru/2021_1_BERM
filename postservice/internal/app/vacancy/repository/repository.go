@@ -81,9 +81,9 @@ const (
 
 	selectArchiveVacanciesByCustomerID = "SELECT * FROM post.archive_vacancy WHERE customer_id=$1"
 
-	selectTittle = `SELECT vacancy_name FROM post.vacancy WHERE vacancy_name LIKE $1 LIMIT 5`
+	selectTittle = `SELECT DISTINCT vacancy_name FROM post.vacancy WHERE vacancy_name LIKE $1 LIMIT 5`
 
-	selectAllTittle = `SELECT vacancy_name FROM post.vacancy LIMIT 5`
+	selectAllTittle = `SELECT DISTINCT vacancy_name FROM post.vacancy LIMIT 5`
 )
 
 type Repository struct {

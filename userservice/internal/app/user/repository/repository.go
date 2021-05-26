@@ -70,9 +70,9 @@ const (
 		GROUP BY users.id, name_surname
 		ORDER BY reviews_count LIMIT $4 OFFSET $5`
 
-	selectTittle = `SELECT name_surname FROM userservice.users WHERE name_surname LIKE $1 LIMIT 5`
+	selectTittle = `SELECT DISTINCT name_surname FROM userservice.users WHERE name_surname LIKE $1 LIMIT 5`
 
-	selectAllTittle = `SELECT name_surname FROM userservice.users LIMIT 5`
+	selectAllTittle = `SELECT DISTINCT name_surname FROM userservice.users LIMIT 5`
 )
 
 type Repository struct {

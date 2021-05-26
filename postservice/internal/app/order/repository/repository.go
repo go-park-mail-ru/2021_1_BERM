@@ -98,9 +98,9 @@ const (
 		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY budget DESC LIMIT $5 OFFSET $6"
 
-	selectTittle = `SELECT order_name FROM post.orders WHERE order_name LIKE $1 LIMIT 5`
+	selectTittle = `SELECT DISTINCT order_name FROM post.orders WHERE order_name LIKE $1 LIMIT 5`
 
-	selectAllTittle = `SELECT order_name FROM post.orders LIMIT 5`
+	selectAllTittle = `SELECT DISTINCT order_name FROM post.orders LIMIT 5`
 )
 const (
 	ctxQueryParams uint8 = 4
