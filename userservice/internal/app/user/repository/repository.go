@@ -38,7 +38,7 @@ const(
 		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
 		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
 		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
-		GROUP BY users.id
+		GROUP BY users.id, name_surname
 		ORDER BY name_surname LIMIT $4 OFFSET $5`
 
 	getUsersNickDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
@@ -48,7 +48,7 @@ const(
 		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
 		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
 		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
-		GROUP BY users.id
+		GROUP BY users.id, name_surname
 		ORDER BY name_surname DESC LIMIT $4 OFFSET $5`
 )
 
