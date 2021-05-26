@@ -137,25 +137,25 @@ const (
 	ctxQueryParams uint8 = 4
 )
 
-func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, error) {
+func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, uint64, error) {
 	orders, err := u.OrderRepo.GetActualOrders(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, orderUseCaseError)
+		return nil, 0,errors.Wrap(err, orderUseCaseError)
 	}
 	for i, order := range orders {
 		err = u.supplementingTheOrderModel(&order)
 		if err != nil {
-			return nil, errors.Wrap(err, orderUseCaseError)
+			return nil, 0, errors.Wrap(err, orderUseCaseError)
 		}
 		orders[i] = order
 	}
 	if orders == nil {
-		return []models.Order{}, nil
+		return []models.Order{}, 0,  nil
 	}
 
 	user, err := u.UserRepo.GetUserById(ctx, &api.UserRequest{Id: ctx.Value(ctxUserID).(uint64)})
 	if err != nil {
-		return []models.Order{}, errors.Wrap(err, orderUseCaseError)
+		return []models.Order{}, 0, errors.Wrap(err, orderUseCaseError)
 	}
 
 	counter := 0
@@ -167,7 +167,11 @@ func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, error) {
 			}
 		}
 	}
-	return orders, err
+	oNum, err := u.OrderRepo.GetOrderNum(ctx);
+	if err != nil {
+		return []models.Order{}, 0, errors.Wrap(err, orderUseCaseError)
+	}
+	return orders, oNum, err
 }
 
 func (u *UseCase) SelectExecutor(order models.Order, ctx context.Context) error {

@@ -219,6 +219,16 @@ func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error
 	return orders, nil
 }
 
+func (r* Repository)GetOrderNum(ctx context.Context) (uint64, error){
+	var num uint64
+	if err := r.db.Get(&num, "SELECT COUNT(id) FROM post.orders"); err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return 0, errors.Wrap(customErr, err.Error())
+	}
+	return num, nil
+}
+
+
 //
 //- search_str: fffff
 //
