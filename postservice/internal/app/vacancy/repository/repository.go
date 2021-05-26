@@ -46,18 +46,21 @@ const (
 	selectArchiveVacancies = "SELECT * FROM post.archive_vacancy"
 
 	insertArchiveVacancy = `INSERT INTO post.archive_vacancy (
+                          id,
 						  category, 
 						  vacancy_name,
 						  description, 
 						  salary,
 						  customer_id,
+                          executor_id,
                           is_archived
 	                  )
-	       VALUES ($1, $2, $3,$4, $5, $6) RETURNING id`
+	       VALUES ($1, $2, $3,$4, $5, $6, $7, $8) RETURNING id`
 
 	searchVacanciesInTitle = "SELECT * FROM post.vacancy WHERE to_tsvector(vacancy_name) @@ to_tsquery($1)"
 
 	searchVacanciesInText = "SELECT * FROM post.vacancy WHERE to_tsvector(description) @@ to_tsquery($1)"
+
 
 	getActualVacancy      = "SELECT * FROM post.vacancy " +
 		"WHERE CASE WHEN $1 != 0 THEN salary >= $1 ELSE true END " +
@@ -72,6 +75,13 @@ const (
 		"AND CASE WHEN $3 != '~' THEN to_tsvector(vacancy_name) @@ to_tsquery($3) ELSE true END " +
 		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY salary DESC LIMIT $5 OFFSET $6"
+
+	selectArchiveVacancyByID = "SELECT * FROM post.archive_vacancy WHERE id=$1"
+
+	selectArchiveVacanciesByExecutorID = "SELECT * FROM post.archive_vacancy WHERE executor_id=$1"
+
+	selectArchiveVacanciesByCustomerID = "SELECT * FROM post.archive_vacancy WHERE customer_id=$1"
+
 )
 
 type Repository struct {
@@ -210,11 +220,13 @@ func (r *Repository) CreateArchive(vacancy models.Vacancy, ctx context.Context) 
 	vacancy.IsArchived = true
 	err := r.db.QueryRow(
 		insertArchiveVacancy,
+		vacancy.ID,
 		vacancy.Category,
 		vacancy.VacancyName,
 		vacancy.Description,
 		vacancy.Salary,
 		vacancy.CustomerID,
+		vacancy.ExecutorID,
 		vacancy.IsArchived).Scan(&vacancyID)
 	if err != nil {
 		customErr := errortools.SqlErrorChoice(err)
@@ -247,6 +259,36 @@ func (r *Repository) SearchVacancy(keyword string, ctx context.Context) ([]model
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
 		}
+	}
+	return vacancies, nil
+}
+
+func (r *Repository) FindArchiveByID(id uint64, ctx context.Context) (*models.Vacancy, error) {
+	vacancy := models.Vacancy{}
+	if err := r.db.Get(&vacancy, selectArchiveVacancyByID, id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
+	}
+	return &vacancy, nil
+}
+
+func (r *Repository) GetArchiveVacanciesByExecutorID(executorID uint64, ctx context.Context) ([]models.Vacancy, error) {
+	var vacancies []models.Vacancy
+	if err := r.db.Select(&vacancies, selectArchiveVacanciesByExecutorID, executorID); err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
+	}
+	return vacancies, nil
+}
+
+func (r *Repository) GetArchiveVacanciesByCustomerID(customerID uint64, ctx context.Context) ([]models.Vacancy, error) {
+	var vacancies []models.Vacancy
+	if err := r.db.Select(&vacancies, selectArchiveVacanciesByCustomerID, customerID); err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return vacancies, nil
 }
