@@ -256,9 +256,12 @@ func (u *UseCase) SearchOrders(keyword string, ctx context.Context) ([]models.Or
 }
 
 func (u *UseCase) SuggestOrderTitle(suggestWord string,ctx context.Context) ([]models.SuggestOrderTitle, error) {
-	suggestTittles, err := u.SuggestOrderTitle(suggestWord, ctx)
+	suggestTittles, err := u.OrderRepo.SuggestOrderTitle(suggestWord, ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
+	}
+	if suggestTittles == nil {
+		return []models.SuggestOrderTitle{}, nil
 	}
 	return suggestTittles, nil
 }

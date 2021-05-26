@@ -19,5 +19,5 @@ type OrderSearch struct {
 }
 
 type SuggestOrderTitle struct {
-	Title string `json:"title"`
+	Title string `json:"title" db:"order_name"`
 }

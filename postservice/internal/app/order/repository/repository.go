@@ -98,9 +98,9 @@ const (
 		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY budget DESC LIMIT $5 OFFSET $6"
 
-	selectTittle = `SELECT order_name FROM post.orders WHERE order_name LIKE $1`
+	selectTittle = `SELECT order_name FROM post.orders WHERE order_name LIKE $1 LIMIT 5`
 
-	selectAllTittle = `SELECT order_name FROM post.orders`
+	selectAllTittle = `SELECT order_name FROM post.orders LIMIT 5`
 )
 const (
 	ctxQueryParams uint8 = 4
@@ -325,14 +325,15 @@ func (r *Repository) FindArchiveByID(id uint64, ctx context.Context) (*models.Or
 
 func (r *Repository) SuggestOrderTitle(suggestWord string, ctx context.Context) ([]models.SuggestOrderTitle, error) {
 	var suggestTittles []models.SuggestOrderTitle
-	var query string
 	if suggestWord == "" {
-		query = selectAllTittle
-	} else {
-		query = selectTittle
+		if err := r.db.Select(&suggestTittles, selectAllTittle); err != nil {
+			customErr := errortools.SqlErrorChoice(err)
+			return nil, errors.Wrap(customErr, err.Error())
+		}
+		return suggestTittles, nil
 	}
 	suggestWord += "%"
-	if err := r.db.Select(&suggestTittles, query, suggestWord); err != nil {
+	if err := r.db.Select(&suggestTittles, selectTittle, suggestWord); err != nil {
 		customErr := errortools.SqlErrorChoice(err)
 		return nil, errors.Wrap(customErr, err.Error())
 	}
