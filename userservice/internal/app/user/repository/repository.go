@@ -50,7 +50,7 @@ const (
 		GROUP BY users.id, name_surname
 		ORDER BY name_surname DESC LIMIT $4 OFFSET $5`
 
-	getUsersReviewDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating, COUNT(score) AS reviews_count
+	getUsersReviewDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating, COUNT(reviews) AS reviews_count
 		FROM userservice.users AS users
 		LEFT JOIN userservice.reviews
 		 ON users.id = reviews.to_user_id
@@ -60,9 +60,9 @@ const (
 		GROUP BY users.id, name_surname
 		ORDER BY reviews_count DESC LIMIT $4 OFFSET $5`
 
-	getUsersReview = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating, COUNT(score) AS reviews_count
+	getUsersReview = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating, COUNT(reviews) AS reviews_count
 		FROM userservice.users AS users
-		LEFT JOIN userservice.reviews
+		LEFT JOIN userservice.reviews 
 		 ON users.id = reviews.to_user_id
 		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
 		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
