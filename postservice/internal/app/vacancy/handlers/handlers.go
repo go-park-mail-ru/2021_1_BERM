@@ -134,10 +134,7 @@ func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	var vReq map[string]interface{}
-	vReq["vacancies"] = v;
-	vReq["size"] = len(v);
-	httputils.Respond(w, r, reqID, http.StatusOK, vReq)
+	httputils.Respond(w, r, reqID, http.StatusOK, v)
 }
 
 func (h *Handlers) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
@@ -302,4 +299,15 @@ func (h *Handlers) SearchVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httputils.Respond(w, r, reqID, http.StatusOK, v)
+}
+
+func (h *Handlers) SuggestVacancyTitle(w http.ResponseWriter, r *http.Request) {
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	suggestWord := r.URL.Query().Get("suggest_word")
+	suggestTitles, err := h.useCase.SuggestVacancyTitle(suggestWord, context.Background())
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, suggestTitles)
 }

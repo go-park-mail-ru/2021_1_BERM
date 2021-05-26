@@ -13,4 +13,5 @@ type UseCase interface {
 	Change(user models.ChangeUser, ctx context.Context) (*models.UserBasicInfo, error)
 	SetImg(ID uint64, img string, ctx context.Context) error
 	GetUsers(ctx context.Context) ([]models.UserInfo, error)
+	SuggestUsersTitle(suggestWord string,ctx context.Context) ([]models.SuggestUsersTittle, error)
 }

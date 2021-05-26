@@ -255,7 +255,17 @@ func (u *UseCase) SearchOrders(keyword string, ctx context.Context) ([]models.Or
 	return orders, err
 }
 
-//TODO: вынести в отдеьлный модуль
+func (u *UseCase) SuggestOrderTitle(suggestWord string,ctx context.Context) ([]models.SuggestOrderTitle, error) {
+	suggestTittles, err := u.OrderRepo.SuggestOrderTitle(suggestWord, ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, orderUseCaseError)
+	}
+	if suggestTittles == nil {
+		return []models.SuggestOrderTitle{}, nil
+	}
+	return suggestTittles, nil
+}
+
 func (u *UseCase) validateOrder(order *models.Order) error {
 	err := validation.ValidateStruct(
 		order,
@@ -266,7 +276,6 @@ func (u *UseCase) validateOrder(order *models.Order) error {
 	return err
 }
 
-//TODO: вынести в отдельный модуль
 func (u *UseCase) sanitizeOrder(order *models.Order) {
 	sanitizer := bluemonday.UGCPolicy()
 	order.Category = sanitizer.Sanitize(order.Category)

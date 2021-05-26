@@ -13,6 +13,10 @@ import (
 	customErrors "user/pkg/error"
 )
 
+const (
+	ctxParam uint8 = 4
+)
+
 type UseCase struct {
 	userRepository       user.Repository
 	specializeRepository specialize2.Repository
@@ -172,9 +176,16 @@ func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (*mo
 	}, nil
 }
 
-const (
-	ctxParam uint8 = 4
-)
+func (u *UseCase) SuggestUsersTitle(suggestWord string, ctx context.Context) ([]models.SuggestUsersTittle, error) {
+	suggestTittles, err := u.userRepository.SuggestUsersTitle(suggestWord, ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "Error in data sourse")
+	}
+	if suggestTittles == nil {
+		return []models.SuggestUsersTittle{}, nil
+	}
+	return suggestTittles, nil
+}
 
 func (useCase *UseCase) GetUsers(ctx context.Context) ([]models.UserInfo, error) {
 	uInf, err := useCase.userRepository.GetUsers(ctx)

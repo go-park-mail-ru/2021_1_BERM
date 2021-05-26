@@ -16,3 +16,7 @@ type Vacancy struct {
 type VacancySearch struct {
 	Keyword string `json:"keyword"`
 }
+
+type SuggestVacancyTittle struct {
+	Title string `json:"title" db:"vacancy_name"`
+}

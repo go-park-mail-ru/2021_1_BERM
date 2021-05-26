@@ -152,6 +152,7 @@ func main() {
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.ChangeProfile).Methods(http.MethodPatch)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Create).Methods(http.MethodPost)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Remove).Methods(http.MethodDelete)
+	apiRoute.HandleFunc("/profile/users/suggest", userHandler.SuggestUsers).Methods(http.MethodGet)
 
 	apiRoute.HandleFunc("/profile/review", reviewHandler.Create).Methods(http.MethodPost)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/review", reviewHandler.GetAllByUserId).Methods(http.MethodGet)
