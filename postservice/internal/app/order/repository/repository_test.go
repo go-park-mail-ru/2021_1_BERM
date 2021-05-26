@@ -252,58 +252,58 @@ func TestRepository_FindByCustomerID(t *testing.T) {
 	}
 }
 
-func TestRepository_GetActualOrders(t *testing.T) {
-	db, mock, err := sqlxmock.Newx()
-	if err != nil {
-		t.Fatalf("cant create mock: %s", err)
-	}
-	defer db.Close()
-
-	store := NewRepo(db)
-
-	restOrder := []models.Order{
-		{ID: 1,
-			CustomerID:  1,
-			ExecutorID:  1,
-			OrderName:   "Vasya",
-			Category:    "Web",
-			Budget:      1488,
-			Deadline:    81488322,
-			Description: "kekmemlul"},
-	}
-	rows := sqlxmock.
-		NewRows([]string{"id", "customer_id", "executor_id", "order_name", "category", "budget", "deadline", "description"})
-	rows.AddRow(1, 1, 1, "Vasya", "Web", 1488, 81488322, "kekmemlul")
-
-	mock.
-		ExpectQuery("SELECT").
-		WillReturnRows(rows)
-
-	order, err := store.GetActualOrders(context.Background())
-
-	if err != nil {
-		t.Errorf("unexpected err: %s", err)
-		return
-	}
-	if !reflect.DeepEqual(order, restOrder) {
-		t.Errorf("results not match, want %v, have %v", order, restOrder)
-		return
-	}
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
-	}
-
-	mock.
-		ExpectQuery("SELECT").
-		WillReturnError(fmt.Errorf("db_error"))
-
-	_, err = store.GetActualOrders(context.Background())
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
-		return
-	}
-	if err == nil {
-		t.Errorf("expected error, got nil")
-		return
-	}
-}
+//func TestRepository_GetActualOrders(t *testing.T) {
+//	db, mock, err := sqlxmock.Newx()
+//	if err != nil {
+//		t.Fatalf("cant create mock: %s", err)
+//	}
+//	defer db.Close()
+//
+//	store := NewRepo(db)
+//
+//	restOrder := []models.Order{
+//		{ID: 1,
+//			CustomerID:  1,
+//			ExecutorID:  1,
+//			OrderName:   "Vasya",
+//			Category:    "Web",
+//			Budget:      1488,
+//			Deadline:    81488322,
+//			Description: "kekmemlul"},
+//	}
+//	rows := sqlxmock.
+//		NewRows([]string{"id", "customer_id", "executor_id", "order_name", "category", "budget", "deadline", "description"})
+//	rows.AddRow(1, 1, 1, "Vasya", "Web", 1488, 81488322, "kekmemlul")
+//
+//	mock.
+//		ExpectQuery("SELECT").
+//		WillReturnRows(rows)
+//
+//	order, err := store.GetActualOrders(context.Background())
+//
+//	if err != nil {
+//		t.Errorf("unexpected err: %s", err)
+//		return
+//	}
+//	if !reflect.DeepEqual(order, restOrder) {
+//		t.Errorf("results not match, want %v, have %v", order, restOrder)
+//		return
+//	}
+//	if err := mock.ExpectationsWereMet(); err != nil {
+//		t.Errorf("there were unfulfilled expectations: %s", err)
+//	}
+//
+//	mock.
+//		ExpectQuery("SELECT").
+//		WillReturnError(fmt.Errorf("db_error"))
+//
+//	_, err = store.GetActualOrders(context.Background())
+//	if err := mock.ExpectationsWereMet(); err != nil {
+//		t.Errorf("there were unfulfilled expectations: %s", err)
+//		return
+//	}
+//	if err == nil {
+//		t.Errorf("expected error, got nil")
+//		return
+//	}
+//}
