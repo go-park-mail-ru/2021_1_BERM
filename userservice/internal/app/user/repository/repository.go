@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	ctxParam uint8 = 4
-	getUsersRating = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating, COUNT(reviews) AS reviews_count
+	ctxParam       uint8 = 4
+	getUsersRating       = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating, COUNT(reviews) AS reviews_count
 		FROM userservice.users AS users
 		LEFT JOIN userservice.reviews
 		 ON users.id = reviews.to_user_id
@@ -69,6 +69,10 @@ const (
 		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
 		GROUP BY users.id, name_surname
 		ORDER BY reviews_count LIMIT $4 OFFSET $5`
+
+	selectTittle = `SELECT name_surname FROM userservice.users WHERE name_surname LIKE $1 LIMIT 5`
+
+	selectAllTittle = `SELECT name_surname FROM userservice.users LIMIT 5`
 )
 
 type Repository struct {
@@ -190,4 +194,21 @@ func (r *Repository) GetUsers(ctx context.Context) ([]models.UserInfo, error) {
 		}
 	}
 	return userInfo, nil
+}
+
+func (r *Repository) SuggestUsersTitle(suggestWord string, ctx context.Context) ([]models.SuggestUsersTittle, error) {
+	var suggestTittles []models.SuggestUsersTittle
+	if suggestWord == "" {
+		if err := r.Db.Select(&suggestTittles, selectAllTittle); err != nil {
+			customErr := errortools.SqlErrorChoice(err)
+			return nil, errors.Wrap(customErr, err.Error())
+		}
+		return suggestTittles, nil
+	}
+	suggestWord += "%"
+	if err := r.Db.Select(&suggestTittles, selectTittle, suggestWord); err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
+	}
+	return suggestTittles, nil
 }

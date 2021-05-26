@@ -141,3 +141,14 @@ func (h *Handlers) GetUsers(w http.ResponseWriter, r *http.Request) {
 	}
 	httputils.Respond(w, r, reqID, http.StatusOK, u)
 }
+
+func (h *Handlers) SuggestUsers(w http.ResponseWriter, r *http.Request) {
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	suggestWord := r.URL.Query().Get("suggest_word")
+	suggestTitles, err := h.userUseCase.SuggestUsersTitle(suggestWord, context.Background())
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, suggestTitles)
+}
