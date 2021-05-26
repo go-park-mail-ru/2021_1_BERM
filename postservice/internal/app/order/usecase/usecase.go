@@ -9,10 +9,12 @@ import (
 	"post/internal/app/models"
 	orderRepo "post/internal/app/order"
 	customErr "post/pkg/error"
+	"reflect"
 )
 
 const (
 	orderUseCaseError = "Order use case error"
+	ctxUserID      uint8 = 2
 )
 
 type UseCase struct {
@@ -131,6 +133,10 @@ func (u *UseCase) DeleteOrder(id uint64, ctx context.Context) error {
 	return nil
 }
 
+const (
+	ctxQueryParams uint8 = 4
+)
+
 func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, error) {
 	orders, err := u.OrderRepo.GetActualOrders(ctx)
 	if err != nil {
@@ -145,6 +151,21 @@ func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, error) {
 	}
 	if orders == nil {
 		return []models.Order{}, nil
+	}
+
+	user, err := u.UserRepo.GetUserById(ctx, &api.UserRequest{Id: ctx.Value(ctxUserID).(uint64)})
+	if err != nil {
+		return []models.Order{}, errors.Wrap(err, orderUseCaseError)
+	}
+
+	counter := 0
+	for _, spec := range user.Specializes{
+		for i, _ := range orders {
+			if reflect.DeepEqual(orders[i].Category, spec) {
+				orders[counter], orders[i] = orders[i], orders[counter]
+				counter++
+			}
+		}
 	}
 	return orders, err
 }

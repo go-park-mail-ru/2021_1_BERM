@@ -8,10 +8,13 @@ import (
 	"post/internal/app/models"
 	vacancyRepo "post/internal/app/vacancy"
 	customErr "post/pkg/error"
+	"reflect"
 )
 
 const (
-	vacancyUseCaseError = "Vacancy use case error"
+	vacancyUseCaseError       = "Vacancy use case error"
+	ctxParam            uint8 = 4
+	ctxUserID           uint8 = 2
 )
 
 type UseCase struct {
@@ -42,6 +45,9 @@ func (u *UseCase) Create(vacancy models.Vacancy, ctx context.Context) (*models.V
 
 func (u *UseCase) FindByID(id uint64, ctx context.Context) (*models.Vacancy, error) {
 	vacancy, err := u.VacancyRepo.FindByID(id, ctx)
+	if vacancy == nil {
+		vacancy, err = u.VacancyRepo.FindArchiveByID(id, ctx)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)
 	}
@@ -66,6 +72,20 @@ func (u *UseCase) GetActualVacancies(ctx context.Context) ([]models.Vacancy, err
 	}
 	if vacancies == nil {
 		return []models.Vacancy{}, nil
+	}
+	user, err := u.UserRepo.GetUserById(ctx, &api.UserRequest{Id: ctx.Value(ctxUserID).(uint64)})
+	if err != nil {
+		return []models.Vacancy{}, nil
+	}
+
+	counter := 0
+	for _, spec := range user.Specializes {
+		for i, _ := range vacancies {
+			if reflect.DeepEqual(vacancies[i], spec) {
+				vacancies[i], vacancies[counter] = vacancies[counter], vacancies[i]
+				counter++
+			}
+		}
 	}
 	return vacancies, err
 }
@@ -180,8 +200,15 @@ func (u *UseCase) CloseVacancy(vacancyID uint64, ctx context.Context) error {
 	return nil
 }
 
-func (u *UseCase) GetArchiveVacancies(ctx context.Context) ([]models.Vacancy, error) {
-	vacancies, err := u.VacancyRepo.GetArchiveVacancies(ctx)
+func (u *UseCase) GetArchiveVacancies(userInfo models.UserBasicInfo, ctx context.Context) ([]models.Vacancy, error) {
+	var vacancies []models.Vacancy
+	var err error
+	if userInfo.Executor {
+		vacancies, err = u.VacancyRepo.GetArchiveVacanciesByExecutorID(userInfo.ID, ctx)
+	} else {
+		vacancies, err = u.VacancyRepo.GetArchiveVacanciesByCustomerID(userInfo.ID, ctx)
+	}
+
 	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)
 	}

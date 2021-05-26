@@ -15,6 +15,9 @@ const (
 	ctxKeySession uint8 = iota
 	ctxKeyReqID   uint8 = 1
 	ctxUserID     uint8 = 2
+	ctxParam      uint8 = 4
+	ctxExecutor   uint8 = 3
+
 )
 
 type Handlers struct {
@@ -68,7 +71,64 @@ func (h *Handlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	v, err := h.useCase.GetActualVacancies(context.Background())
+
+	param := make(map[string]interface{})
+	param["search_str"] = r.URL.Query().Get("search_str")
+	if searchStr := r.URL.Query().Get("search_str"); searchStr != "" {
+		param["search_str"] = searchStr
+	} else {
+		param["search_str"] = "~"
+	}
+	if salaryFrom := r.URL.Query().Get("from"); salaryFrom != "" {
+		salaryFromInt, err := strconv.Atoi(salaryFrom)
+		if err == nil {
+			param["from"] = salaryFromInt
+		}
+	} else {
+		param["from"] = 0
+	}
+	if salaryTo := r.URL.Query().Get("to"); salaryTo != "" {
+		salaryToInt, err := strconv.Atoi(salaryTo)
+		if err == nil {
+			param["to"] = salaryToInt
+		}
+	} else {
+		param["to"] = 0
+	}
+
+	if desc := r.URL.Query().Get("desc"); desc != "" {
+		descBool, err := strconv.ParseBool(desc)
+		if err == nil {
+			param["desc"] = descBool
+		}
+	} else {
+		param["desc"] = false
+	}
+
+	if category := r.URL.Query().Get("category"); category != "" {
+		param["category"] = category
+	} else {
+		param["category"] = "~"
+	}
+
+	if limit := r.URL.Query().Get("limit"); limit != "" {
+		limitInt, err := strconv.Atoi(limit)
+		if err == nil {
+			param["limit"] = limitInt
+		}
+	} else {
+		param["limit"] = 15
+	}
+	if offset := r.URL.Query().Get("offset"); offset != "" {
+		offsetInt, err := strconv.Atoi(offset)
+		if err == nil {
+			param["offset"] = offsetInt
+		}
+	} else {
+		param["offset"] = 0
+	}
+
+	v, err := h.useCase.GetActualVacancies(context.WithValue(r.Context(), ctxParam, param))
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 
@@ -208,8 +268,14 @@ func (h *Handlers) CloseVacancy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetAllArchiveUserVacancies(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userInfo := models.UserBasicInfo{}
+	var err error
+	userInfo.ID, err = strconv.ParseUint(params["id"], 10, 64)
+	userInfo.Executor = r.Context().Value(ctxExecutor).(bool)
+
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	v, err := h.useCase.GetArchiveVacancies(context.Background())
+	v, err := h.useCase.GetArchiveVacancies(userInfo, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 

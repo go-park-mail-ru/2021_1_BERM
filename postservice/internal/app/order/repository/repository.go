@@ -37,7 +37,7 @@ const (
 
 	selectOrderByCustomerID = "SELECT * FROM post.orders WHERE customer_id=$1"
 
-	selectOrders = "SELECT * FROM post.orders"
+	selectOrders = "SELECT * FROM post.orders "
 
 	selectArchiveOrdersByExecutorID = "SELECT * FROM post.archive_orders WHERE executor_id=$1"
 
@@ -85,6 +85,21 @@ const (
 	searchOrdersInTitle = "SELECT * FROM post.orders WHERE to_tsvector(order_name) @@ to_tsquery($1)"
 
 	searchOrdersInText = "SELECT * FROM post.orders WHERE to_tsvector(description) @@ to_tsquery($1)"
+	getActualOrders    = "SELECT * FROM post.orders " +
+		"WHERE CASE WHEN $1 != 0 THEN budget >= $1 ELSE true END " +
+		"AND CASE WHEN $2 != 0  THEN budget <= $2 ELSE true END " +
+		"AND CASE WHEN $3 != '~' THEN to_tsvector(order_name) @@ to_tsquery($3) ELSE true END " +
+		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
+		"ORDER BY budget LIMIT $5 OFFSET $6"
+	getActualOrdersDesk   = "SELECT * FROM post.orders " +
+		"WHERE CASE WHEN $1 != 0 THEN budget >= $1 ELSE true END " +
+		"AND CASE WHEN $2 != 0  THEN budget <= $2 ELSE true END " +
+		"AND CASE WHEN $3 != '~' THEN to_tsvector(order_name) @@ to_tsquery($3) ELSE true END " +
+		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
+		"ORDER BY budget DESC LIMIT $5 OFFSET $6"
+)
+const (
+	ctxQueryParams uint8 = 4
 )
 
 type Repository struct {
@@ -182,12 +197,40 @@ func (r *Repository) FindByCustomerID(customerID uint64, ctx context.Context) ([
 
 func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error) {
 	var orders []models.Order
-	if err := r.db.Select(&orders, selectOrders); err != nil {
-		customErr := errortools.SqlErrorChoice(err)
-		return nil, errors.Wrap(customErr, err.Error())
+	param := ctx.Value(ctxQueryParams).(map[string]interface{})
+	category := param["category"].(string)
+	limit := param["limit"].(int)
+	offset := param["offset"].(int)
+	desk := param["desc"].(bool)
+	budgetFrom := param["from"].(int)
+	budgetTo := param["to"].(int)
+	searchStr := param["search_str"].(string)
+	if desk {
+		if err := r.db.Select(&orders, getActualOrdersDesk, budgetFrom, budgetTo, searchStr, category, limit, offset); err != nil {
+			customErr := errortools.SqlErrorChoice(err)
+			return nil, errors.Wrap(customErr, err.Error())
+		}
+	}else{
+		if err := r.db.Select(&orders, getActualOrders, budgetFrom, budgetTo, searchStr, category, limit, offset); err != nil {
+			customErr := errortools.SqlErrorChoice(err)
+			return nil, errors.Wrap(customErr, err.Error())
+		}
 	}
 	return orders, nil
 }
+
+//
+//- search_str: fffff
+//
+//- budget-from: 300
+//- budget-to: 400
+//
+//- sort: {title, salary}
+//- desc: {true, false} - сортировка по возрастанию\убыванию
+//- category: 'Использование человеческих ресурсов'
+//- suggest: 'Использование человеческих ресурсов'
+//- limit: 1
+//- offset: 25
 
 func (r *Repository) UpdateExecutor(order models.Order, ctx context.Context) error {
 	tx, err := r.db.Beginx()
@@ -236,9 +279,9 @@ func (r *Repository) GetArchiveOrdersByExecutorID(executorID uint64, ctx context
 	return orders, nil
 }
 
-func (r *Repository) GetArchiveOrdersByCustomerID(executorID uint64, ctx context.Context) ([]models.Order, error) {
+func (r *Repository) GetArchiveOrdersByCustomerID(customerID uint64, ctx context.Context) ([]models.Order, error) {
 	var orders []models.Order
-	if err := r.db.Select(&orders, selectArchiveOrdersByCustomerID, executorID); err != nil {
+	if err := r.db.Select(&orders, selectArchiveOrdersByCustomerID, customerID); err != nil {
 		customErr := errortools.SqlErrorChoice(err)
 		return nil, errors.Wrap(customErr, err.Error())
 	}

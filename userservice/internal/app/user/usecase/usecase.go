@@ -172,6 +172,50 @@ func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (*mo
 	}, nil
 }
 
+const (
+	ctxParam uint8 = 4
+)
+
+func (useCase *UseCase) GetUsers(ctx context.Context) ([]models.UserInfo, error) {
+	uInf, err := useCase.userRepository.GetUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	param := ctx.Value(ctxParam).(map[string]interface{})
+	category := param["category"].(string)
+
+	var res []models.UserInfo
+
+	for i, _ := range uInf {
+		uInf[i].Specializes, err = useCase.specializeRepository.FindByUserID(uInf[i].ID, ctx)
+		if uInf[i].Specializes == nil {
+			uInf[i].Specializes = []string{}
+		}
+		if err != nil {
+			return nil, err
+		}
+		if category != "" {
+			flag := false
+			for _, spec := range uInf[i].Specializes {
+				if spec == category {
+					flag = true
+				}
+			}
+			if flag {
+				res = append(res, uInf[i])
+				//uInf[i], uInf[len(uInf)-1] = uInf[len(uInf)-1], uInf[i]
+				//uInf = uInf[:len(uInf)-1]
+			}
+		} else {
+			res = append(res, uInf[i])
+		}
+	}
+	if res == nil {
+		return []models.UserInfo{}, nil
+	}
+	return res, nil
+}
+
 func New(userRep user.Repository, specRep specialize2.Repository, reviewsRepository review2.Repository) *UseCase {
 	return &UseCase{
 		specializeRepository: specRep,

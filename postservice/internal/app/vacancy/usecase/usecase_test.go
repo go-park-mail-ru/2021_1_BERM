@@ -430,7 +430,6 @@ func TestGetActualVacancies(t *testing.T) {
 
 	var id uint64
 	id = 1
-	ctx := context.Background()
 	mockVacancyRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
 	useCase := NewUseCase(mockVacancyRepo, mockUserRepo)
@@ -459,6 +458,11 @@ func TestGetActualVacancies(t *testing.T) {
 		},
 	}
 
+	ctx := context.WithValue(context.Background(), ctxUserID, uint64(1))
+	mockUserRepo.EXPECT().
+		GetUserById(context.Background(), &api.UserRequest{Id: id}).
+		Times(1).
+		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek", Executor: true}, nil)
 	mockUserRepo.EXPECT().
 		GetUserById(ctx, &api.UserRequest{Id: id}).
 		Times(1).
@@ -483,7 +487,7 @@ func TestGetActualVacancies(t *testing.T) {
 	require.Error(t, err)
 
 	mockUserRepo.EXPECT().
-		GetUserById(ctx, &api.UserRequest{Id: id}).
+		GetUserById(context.Background(), &api.UserRequest{Id: id}).
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek", Executor: true}, errors.New("GRPC error"))
 	mockVacancyRepo.EXPECT().

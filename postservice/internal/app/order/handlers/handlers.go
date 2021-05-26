@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	ctxKeyReqID uint8 = 1
-	ctxUserID   uint8 = 2
-	ctxExecutor uint8 = 3
+	ctxKeyReqID    uint8 = 1
+	ctxUserID      uint8 = 2
+	ctxExecutor    uint8 = 3
+	ctxQueryParams uint8 = 4
 )
 
 type Handlers struct {
@@ -47,7 +48,64 @@ func (h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	o, err := h.useCase.GetActualOrders(context.Background())
+	param := make(map[string]interface{})
+	param["search_str"] = r.URL.Query().Get("search_str")
+	if searchStr := r.URL.Query().Get("search_str"); searchStr != "" {
+		param["search_str"] = searchStr
+	} else {
+		param["search_str"] = "~"
+	}
+	if budgetFrom := r.URL.Query().Get("from"); budgetFrom != "" {
+		budgetFromInt, err := strconv.Atoi(budgetFrom)
+		if err == nil {
+			param["from"] = budgetFromInt
+		}
+	} else {
+		param["from"] = 0
+	}
+	if budgetTo := r.URL.Query().Get("to"); budgetTo != "" {
+		budgetToInt, err := strconv.Atoi(budgetTo)
+		if err == nil {
+			param["to"] = budgetToInt
+		}
+	} else {
+		param["to"] = 0
+	}
+
+	if desc := r.URL.Query().Get("desc"); desc != "" {
+		descBool, err := strconv.ParseBool(desc)
+		if err == nil {
+			param["desc"] = descBool
+		}
+	} else {
+		param["desc"] = false
+	}
+
+	if category := r.URL.Query().Get("category"); category != "" {
+		param["category"] = category
+	} else {
+		param["category"] = "~"
+	}
+
+	if limit := r.URL.Query().Get("limit"); limit != "" {
+		limitInt, err := strconv.Atoi(limit)
+		if err == nil {
+			param["limit"] = limitInt
+		}
+	} else {
+		param["limit"] = 15
+	}
+	if offset := r.URL.Query().Get("offset"); offset != "" {
+		offsetInt, err := strconv.Atoi(offset)
+		if err == nil {
+			param["offset"] = offsetInt
+		}
+	} else {
+		param["offset"] = 0
+	}
+	ctx := context.WithValue(r.Context(), ctxQueryParams, param)
+	o, err := h.useCase.GetActualOrders(ctx)
+
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 

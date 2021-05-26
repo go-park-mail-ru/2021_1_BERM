@@ -22,7 +22,7 @@ func Respond(w http.ResponseWriter, r *http.Request, requestId uint64, code int,
 			return
 		}
 	}
-	metric.CrateRequestHits(code, r)
+	//metric.CrateRequestHits(code, r)
 	logger.LoggingResponse(requestId, code)
 }
 
