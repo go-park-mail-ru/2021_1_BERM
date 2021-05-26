@@ -10,3 +10,7 @@ userservice/bin
 authservice/bin
 postservice/bin
 imageservice/bin
+logauth.txt
+logimage.txt
+logpost.txt
+loguser.txt
