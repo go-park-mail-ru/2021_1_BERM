@@ -155,6 +155,9 @@ func (r *Repository) GetUsers(ctx context.Context) ([]models.UserInfo, error) {
 	to := param["to"].(int)
 	searchStr := param["search_str"].(string)
 	sort := param["sort"].(string)
+	if searchStr != "~" {
+		searchStr += ":*"
+	}
 	if desc {
 		switch sort {
 		case "rating":

@@ -132,6 +132,9 @@ func (r *Repository) GetActualVacancies(ctx context.Context) ([]models.Vacancy, 
 	salaryFrom := param["from"].(int)
 	salaryTo := param["to"].(int)
 	searchStr := param["search_str"].(string)
+	if searchStr != "~" {
+		searchStr += ":*"
+	}
 	if desk {
 		if err := r.db.Select(&vacancies, getActualVacancy, salaryFrom, salaryTo, searchStr, category, limit, offset); err != nil {
 			customErr := errortools.SqlErrorChoice(err)
