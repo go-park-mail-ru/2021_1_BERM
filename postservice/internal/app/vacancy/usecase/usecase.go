@@ -143,8 +143,8 @@ func (u *UseCase) FindByUserID(userID uint64, ctx context.Context) ([]models.Vac
 	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)
 	}
-	for _, vacancy := range vacancies {
-		err = u.supplementingTheVacancyModel(&vacancy)
+	for i, _ := range vacancies {
+		err = u.supplementingTheVacancyModel(&vacancies[i])
 		if err != nil {
 			return nil, errors.Wrap(err, vacancyUseCaseError)
 		}

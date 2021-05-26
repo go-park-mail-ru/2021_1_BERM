@@ -80,8 +80,8 @@ func (u *UseCase) FindByUserID(userID uint64, ctx context.Context) ([]models.Ord
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
-	for _, order := range orders {
-		err = u.supplementingTheOrderModel(&order)
+	for i, _ := range orders {
+		err = u.supplementingTheOrderModel(&orders[i])
 		if err != nil {
 			return nil, errors.Wrap(err, orderUseCaseError)
 		}
