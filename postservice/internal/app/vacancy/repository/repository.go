@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	ctxParam      uint8 = 3
+	ctxParam      uint8 = 4
 	insertVacancy       = `INSERT INTO post.vacancy (
 						  category, 
 						  vacancy_name,

@@ -13,7 +13,7 @@ import (
 
 const (
 	vacancyUseCaseError       = "Vacancy use case error"
-	ctxParam            uint8 = 3
+	ctxParam            uint8 = 4
 	ctxUserID           uint8 = 2
 )
 
