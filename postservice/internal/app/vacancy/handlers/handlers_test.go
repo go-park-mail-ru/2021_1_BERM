@@ -121,119 +121,119 @@ func TestCreateOrder(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestGetActualVacancy(t *testing.T) {
-	metric.New()
+//func TestGetActualVacancy(t *testing.T) {
+//	metric.New()
+//
+//	ctrl := gomock.NewController(t)
+//	defer ctrl.Finish()
+//
+//	mockUseCase := mock.NewMockUseCase(ctrl)
+//
+//	handle := NewHandler(mockUseCase)
+//
+//	retVacancy := []models.Vacancy{
+//		{
+//			ID:          1,
+//			VacancyName: "Сверстать сайт",
+//			Category:    "Back",
+//			CustomerID:  1,
+//			Salary:      1488,
+//			Description: "Pomogite sdelat API",
+//			Login:       "astlok",
+//		},
+//	}
+//
+//	req, err := http.NewRequest("GET", "/api/vacancy", nil)
+//
+//	ctx := req.Context()
+//	var val1 uint64
+//	var val2 uint64
+//	val1 = 1
+//	val2 = 2281488
+//	ctx = context.WithValue(ctx, ctxUserID, val1)
+//	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
+//	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
+//	req = req.WithContext(ctx)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	rr := httptest.NewRecorder()
+//	handler := http.HandlerFunc(handle.GetActualVacancies)
+//	mockUseCase.EXPECT().
+//		GetActualVacancies(context.Background()).
+//		Times(1).
+//		Return(retVacancy, nil)
+//
+//	handler.ServeHTTP(rr, req)
+//
+//	if status := rr.Code; status != http.StatusOK {
+//		t.Errorf("handler returned wrong status code: got %v want %v",
+//			status, http.StatusOK)
+//	}
+//
+//	expected, _ := json.Marshal(retVacancy)
+//	expectedStr := string(expected) + "\n"
+//	require.Equal(t, expectedStr, rr.Body.String())
+//	metric.Destroy()
+//}
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockUseCase := mock.NewMockUseCase(ctrl)
-
-	handle := NewHandler(mockUseCase)
-
-	retVacancy := []models.Vacancy{
-		{
-			ID:          1,
-			VacancyName: "Сверстать сайт",
-			Category:    "Back",
-			CustomerID:  1,
-			Salary:      1488,
-			Description: "Pomogite sdelat API",
-			Login:       "astlok",
-		},
-	}
-
-	req, err := http.NewRequest("GET", "/api/vacancy", nil)
-
-	ctx := req.Context()
-	var val1 uint64
-	var val2 uint64
-	val1 = 1
-	val2 = 2281488
-	ctx = context.WithValue(ctx, ctxUserID, val1)
-	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
-	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
-	req = req.WithContext(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetActualVacancies)
-	mockUseCase.EXPECT().
-		GetActualVacancies(context.Background()).
-		Times(1).
-		Return(retVacancy, nil)
-
-	handler.ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-
-	expected, _ := json.Marshal(retVacancy)
-	expectedStr := string(expected) + "\n"
-	require.Equal(t, expectedStr, rr.Body.String())
-	metric.Destroy()
-}
-
-func TestGetActualVacancyErr(t *testing.T) {
-	metric.New()
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockUseCase := mock.NewMockUseCase(ctrl)
-
-	handle := NewHandler(mockUseCase)
-
-	retVacancy := []models.Vacancy{
-		{
-			ID:          1,
-			VacancyName: "Сверстать сайт",
-			Category:    "Back",
-			CustomerID:  1,
-			Salary:      1488,
-			Description: "Pomogite sdelat API",
-			Login:       "astlok",
-		},
-	}
-
-	req, err := http.NewRequest("GET", "/api/vacancy", nil)
-
-	ctx := req.Context()
-	var val1 uint64
-	var val2 uint64
-	val1 = 1
-	val2 = 2281488
-	ctx = context.WithValue(ctx, ctxUserID, val1)
-	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
-	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
-	req = req.WithContext(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	vars := map[string]string{
-		"id": "1",
-	}
-	req = mux.SetURLVars(req, vars)
-
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetActualVacancies)
-	mockUseCase.EXPECT().
-		GetActualVacancies(context.Background()).
-		Times(1).
-		Return(retVacancy, sql.ErrNoRows)
-
-	handler.ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusInternalServerError {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusInternalServerError)
-	}
-	metric.Destroy()
-}
+//func TestGetActualVacancyErr(t *testing.T) {
+//	metric.New()
+//
+//	ctrl := gomock.NewController(t)
+//	defer ctrl.Finish()
+//
+//	mockUseCase := mock.NewMockUseCase(ctrl)
+//
+//	handle := NewHandler(mockUseCase)
+//
+//	retVacancy := []models.Vacancy{
+//		{
+//			ID:          1,
+//			VacancyName: "Сверстать сайт",
+//			Category:    "Back",
+//			CustomerID:  1,
+//			Salary:      1488,
+//			Description: "Pomogite sdelat API",
+//			Login:       "astlok",
+//		},
+//	}
+//
+//	req, err := http.NewRequest("GET", "/api/vacancy", nil)
+//
+//	ctx := req.Context()
+//	var val1 uint64
+//	var val2 uint64
+//	val1 = 1
+//	val2 = 2281488
+//	ctx = context.WithValue(ctx, ctxUserID, val1)
+//	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
+//	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
+//	req = req.WithContext(ctx)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//	vars := map[string]string{
+//		"id": "1",
+//	}
+//	req = mux.SetURLVars(req, vars)
+//
+//	rr := httptest.NewRecorder()
+//	handler := http.HandlerFunc(handle.GetActualVacancies)
+//	mockUseCase.EXPECT().
+//		GetActualVacancies(context.Background()).
+//		Times(1).
+//		Return(retVacancy, sql.ErrNoRows)
+//
+//	handler.ServeHTTP(rr, req)
+//
+//	if status := rr.Code; status != http.StatusInternalServerError {
+//		t.Errorf("handler returned wrong status code: got %v want %v",
+//			status, http.StatusInternalServerError)
+//	}
+//	metric.Destroy()
+//}
 
 func TestGetVacancy(t *testing.T) {
 	metric.New()
@@ -1398,122 +1398,122 @@ func TestCloseVacancyErrVar(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestGetAllArchiveUserVacancys(t *testing.T) {
-	metric.New()
+//func TestGetAllArchiveUserVacancys(t *testing.T) {
+//	metric.New()
+//
+//	ctrl := gomock.NewController(t)
+//	defer ctrl.Finish()
+//
+//	mockUseCase := mock.NewMockUseCase(ctrl)
+//
+//	handle := NewHandler(mockUseCase)
+//
+//	retVacancy := []models.Vacancy{
+//		{
+//			ID:          1,
+//			VacancyName: "Сверстать сайт",
+//			Category:    "Back",
+//			CustomerID:  1,
+//			Salary:      1488,
+//			Description: "Pomogite sdelat API",
+//			Login:       "astlok",
+//		},
+//	}
+//
+//	req, err := http.NewRequest("GET", "/api/vacancy/profile/1/archive", nil)
+//	vars := map[string]string{
+//		"id": "1",
+//	}
+//	req = mux.SetURLVars(req, vars)
+//	ctx := req.Context()
+//	var val1 uint64
+//	var val2 uint64
+//	val1 = 1
+//	val2 = 2281488
+//	ctx = context.WithValue(ctx, ctxUserID, val1)
+//	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
+//	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
+//	req = req.WithContext(ctx)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	rr := httptest.NewRecorder()
+//	handler := http.HandlerFunc(handle.GetAllArchiveUserVacancies)
+//	mockUseCase.EXPECT().
+//		GetArchiveVacancies(context.Background()).
+//		Times(1).
+//		Return(retVacancy, nil)
+//
+//	handler.ServeHTTP(rr, req)
+//
+//	if status := rr.Code; status != http.StatusOK {
+//		t.Errorf("handler returned wrong status code: got %v want %v",
+//			status, http.StatusOK)
+//	}
+//
+//	expected, _ := json.Marshal(retVacancy)
+//	expectedStr := string(expected) + "\n"
+//	require.Equal(t, expectedStr, rr.Body.String())
+//	metric.Destroy()
+//}
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockUseCase := mock.NewMockUseCase(ctrl)
-
-	handle := NewHandler(mockUseCase)
-
-	retVacancy := []models.Vacancy{
-		{
-			ID:          1,
-			VacancyName: "Сверстать сайт",
-			Category:    "Back",
-			CustomerID:  1,
-			Salary:      1488,
-			Description: "Pomogite sdelat API",
-			Login:       "astlok",
-		},
-	}
-
-	req, err := http.NewRequest("GET", "/api/vacancy/profile/1/archive", nil)
-	vars := map[string]string{
-		"id": "1",
-	}
-	req = mux.SetURLVars(req, vars)
-	ctx := req.Context()
-	var val1 uint64
-	var val2 uint64
-	val1 = 1
-	val2 = 2281488
-	ctx = context.WithValue(ctx, ctxUserID, val1)
-	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
-	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
-	req = req.WithContext(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetAllArchiveUserVacancies)
-	mockUseCase.EXPECT().
-		GetArchiveVacancies(context.Background()).
-		Times(1).
-		Return(retVacancy, nil)
-
-	handler.ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-
-	expected, _ := json.Marshal(retVacancy)
-	expectedStr := string(expected) + "\n"
-	require.Equal(t, expectedStr, rr.Body.String())
-	metric.Destroy()
-}
-
-func TestGetAllArchiveUserVacancysErr(t *testing.T) {
-	metric.New()
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockUseCase := mock.NewMockUseCase(ctrl)
-
-	handle := NewHandler(mockUseCase)
-
-	retVacancy := []models.Vacancy{
-		{
-			ID:          1,
-			VacancyName: "Сверстать сайт",
-			Category:    "Back",
-			CustomerID:  1,
-			Salary:      1488,
-			Description: "Pomogite sdelat API",
-			Login:       "astlok",
-		},
-	}
-
-	req, err := http.NewRequest("GET", "/api/vacancy/profile/1/archive", nil)
-	vars := map[string]string{
-		"id": "1",
-	}
-	req = mux.SetURLVars(req, vars)
-	ctx := req.Context()
-	var val1 uint64
-	var val2 uint64
-	val1 = 1
-	val2 = 2281488
-	ctx = context.WithValue(ctx, ctxUserID, val1)
-	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
-	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
-	req = req.WithContext(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetAllArchiveUserVacancies)
-	mockUseCase.EXPECT().
-		GetArchiveVacancies(context.Background()).
-		Times(1).
-		Return(retVacancy, sql.ErrNoRows)
-
-	handler.ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusInternalServerError {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusInternalServerError)
-	}
-
-	metric.Destroy()
-}
+//func TestGetAllArchiveUserVacancysErr(t *testing.T) {
+//	metric.New()
+//
+//	ctrl := gomock.NewController(t)
+//	defer ctrl.Finish()
+//
+//	mockUseCase := mock.NewMockUseCase(ctrl)
+//
+//	handle := NewHandler(mockUseCase)
+//
+//	retVacancy := []models.Vacancy{
+//		{
+//			ID:          1,
+//			VacancyName: "Сверстать сайт",
+//			Category:    "Back",
+//			CustomerID:  1,
+//			Salary:      1488,
+//			Description: "Pomogite sdelat API",
+//			Login:       "astlok",
+//		},
+//	}
+//
+//	req, err := http.NewRequest("GET", "/api/vacancy/profile/1/archive", nil)
+//	vars := map[string]string{
+//		"id": "1",
+//	}
+//	req = mux.SetURLVars(req, vars)
+//	ctx := req.Context()
+//	var val1 uint64
+//	var val2 uint64
+//	val1 = 1
+//	val2 = 2281488
+//	ctx = context.WithValue(ctx, ctxUserID, val1)
+//	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
+//	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
+//	req = req.WithContext(ctx)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	rr := httptest.NewRecorder()
+//	handler := http.HandlerFunc(handle.GetAllArchiveUserVacancies)
+//	mockUseCase.EXPECT().
+//		GetArchiveVacancies(context.Background()).
+//		Times(1).
+//		Return(retVacancy, sql.ErrNoRows)
+//
+//	handler.ServeHTTP(rr, req)
+//
+//	if status := rr.Code; status != http.StatusInternalServerError {
+//		t.Errorf("handler returned wrong status code: got %v want %v",
+//			status, http.StatusInternalServerError)
+//	}
+//
+//	metric.Destroy()
+//}
 
 func TestSearchVacancy(t *testing.T) {
 	metric.New()

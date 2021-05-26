@@ -80,6 +80,21 @@ func (mr *MockUseCaseMockRecorder) GetById(arg0, arg1 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockUseCase)(nil).GetById), arg0, arg1)
 }
 
+// GetUsers mocks base method.
+func (m *MockUseCase) GetUsers(arg0 context.Context) ([]models.UserInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsers", arg0)
+	ret0, _ := ret[0].([]models.UserInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsers indicates an expected call of GetUsers.
+func (mr *MockUseCaseMockRecorder) GetUsers(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockUseCase)(nil).GetUsers), arg0)
+}
+
 // SetImg mocks base method.
 func (m *MockUseCase) SetImg(arg0 uint64, arg1 string, arg2 context.Context) error {
 	m.ctrl.T.Helper()

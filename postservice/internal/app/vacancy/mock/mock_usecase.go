@@ -153,18 +153,18 @@ func (mr *MockUseCaseMockRecorder) GetActualVacancies(arg0 interface{}) *gomock.
 }
 
 // GetArchiveVacancies mocks base method.
-func (m *MockUseCase) GetArchiveVacancies(arg0 context.Context) ([]models.Vacancy, error) {
+func (m *MockUseCase) GetArchiveVacancies(arg0 models.UserBasicInfo, arg1 context.Context) ([]models.Vacancy, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetArchiveVacancies", arg0)
+	ret := m.ctrl.Call(m, "GetArchiveVacancies", arg0, arg1)
 	ret0, _ := ret[0].([]models.Vacancy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetArchiveVacancies indicates an expected call of GetArchiveVacancies.
-func (mr *MockUseCaseMockRecorder) GetArchiveVacancies(arg0 interface{}) *gomock.Call {
+func (mr *MockUseCaseMockRecorder) GetArchiveVacancies(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArchiveVacancies", reflect.TypeOf((*MockUseCase)(nil).GetArchiveVacancies), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArchiveVacancies", reflect.TypeOf((*MockUseCase)(nil).GetArchiveVacancies), arg0, arg1)
 }
 
 // SearchVacancy mocks base method.

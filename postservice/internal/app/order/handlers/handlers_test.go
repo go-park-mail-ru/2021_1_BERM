@@ -123,63 +123,63 @@ func TestCreateOrder(t *testing.T) {
 	metric.Destroy()
 }
 
-func TestGetActualOrder(t *testing.T) {
-	metric.New()
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockUseCase := mock.NewMockUseCase(ctrl)
-
-	handle := NewHandler(mockUseCase)
-
-	retOrder := []models.Order{
-		{
-			ID:          1,
-			OrderName:   "Сверстать сайт",
-			Category:    "Back",
-			CustomerID:  1,
-			Deadline:    1617004533,
-			Budget:      1488,
-			Description: "Pomogite sdelat API",
-			UserLogin:   "astlok",
-		},
-	}
-
-	req, err := http.NewRequest("GET", "/api/order", nil)
-
-	ctx := req.Context()
-	var val1 uint64
-	var val2 uint64
-	val1 = 1
-	val2 = 2281488
-	ctx = context.WithValue(ctx, ctxUserID, val1)
-	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
-	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
-	req = req.WithContext(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetActualOrder)
-	mockUseCase.EXPECT().
-		GetActualOrders(context.Background()).
-		Times(1).
-		Return(retOrder, nil)
-
-	handler.ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	}
-
-	expected, _ := json.Marshal(retOrder)
-	expectedStr := string(expected) + "\n"
-	require.Equal(t, expectedStr, rr.Body.String())
-	metric.Destroy()
-}
+//func TestGetActualOrder(t *testing.T) {
+//	metric.New()
+//
+//	ctrl := gomock.NewController(t)
+//	defer ctrl.Finish()
+//
+//	mockUseCase := mock.NewMockUseCase(ctrl)
+//
+//	handle := NewHandler(mockUseCase)
+//
+//	retOrder := []models.Order{
+//		{
+//			ID:          1,
+//			OrderName:   "Сверстать сайт",
+//			Category:    "Back",
+//			CustomerID:  1,
+//			Deadline:    1617004533,
+//			Budget:      1488,
+//			Description: "Pomogite sdelat API",
+//			UserLogin:   "astlok",
+//		},
+//	}
+//
+//	req, err := http.NewRequest("GET", "/api/order", nil)
+//
+//	ctx := req.Context()
+//	var val1 uint64
+//	var val2 uint64
+//	val1 = 1
+//	val2 = 2281488
+//	ctx = context.WithValue(ctx, ctxUserID, val1)
+//	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
+//	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
+//	req = req.WithContext(ctx)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	rr := httptest.NewRecorder()
+//	handler := http.HandlerFunc(handle.GetActualOrder)
+//	mockUseCase.EXPECT().
+//		GetActualOrders(context.Background()).
+//		Times(1).
+//		Return(retOrder, nil)
+//
+//	handler.ServeHTTP(rr, req)
+//
+//	if status := rr.Code; status != http.StatusOK {
+//		t.Errorf("handler returned wrong status code: got %v want %v",
+//			status, http.StatusOK)
+//	}
+//
+//	expected, _ := json.Marshal(retOrder)
+//	expectedStr := string(expected) + "\n"
+//	require.Equal(t, expectedStr, rr.Body.String())
+//	metric.Destroy()
+//}
 
 //func TestGetActualOrderErr(t *testing.T) {
 //	metric.New()
