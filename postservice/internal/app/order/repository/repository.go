@@ -98,7 +98,7 @@ const (
 		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY budget DESC LIMIT $5 OFFSET $6"
 
-	selectTittle = `SELECT order_name FROM post.orders WHERE to_tsvector(order_name) @@ to_tsquery($3)`
+	selectTittle = `SELECT order_name FROM post.orders WHERE order_name LIKE $1`
 
 	selectAllTittle = `SELECT order_name FROM post.orders`
 )
@@ -324,14 +324,14 @@ func (r *Repository) FindArchiveByID(id uint64, ctx context.Context) (*models.Or
 }
 
 func (r *Repository) SuggestOrderTitle(suggestWord string, ctx context.Context) ([]models.SuggestOrderTitle, error) {
-	suggestTittles := []models.SuggestOrderTitle{}
+	var suggestTittles []models.SuggestOrderTitle
 	var query string
 	if suggestWord == "" {
 		query = selectAllTittle
 	} else {
 		query = selectTittle
 	}
-	suggestWord += ":*"
+	suggestWord += "%"
 	if err := r.db.Select(&suggestTittles, query, suggestWord); err != nil {
 		customErr := errortools.SqlErrorChoice(err)
 		return nil, errors.Wrap(customErr, err.Error())
