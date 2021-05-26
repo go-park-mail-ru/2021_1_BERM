@@ -18,5 +18,5 @@ type VacancySearch struct {
 }
 
 type SuggestVacancyTittle struct {
-	Title string `json:"title" db:"order_name"`
+	Title string `json:"title" db:"vacancy_name"`
 }

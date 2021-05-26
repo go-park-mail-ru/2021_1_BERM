@@ -111,10 +111,8 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	var oReq map[string]interface{}
-	oReq["orders"] = o;
-	oReq["size"] = len(o);
-	httputils.Respond(w, r, reqID, http.StatusOK, oReq)
+
+	httputils.Respond(w, r, reqID, http.StatusOK, o)
 }
 
 func (h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {

@@ -134,10 +134,7 @@ func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	var vReq map[string]interface{}
-	vReq["vacancies"] = v;
-	vReq["size"] = len(v);
-	httputils.Respond(w, r, reqID, http.StatusOK, vReq)
+	httputils.Respond(w, r, reqID, http.StatusOK, v)
 }
 
 func (h *Handlers) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
