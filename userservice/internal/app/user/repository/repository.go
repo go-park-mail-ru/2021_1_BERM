@@ -11,7 +11,7 @@ import (
 const(
 	ctxParam uint8 = 4;
 
-	getUsersRating = `SELECT users.id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+	getUsersRating = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating
 		FROM userservice.users AS users
 		LEFT JOIN userservice.reviews
 		 ON users.id = reviews.to_user_id
@@ -21,7 +21,7 @@ const(
 		GROUP BY users.id
 		ORDER BY rating LIMIT $4 OFFSET $5`
 
-	getUsersRatingDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+	getUsersRatingDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating
 		FROM userservice.users AS users
 		LEFT JOIN userservice.reviews
 		 ON users.id = reviews.to_user_id
@@ -31,7 +31,7 @@ const(
 		GROUP BY users.id
 		ORDER BY rating DESC LIMIT $4 OFFSET $5`
 
-	getUsersNick = `SELECT users.id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+	getUsersNick = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating
 		FROM userservice.users AS users
 		LEFT JOIN userservice.reviews
 		 ON users.id = reviews.to_user_id
@@ -41,7 +41,7 @@ const(
 		GROUP BY users.id, name_surname
 		ORDER BY name_surname LIMIT $4 OFFSET $5`
 
-	getUsersNickDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, AVG(score) AS rating
+	getUsersNickDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating
 		FROM userservice.users AS users
 		LEFT JOIN userservice.reviews
 		 ON users.id = reviews.to_user_id
