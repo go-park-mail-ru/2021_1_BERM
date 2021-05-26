@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"post/internal/app/models"
 	"post/pkg/error/errortools"
+	"strings"
 )
 
 const (
@@ -210,6 +211,17 @@ func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error
 	budgetTo := param["to"].(int)
 	searchStr := param["search_str"].(string)
 	if searchStr != "~" {
+		search := strings.Split(searchStr, " ")
+		var res string
+		for i, s := range search {
+			if i == len(search) - 1 {
+				res += " " + s
+				break
+			}
+			res += s + " <->"
+
+		}
+		searchStr = res
 		searchStr += ":*"
 	}
 	if desk {
