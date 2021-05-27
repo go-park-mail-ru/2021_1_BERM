@@ -105,7 +105,7 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 		param["offset"] = 0
 	}
 	ctx := context.WithValue(r.Context(), ctxQueryParams, param)
-	o, err := h.useCase.GetActualOrders(ctx)
+	o, num, err := h.useCase.GetActualOrders(ctx)
 
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
@@ -113,7 +113,11 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httputils.Respond(w, r, reqID, http.StatusOK, o)
+	orderResponse := make(map[string]interface{})
+	orderResponse["order"] = o
+	orderResponse["size"] = num
+	httputils.Respond(w, r, reqID, http.StatusOK, orderResponse)
+
 }
 
 func (h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {

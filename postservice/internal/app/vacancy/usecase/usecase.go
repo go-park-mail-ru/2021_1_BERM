@@ -58,24 +58,24 @@ func (u *UseCase) FindByID(id uint64, ctx context.Context) (*models.Vacancy, err
 	return vacancy, nil
 }
 
-func (u *UseCase) GetActualVacancies(ctx context.Context) ([]models.Vacancy, error) {
+func (u *UseCase) GetActualVacancies(ctx context.Context) ([]models.Vacancy, uint64, error) {
 	vacancies, err := u.VacancyRepo.GetActualVacancies(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, vacancyUseCaseError)
+		return nil,0, errors.Wrap(err, vacancyUseCaseError)
 	}
 	for i, vacancy := range vacancies {
 		err = u.supplementingTheVacancyModel(&vacancy)
 		if err != nil {
-			return nil, errors.Wrap(err, vacancyUseCaseError)
+			return nil, 0, errors.Wrap(err, vacancyUseCaseError)
 		}
 		vacancies[i] = vacancy
 	}
 	if vacancies == nil {
-		return []models.Vacancy{}, nil
+		return []models.Vacancy{},0, nil
 	}
 	user, err := u.UserRepo.GetUserById(ctx, &api.UserRequest{Id: ctx.Value(ctxUserID).(uint64)})
 	if err != nil {
-		return []models.Vacancy{}, nil
+		return []models.Vacancy{}, 0, nil
 	}
 
 	counter := 0
@@ -87,7 +87,11 @@ func (u *UseCase) GetActualVacancies(ctx context.Context) ([]models.Vacancy, err
 			}
 		}
 	}
-	return vacancies, err
+	oNum, err := u.VacancyRepo.GetVacancyNum(ctx);
+	if err != nil {
+		return []models.Vacancy{}, 0, err
+	}
+	return vacancies, oNum, err
 }
 
 func (u *UseCase) ChangeVacancy(vacancy models.Vacancy, ctx context.Context) (models.Vacancy, error) {
