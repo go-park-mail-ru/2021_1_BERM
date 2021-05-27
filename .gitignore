@@ -14,6 +14,6 @@ logauth.txt
 logimage.txt
 logpost.txt
 loguser.txt
-.jpg
-.jpeg
-.cov
+*.jpg
+*.jpeg
+*.cov
