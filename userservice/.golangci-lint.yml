@@ -8,15 +8,12 @@ linters-settings:
   funlen:
     lines: 150
     statements: 80
-  gofmt:
-    simplify: true
   lll:
     line-length: 150
     tab-width: 4
 
 linters:
   enable:
-    - gofmt
     - deadcode
     - errcheck
     - gosimple

@@ -153,39 +153,3 @@ func TestGetUserInfo(t *testing.T) {
 	}
 	metric.Destroy()
 }
-
-
-func TestGetUsers(t *testing.T) {
-	metric.New()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockUserUseCase := userMock.NewMockUseCase(ctrl)
-	handle := userHandlers.New(mockUserUseCase)
-
-	req, err := http.NewRequest("GET", "/profile/users", nil)
-
-
-	ctx := req.Context()
-	reqID := uint64(2281488)
-	ctx = context.WithValue(ctx, ctxKeyReqID, reqID)
-	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
-	req = req.WithContext(ctx)
-
-	mockUserUseCase.EXPECT().GetById(uint64(1), req.Context()).Times(1).Return(&models.UserInfo{}, nil)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	recorder := httptest.NewRecorder()
-	handler := http.HandlerFunc(handle.GetUserInfo)
-
-	handler.ServeHTTP(recorder, req)
-
-	if status := recorder.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusCreated)
-	}
-	metric.Destroy()
-}

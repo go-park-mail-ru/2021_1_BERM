@@ -5,15 +5,12 @@ run:
   tests: true
 
 linters-settings:
-  gofmt:
-    simplify: true
   lll:
     line-length: 150
     tab-width: 4
 
 linters:
   enable:
-    - gofmt
     - deadcode
     - errcheck
     - gosimple
