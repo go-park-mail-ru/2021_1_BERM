@@ -117,7 +117,6 @@ func TestCreateUserWithInvalidUrl(t *testing.T) {
 	metric.Destroy()
 }
 
-
 func TestGetUsers(t *testing.T) {
 	metric.New()
 	ctrl := gomock.NewController(t)
@@ -134,7 +133,7 @@ func TestGetUsers(t *testing.T) {
 	ctx = context.WithValue(ctx, ctxKeyReqID, reqID)
 	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 	req.URL.Query().Add("suggest_word", "")
-	mockUserUseCase.EXPECT().SuggestUsersTitle("",context.Background()).Times(1).Return([]models.SuggestUsersTittle{}, nil)
+	mockUserUseCase.EXPECT().SuggestUsersTitle("", context.Background()).Times(1).Return([]models.SuggestUsersTittle{}, nil)
 	req = req.WithContext(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -168,7 +167,7 @@ func TestSuggestErr(t *testing.T) {
 	ctx = context.WithValue(ctx, ctxKeyReqID, reqID)
 	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 	req.URL.Query().Add("suggest_word", "")
-	mockUserUseCase.EXPECT().SuggestUsersTitle("",context.Background()).Times(1).Return(nil, errors.New("hunia"))
+	mockUserUseCase.EXPECT().SuggestUsersTitle("", context.Background()).Times(1).Return(nil, errors.New("hunia"))
 	req = req.WithContext(ctx)
 	if err != nil {
 		t.Fatal(err)

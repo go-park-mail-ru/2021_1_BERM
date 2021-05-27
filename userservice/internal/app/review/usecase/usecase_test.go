@@ -172,7 +172,6 @@ func TestGetAllReviewsByUserIDErr4(t *testing.T) {
 	require.NoError(t, err)
 }
 
-
 func TestGetAllReviewsByUserIDErr(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
