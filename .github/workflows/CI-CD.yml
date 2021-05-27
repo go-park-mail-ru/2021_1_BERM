@@ -16,7 +16,7 @@ jobs:
       - name: linters check auth service
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.29
+          version: latest
           working-directory: authservice
           args: -c .golangci-lint.yml
 
