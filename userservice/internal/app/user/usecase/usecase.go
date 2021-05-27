@@ -198,7 +198,6 @@ func (useCase *UseCase) GetUsers(ctx context.Context) ([]models.UserInfo, error)
 	category := param["category"].(string)
 
 	var res []models.UserInfo
-
 	for i := range uInf {
 		uInf[i].Specializes, err = useCase.SpecializeRepository.FindByUserID(uInf[i].ID, ctx)
 		if uInf[i].Specializes == nil {

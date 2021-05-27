@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/lib/pq"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 	"strconv"
 	"testing"
@@ -15,6 +16,11 @@ import (
 	"user/internal/app/user/tools/passwordencrypt"
 	userUseCase "user/internal/app/user/usecase"
 	customError "user/pkg/error"
+	"user/pkg/types"
+)
+
+const (
+	ctxParam types.CtxKey = 4
 )
 
 //Проверка созданияю юзера клиента
@@ -385,6 +391,97 @@ func TestUserVerificationBadPass(t *testing.T) {
 		Encrypter:      encrypter,
 	}
 	_, err := useCase.Verification("asdas@mail.ru", "SAdadasdsda", ctx)
+	require.Error(t, err)
+}
+
+func TestGetUsers(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userInfos := []models.UserInfo{
+		models.UserInfo{
+			ID:          1,
+			Email:       "abc@mail.ru",
+			Login:       "abcdefg",
+			NameSurname: "abc bdf",
+			Password:    []byte{1, 2, 4, 5, 6, 4, 2, 4, 6, 3, 45, 3, 3},
+			Rating:      3,
+			ReviewCount: 2,
+			Executor:    false,
+		},
+	}
+	ID := uint64(1);
+	specs := pq.StringArray{"1", "2"}
+	ctxParent := context.Background()
+	param := map[string]interface{}{
+		"category" : "",
+	}
+	ctx := context.WithValue(ctxParent, ctxParam, param)
+	mockUserRepo := mock.NewMockRepository(ctrl)
+	mockUserRepo.EXPECT().GetUsers(ctx).Times(1).Return(userInfos, nil)
+
+	mockSpecRep := mock2.NewMockRepository(ctrl)
+
+	mockSpecRep.EXPECT().FindByUserID(ID, ctx).Return(specs, nil)
+	useCase := userUseCase.UseCase{
+		UserRepository: mockUserRepo,
+		SpecializeRepository: mockSpecRep,
+	}
+
+	_, err := useCase.GetUsers(ctx)
+	require.NoError(t, err)
+}
+
+func TestGetUsersCategory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userInfos := []models.UserInfo{
+		models.UserInfo{
+			ID:          1,
+			Email:       "abc@mail.ru",
+			Login:       "abcdefg",
+			NameSurname: "abc bdf",
+			Password:    []byte{1, 2, 4, 5, 6, 4, 2, 4, 6, 3, 45, 3, 3},
+			Rating:      3,
+			ReviewCount: 2,
+			Executor:    false,
+		},
+	}
+	ID := uint64(1);
+	specs := pq.StringArray{"1", "2"}
+	ctxParent := context.Background()
+	param := map[string]interface{}{
+		"category" : "sdaasDAS",
+	}
+	ctx := context.WithValue(ctxParent, ctxParam, param)
+	mockUserRepo := mock.NewMockRepository(ctrl)
+	mockUserRepo.EXPECT().GetUsers(ctx).Times(1).Return(userInfos, nil)
+
+	mockSpecRep := mock2.NewMockRepository(ctrl)
+
+	mockSpecRep.EXPECT().FindByUserID(ID, ctx).Return(specs, nil)
+	useCase := userUseCase.UseCase{
+		UserRepository: mockUserRepo,
+		SpecializeRepository: mockSpecRep,
+	}
+
+	_, err := useCase.GetUsers(ctx)
+	require.NoError(t, err)
+}
+
+func TestGetUsersErrInGetUsersRep(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	ctx := context.Background()
+	mockUserRepo := mock.NewMockRepository(ctrl)
+	mockUserRepo.EXPECT().GetUsers(ctx).Times(1).Return(nil, errors.New("test err"))
+
+	useCase := userUseCase.UseCase{
+		UserRepository: mockUserRepo,
+	}
+
+	_, err := useCase.GetUsers(ctx)
 	require.Error(t, err)
 }
 
