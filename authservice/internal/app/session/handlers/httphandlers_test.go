@@ -133,7 +133,6 @@ func TestRegistrationProfileErr2(t *testing.T) {
 	metric.Destroy()
 }
 
-
 func TestLogOut(t *testing.T) {
 	metric.New()
 	ctrl := gomock.NewController(t)

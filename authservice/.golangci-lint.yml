@@ -1,0 +1,38 @@
+run:
+  concurrency: 2
+  timeout: 3m
+  issues-exit-code: 1
+  tests: true
+
+linters-settings:
+  funlen:
+    lines: 150
+    statements: 80
+  gofmt:
+    simplify: true
+  lll:
+    line-length: 150
+    tab-width: 4
+
+linters:
+  enable:
+    - gofmt
+    - deadcode
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - varcheck
+    - structcheck
+    - typecheck
+    - funlen
+    - lll
+    - dogsled
+    - prealloc
+    - unconvert
+    - unparam
+    - whitespace
+    - gomnd
+    - testpackage

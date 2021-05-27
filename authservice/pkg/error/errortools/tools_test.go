@@ -1,11 +1,11 @@
 package errortools_test
 
 import (
+	errTools "authorizationservice/pkg/error/errortools"
 	"errors"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"testing"
-	errTools "authorizationservice/pkg/error/errortools"
 )
 
 func TestTools(t *testing.T) {

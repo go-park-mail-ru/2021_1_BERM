@@ -20,8 +20,8 @@ import (
 
 const (
 	ctxKeyStartReqTime types.CtxKey = 5
-	ctxKeyReqID types.CtxKey = 1
-	ctxUserID   types.CtxKey = 2
+	ctxKeyReqID        types.CtxKey = 1
+	ctxUserID          types.CtxKey = 2
 )
 
 func TestHandlers_CreatePostResponse(t *testing.T) {

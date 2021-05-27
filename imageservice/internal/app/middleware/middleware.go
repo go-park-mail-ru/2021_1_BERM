@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	ctxKeyReqID types.CtxKey = 1
+	ctxKeyReqID       types.CtxKey = 1
 	MaxAgeDay         int          = 86400
 	MaxAgeQuarterHour int          = 900
 )

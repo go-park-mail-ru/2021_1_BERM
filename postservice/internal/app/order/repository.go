@@ -21,5 +21,5 @@ type Repository interface {
 	SearchOrders(keyword string, ctx context.Context) ([]models.Order, error)
 	FindArchiveByID(id uint64, ctx context.Context) (*models.Order, error)
 	GetOrderNum(ctx context.Context) (uint64, error)
-	SuggestOrderTitle(suggestWord string,ctx context.Context) ([]models.SuggestOrderTitle, error)
+	SuggestOrderTitle(suggestWord string, ctx context.Context) ([]models.SuggestOrderTitle, error)
 }

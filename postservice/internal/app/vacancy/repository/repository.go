@@ -13,7 +13,7 @@ import (
 
 const (
 	ctxParam      types.CtxKey = 4
-	insertVacancy       = `INSERT INTO post.vacancy (
+	insertVacancy              = `INSERT INTO post.vacancy (
 						  category, 
 						  vacancy_name,
 						  description, 
@@ -42,7 +42,6 @@ const (
 	updateExecutor = `UPDATE post.vacancy SET 
                  executor_id =:executor_id
 				 WHERE id = :id`
-
 
 	selectArchiveVacancies = "SELECT * FROM post.archive_vacancy"
 
@@ -155,8 +154,7 @@ func (r *Repository) GetActualVacancies(ctx context.Context) ([]models.Vacancy, 
 			searchStr,
 			category,
 			limit,
-			offset);
-		err != nil {
+			offset); err != nil {
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
 		}
@@ -169,8 +167,7 @@ func (r *Repository) GetActualVacancies(ctx context.Context) ([]models.Vacancy, 
 			searchStr,
 			category,
 			limit,
-			offset);
-		err != nil {
+			offset); err != nil {
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
 		}
@@ -178,7 +175,7 @@ func (r *Repository) GetActualVacancies(ctx context.Context) ([]models.Vacancy, 
 	return vacancies, nil
 }
 
-func (r *Repository)GetVacancyNum(ctx context.Context) (uint64, error){
+func (r *Repository) GetVacancyNum(ctx context.Context) (uint64, error) {
 	var num uint64
 	if err := r.db.Get(&num, "SELECT COUNT(id) FROM post.vacancy"); err != nil {
 		customErr := errortools.SqlErrorChoice(err)
