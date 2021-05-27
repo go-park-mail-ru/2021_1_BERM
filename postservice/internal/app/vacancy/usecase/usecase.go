@@ -8,10 +8,13 @@ import (
 	"post/internal/app/models"
 	vacancyRepo "post/internal/app/vacancy"
 	customErr "post/pkg/error"
+	"post/pkg/types"
+	"reflect"
 )
 
 const (
-	vacancyUseCaseError = "Vacancy use case error"
+	vacancyUseCaseError              = "Vacancy use case error"
+	ctxUserID           types.CtxKey = 2
 )
 
 type UseCase struct {
@@ -42,6 +45,9 @@ func (u *UseCase) Create(vacancy models.Vacancy, ctx context.Context) (*models.V
 
 func (u *UseCase) FindByID(id uint64, ctx context.Context) (*models.Vacancy, error) {
 	vacancy, err := u.VacancyRepo.FindByID(id, ctx)
+	if vacancy == nil {
+		vacancy, err = u.VacancyRepo.FindArchiveByID(id, ctx)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)
 	}
@@ -52,22 +58,40 @@ func (u *UseCase) FindByID(id uint64, ctx context.Context) (*models.Vacancy, err
 	return vacancy, nil
 }
 
-func (u *UseCase) GetActualVacancies(ctx context.Context) ([]models.Vacancy, error) {
+func (u *UseCase) GetActualVacancies(ctx context.Context) ([]models.Vacancy, uint64, error) {
 	vacancies, err := u.VacancyRepo.GetActualVacancies(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, vacancyUseCaseError)
+		return nil, 0, errors.Wrap(err, vacancyUseCaseError)
 	}
 	for i, vacancy := range vacancies {
 		err = u.supplementingTheVacancyModel(&vacancy)
 		if err != nil {
-			return nil, errors.Wrap(err, vacancyUseCaseError)
+			return nil, 0, errors.Wrap(err, vacancyUseCaseError)
 		}
 		vacancies[i] = vacancy
 	}
 	if vacancies == nil {
-		return []models.Vacancy{}, nil
+		return []models.Vacancy{}, 0, nil
 	}
-	return vacancies, err
+	user, err := u.UserRepo.GetUserById(ctx, &api.UserRequest{Id: ctx.Value(ctxUserID).(uint64)})
+	if err != nil {
+		return []models.Vacancy{}, 0, nil
+	}
+
+	counter := 0
+	for _, spec := range user.Specializes {
+		for i := range vacancies {
+			if reflect.DeepEqual(vacancies[i], spec) {
+				vacancies[i], vacancies[counter] = vacancies[counter], vacancies[i]
+				counter++
+			}
+		}
+	}
+	oNum, err := u.VacancyRepo.GetVacancyNum(ctx)
+	if err != nil {
+		return []models.Vacancy{}, 0, err
+	}
+	return vacancies, oNum, err
 }
 
 func (u *UseCase) ChangeVacancy(vacancy models.Vacancy, ctx context.Context) (models.Vacancy, error) {
@@ -123,8 +147,8 @@ func (u *UseCase) FindByUserID(userID uint64, ctx context.Context) ([]models.Vac
 	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)
 	}
-	for _, vacancy := range vacancies {
-		err = u.supplementingTheVacancyModel(&vacancy)
+	for i := range vacancies {
+		err = u.supplementingTheVacancyModel(&vacancies[i])
 		if err != nil {
 			return nil, errors.Wrap(err, vacancyUseCaseError)
 		}
@@ -140,11 +164,9 @@ func (u *UseCase) SelectExecutor(vacancy models.Vacancy, ctx context.Context) er
 	if err != nil {
 		return errors.Wrap(err, vacancyUseCaseError)
 	}
-	//TODO: изменить интернал на экстернал
-	if userR.GetExecutor() == false {
+	if !userR.GetExecutor() {
 		return customErr.ErrorUserNotExecutor
 	}
-	//TODO: изменить интернал на экстернал
 	if vacancy.ExecutorID == vacancy.CustomerID {
 		return customErr.ErrorSameID
 	}
@@ -180,8 +202,15 @@ func (u *UseCase) CloseVacancy(vacancyID uint64, ctx context.Context) error {
 	return nil
 }
 
-func (u *UseCase) GetArchiveVacancies(ctx context.Context) ([]models.Vacancy, error) {
-	vacancies, err := u.VacancyRepo.GetArchiveVacancies(ctx)
+func (u *UseCase) GetArchiveVacancies(userInfo models.UserBasicInfo, ctx context.Context) ([]models.Vacancy, error) {
+	var vacancies []models.Vacancy
+	var err error
+	if userInfo.Executor {
+		vacancies, err = u.VacancyRepo.GetArchiveVacanciesByExecutorID(userInfo.ID, ctx)
+	} else {
+		vacancies, err = u.VacancyRepo.GetArchiveVacanciesByCustomerID(userInfo.ID, ctx)
+	}
+
 	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)
 	}
@@ -214,6 +243,17 @@ func (u *UseCase) SearchVacancy(keyword string, ctx context.Context) ([]models.V
 		return []models.Vacancy{}, nil
 	}
 	return vacancies, err
+}
+
+func (u *UseCase) SuggestVacancyTitle(suggestWord string, ctx context.Context) ([]models.SuggestVacancyTittle, error) {
+	suggestTittles, err := u.VacancyRepo.SuggestVacancyTitle(suggestWord, ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, vacancyUseCaseError)
+	}
+	if suggestTittles == nil {
+		return []models.SuggestVacancyTittle{}, nil
+	}
+	return suggestTittles, nil
 }
 
 func (u *UseCase) supplementingTheVacancyModel(vacancy *models.Vacancy) error {

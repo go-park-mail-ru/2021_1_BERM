@@ -1,8 +1,9 @@
-package handlers
+package handlers_test
 
 import (
 	"authorizationservice/api"
 	"authorizationservice/internal/app/models"
+	sesHandle "authorizationservice/internal/app/session/handlers"
 	"authorizationservice/internal/app/session/mock"
 	"authorizationservice/pkg/metric"
 	"context"
@@ -28,7 +29,7 @@ func TestGRPCServer_Check(t *testing.T) {
 	}
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewGRPCServer(mockUseCase)
+	handle := sesHandle.NewGRPCServer(mockUseCase)
 
 	mockUseCase.EXPECT().
 		Get(sessionInfo.SessionID, context.Background()).
@@ -54,7 +55,7 @@ func TestGRPCServer_CheckErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewGRPCServer(mockUseCase)
+	handle := sesHandle.NewGRPCServer(mockUseCase)
 
 	mockUseCase.EXPECT().
 		Get(sessionInfo.SessionID, context.Background()).

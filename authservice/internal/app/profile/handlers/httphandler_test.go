@@ -1,10 +1,12 @@
-package handlers
+package handlers_test
 
 import (
 	"authorizationservice/internal/app/models"
+	profAuth "authorizationservice/internal/app/profile/handlers"
 	profileMock "authorizationservice/internal/app/profile/mock"
 	sessionMock "authorizationservice/internal/app/session/mock"
 	"authorizationservice/pkg/metric"
+	"authorizationservice/pkg/types"
 	"bytes"
 	"context"
 	"database/sql"
@@ -16,8 +18,8 @@ import (
 	"time"
 )
 
-const ctxKeyStartReqTime uint8 = 5
-const ctxKeyReqID uint8 = 1
+const ctxKeyStartReqTime types.CtxKey = 5
+const ctxKeyReqID types.CtxKey = 1
 
 func TestRegistrationProfile(t *testing.T) {
 	metric.New()
@@ -43,7 +45,7 @@ func TestRegistrationProfile(t *testing.T) {
 	sessionUseCaseMock := sessionMock.NewMockUseCase(ctrl)
 	sessionUseCaseMock.EXPECT().Create(uint64(1), true, context.Background()).Times(1).Return(&models.Session{}, nil)
 
-	handle := New(sessionUseCaseMock, profileUseCaseMock)
+	handle := profAuth.New(sessionUseCaseMock, profileUseCaseMock)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.RegistrationProfile)
@@ -76,7 +78,7 @@ func TestRegistrationProfileErr(t *testing.T) {
 
 	sessionUseCaseMock := sessionMock.NewMockUseCase(ctrl)
 
-	handle := New(sessionUseCaseMock, profileUseCaseMock)
+	handle := profAuth.New(sessionUseCaseMock, profileUseCaseMock)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.RegistrationProfile)
@@ -113,7 +115,7 @@ func TestRegistrationProfileErr1(t *testing.T) {
 	}, sql.ErrNoRows)
 	sessionUseCaseMock := sessionMock.NewMockUseCase(ctrl)
 
-	handle := New(sessionUseCaseMock, profileUseCaseMock)
+	handle := profAuth.New(sessionUseCaseMock, profileUseCaseMock)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.RegistrationProfile)
@@ -149,9 +151,13 @@ func TestRegistrationProfileErr3(t *testing.T) {
 		Executor: true,
 	}, nil)
 	sessionUseCaseMock := sessionMock.NewMockUseCase(ctrl)
-	sessionUseCaseMock.EXPECT().Create(uint64(1), true, context.Background()).Times(1).Return(&models.Session{}, sql.ErrNoRows)
+	sessionUseCaseMock.
+		EXPECT().
+		Create(uint64(1), true, context.Background()).
+		Times(1).
+		Return(&models.Session{}, sql.ErrNoRows)
 
-	handle := New(sessionUseCaseMock, profileUseCaseMock)
+	handle := profAuth.New(sessionUseCaseMock, profileUseCaseMock)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.RegistrationProfile)
@@ -185,14 +191,17 @@ func TestAuthorizationProfile(t *testing.T) {
 	}
 
 	profileUseCaseMock := profileMock.NewMockUseCase(ctrl)
-	profileUseCaseMock.EXPECT().Authentication(newLogin.Email, newLogin.Password, ctx).Times(1).Return(&models.UserBasicInfo{
+	profileUseCaseMock.
+		EXPECT().
+		Authentication(newLogin.Email, newLogin.Password, ctx).
+		Times(1).Return(&models.UserBasicInfo{
 		ID:       1,
 		Executor: true,
 	}, nil)
 	sessionUseCaseMock := sessionMock.NewMockUseCase(ctrl)
 	sessionUseCaseMock.EXPECT().Create(uint64(1), true, ctx).Times(1).Return(&models.Session{}, nil)
 
-	handle := New(sessionUseCaseMock, profileUseCaseMock)
+	handle := profAuth.New(sessionUseCaseMock, profileUseCaseMock)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.AuthorisationProfile)
@@ -226,7 +235,7 @@ func TestAuthorizationProfileErr(t *testing.T) {
 
 	sessionUseCaseMock := sessionMock.NewMockUseCase(ctrl)
 
-	handle := New(sessionUseCaseMock, profileUseCaseMock)
+	handle := profAuth.New(sessionUseCaseMock, profileUseCaseMock)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.AuthorisationProfile)
@@ -261,13 +270,17 @@ func TestAuthorizationProfileErr2(t *testing.T) {
 	}
 
 	profileUseCaseMock := profileMock.NewMockUseCase(ctrl)
-	profileUseCaseMock.EXPECT().Authentication(newLogin.Email, newLogin.Password, ctx).Times(1).Return(&models.UserBasicInfo{
-		ID:       1,
-		Executor: true,
-	}, sql.ErrNoRows)
+	profileUseCaseMock.
+		EXPECT().
+		Authentication(newLogin.Email, newLogin.Password, ctx).
+		Times(1).
+		Return(&models.UserBasicInfo{
+			ID:       1,
+			Executor: true,
+		}, sql.ErrNoRows)
 	sessionUseCaseMock := sessionMock.NewMockUseCase(ctrl)
 
-	handle := New(sessionUseCaseMock, profileUseCaseMock)
+	handle := profAuth.New(sessionUseCaseMock, profileUseCaseMock)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.AuthorisationProfile)
@@ -302,14 +315,17 @@ func TestAuthorizationProfile3(t *testing.T) {
 	}
 
 	profileUseCaseMock := profileMock.NewMockUseCase(ctrl)
-	profileUseCaseMock.EXPECT().Authentication(newLogin.Email, newLogin.Password, ctx).Times(1).Return(&models.UserBasicInfo{
-		ID:       1,
-		Executor: true,
-	}, nil)
+	profileUseCaseMock.EXPECT().
+		Authentication(newLogin.Email, newLogin.Password, ctx).
+		Times(1).
+		Return(&models.UserBasicInfo{
+			ID:       1,
+			Executor: true,
+		}, nil)
 	sessionUseCaseMock := sessionMock.NewMockUseCase(ctrl)
 	sessionUseCaseMock.EXPECT().Create(uint64(1), true, ctx).Times(1).Return(&models.Session{}, sql.ErrNoRows)
 
-	handle := New(sessionUseCaseMock, profileUseCaseMock)
+	handle := profAuth.New(sessionUseCaseMock, profileUseCaseMock)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.AuthorisationProfile)

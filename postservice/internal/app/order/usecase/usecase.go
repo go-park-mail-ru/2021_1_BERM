@@ -9,10 +9,13 @@ import (
 	"post/internal/app/models"
 	orderRepo "post/internal/app/order"
 	customErr "post/pkg/error"
+	"post/pkg/types"
+	"reflect"
 )
 
 const (
-	orderUseCaseError = "Order use case error"
+	orderUseCaseError string       = "Order use case error"
+	ctxUserID         types.CtxKey = 2
 )
 
 type UseCase struct {
@@ -78,8 +81,8 @@ func (u *UseCase) FindByUserID(userID uint64, ctx context.Context) ([]models.Ord
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
-	for _, order := range orders {
-		err = u.supplementingTheOrderModel(&order)
+	for i := range orders {
+		err = u.supplementingTheOrderModel(&orders[i])
 		if err != nil {
 			return nil, errors.Wrap(err, orderUseCaseError)
 		}
@@ -131,22 +134,41 @@ func (u *UseCase) DeleteOrder(id uint64, ctx context.Context) error {
 	return nil
 }
 
-func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, error) {
+func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, uint64, error) {
 	orders, err := u.OrderRepo.GetActualOrders(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, orderUseCaseError)
+		return nil, 0, errors.Wrap(err, orderUseCaseError)
 	}
 	for i, order := range orders {
 		err = u.supplementingTheOrderModel(&order)
 		if err != nil {
-			return nil, errors.Wrap(err, orderUseCaseError)
+			return nil, 0, errors.Wrap(err, orderUseCaseError)
 		}
 		orders[i] = order
 	}
 	if orders == nil {
-		return []models.Order{}, nil
+		return []models.Order{}, 0, nil
 	}
-	return orders, err
+
+	user, err := u.UserRepo.GetUserById(ctx, &api.UserRequest{Id: ctx.Value(ctxUserID).(uint64)})
+	if err != nil {
+		return []models.Order{}, 0, errors.Wrap(err, orderUseCaseError)
+	}
+
+	counter := 0
+	for _, spec := range user.Specializes {
+		for i := range orders {
+			if reflect.DeepEqual(orders[i].Category, spec) {
+				orders[counter], orders[i] = orders[i], orders[counter]
+				counter++
+			}
+		}
+	}
+	oNum, err := u.OrderRepo.GetOrderNum(ctx)
+	if err != nil {
+		return []models.Order{}, 0, errors.Wrap(err, orderUseCaseError)
+	}
+	return orders, oNum, err
 }
 
 func (u *UseCase) SelectExecutor(order models.Order, ctx context.Context) error {
@@ -154,7 +176,7 @@ func (u *UseCase) SelectExecutor(order models.Order, ctx context.Context) error 
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
-	if userR.GetExecutor() == false {
+	if !userR.GetExecutor() {
 		return customErr.ErrorUserNotExecutor
 	}
 	if order.ExecutorID == order.CustomerID {
@@ -234,7 +256,17 @@ func (u *UseCase) SearchOrders(keyword string, ctx context.Context) ([]models.Or
 	return orders, err
 }
 
-//TODO: вынести в отдеьлный модуль
+func (u *UseCase) SuggestOrderTitle(suggestWord string, ctx context.Context) ([]models.SuggestOrderTitle, error) {
+	suggestTittles, err := u.OrderRepo.SuggestOrderTitle(suggestWord, ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, orderUseCaseError)
+	}
+	if suggestTittles == nil {
+		return []models.SuggestOrderTitle{}, nil
+	}
+	return suggestTittles, nil
+}
+
 func (u *UseCase) validateOrder(order *models.Order) error {
 	err := validation.ValidateStruct(
 		order,
@@ -245,7 +277,6 @@ func (u *UseCase) validateOrder(order *models.Order) error {
 	return err
 }
 
-//TODO: вынести в отдельный модуль
 func (u *UseCase) sanitizeOrder(order *models.Order) {
 	sanitizer := bluemonday.UGCPolicy()
 	order.Category = sanitizer.Sanitize(order.Category)

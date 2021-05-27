@@ -94,6 +94,21 @@ func (mr *MockRepositoryMockRecorder) FindUserByID(arg0, arg1 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindUserByID", reflect.TypeOf((*MockRepository)(nil).FindUserByID), arg0, arg1)
 }
 
+// GetUsers mocks base method.
+func (m *MockRepository) GetUsers(arg0 context.Context) ([]models.UserInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsers", arg0)
+	ret0, _ := ret[0].([]models.UserInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsers indicates an expected call of GetUsers.
+func (mr *MockRepositoryMockRecorder) GetUsers(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockRepository)(nil).GetUsers), arg0)
+}
+
 // SetUserImg mocks base method.
 func (m *MockRepository) SetUserImg(arg0 uint64, arg1 string, arg2 context.Context) error {
 	m.ctrl.T.Helper()
@@ -106,4 +121,19 @@ func (m *MockRepository) SetUserImg(arg0 uint64, arg1 string, arg2 context.Conte
 func (mr *MockRepositoryMockRecorder) SetUserImg(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserImg", reflect.TypeOf((*MockRepository)(nil).SetUserImg), arg0, arg1, arg2)
+}
+
+// SuggestUsersTitle mocks base method.
+func (m *MockRepository) SuggestUsersTitle(arg0 string, arg1 context.Context) ([]models.SuggestUsersTittle, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SuggestUsersTitle", arg0, arg1)
+	ret0, _ := ret[0].([]models.SuggestUsersTittle)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SuggestUsersTitle indicates an expected call of SuggestUsersTitle.
+func (mr *MockRepositoryMockRecorder) SuggestUsersTitle(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SuggestUsersTitle", reflect.TypeOf((*MockRepository)(nil).SuggestUsersTitle), arg0, arg1)
 }

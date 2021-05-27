@@ -9,21 +9,22 @@ import (
 )
 
 type UseCase struct {
-	reviewRepository review.Repository
-	userRepository   user.Repository
-	orderRepository  order.Repository
+	ReviewRepository review.Repository
+	UserRepository   user.Repository
+	OrderRepository  order.Repository
 }
 
-func New(reviewRepository review.Repository, userRepository user.Repository, orderRepository order.Repository) *UseCase {
+func New(reviewRepository review.Repository,
+	userRepository user.Repository, orderRepository order.Repository) *UseCase {
 	return &UseCase{
-		reviewRepository: reviewRepository,
-		userRepository:   userRepository,
-		orderRepository:  orderRepository,
+		ReviewRepository: reviewRepository,
+		UserRepository:   userRepository,
+		OrderRepository:  orderRepository,
 	}
 }
 
 func (useCase *UseCase) Create(review models.Review, ctx context.Context) (*models.Review, error) {
-	revResp, err := useCase.reviewRepository.Create(review, ctx)
+	revResp, err := useCase.ReviewRepository.Create(review, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -31,24 +32,24 @@ func (useCase *UseCase) Create(review models.Review, ctx context.Context) (*mode
 }
 
 func (useCase *UseCase) GetAllReviewByUserId(userId uint64, ctx context.Context) (*models.UserReviews, error) {
-	reviews, err := useCase.reviewRepository.GetAll(userId, ctx)
+	reviews, err := useCase.ReviewRepository.GetAll(userId, ctx)
 	if err != nil {
 		return nil, err
 	}
-	for index, _ := range reviews {
-		u, err := useCase.userRepository.FindUserByID(reviews[index].UserId, ctx)
+	for index := range reviews {
+		u, err := useCase.UserRepository.FindUserByID(reviews[index].UserId, ctx)
 		if err != nil {
 			return nil, err
 		}
 		reviews[index].UserLogin = u.Login
 		reviews[index].UserNameSurname = u.NameSurname
-		oInf, err := useCase.orderRepository.GetByID(reviews[index].OrderId, ctx)
+		oInf, err := useCase.OrderRepository.GetByID(reviews[index].OrderId, ctx)
 		if err != nil {
 			return nil, err
 		}
 		reviews[index].OrderName = oInf.OrderName
 	}
-	u, err := useCase.userRepository.FindUserByID(userId, ctx)
+	u, err := useCase.UserRepository.FindUserByID(userId, ctx)
 	if err != nil {
 		return nil, err
 	}

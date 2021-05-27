@@ -1,10 +1,11 @@
-package usecase
+package usecase_test
 
 import (
 	"context"
 	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/lib/pq"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 	"strconv"
 	"testing"
@@ -13,7 +14,13 @@ import (
 	mock2 "user/internal/app/specialize/mock"
 	"user/internal/app/user/mock"
 	"user/internal/app/user/tools/passwordencrypt"
+	userUseCase "user/internal/app/user/usecase"
 	customError "user/pkg/error"
+	"user/pkg/types"
+)
+
+const (
+	ctxParam types.CtxKey = 4
 )
 
 //Проверка созданияю юзера клиента
@@ -39,9 +46,9 @@ func TestCreateUserClient(t *testing.T) {
 	mockEncrypter := mock.NewMockPasswordEncrypter(ctrl)
 	mockEncrypter.EXPECT().BeforeCreate(*newUser).Times(1).Return(newReturnUser, nil)
 
-	useCase := UseCase{
-		userRepository: mockUserRepo,
-		encrypter:      mockEncrypter,
+	useCase := userUseCase.UseCase{
+		UserRepository: mockUserRepo,
+		Encrypter:      mockEncrypter,
 	}
 	userBasicInfo, err := useCase.Create(*newUser, ctx)
 	require.NoError(t, err)
@@ -63,10 +70,9 @@ func TestCreateUserClientWithInvalidLogin(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	useCase := UseCase{}
+	useCase := userUseCase.UseCase{}
 	_, err := useCase.Create(*newUser, ctx)
 	require.Error(t, err)
-
 }
 
 //Проверка созданияю юзера исполнителя при отсутствии в базе указанных им специализаций
@@ -75,7 +81,7 @@ func TestCreateUserExecutorWithoutSpecInDB(t *testing.T) {
 	defer ctrl.Finish()
 
 	spec := make(pq.StringArray, 2)
-	for index, _ := range spec {
+	for index := range spec {
 		spec[index] = "123" + strconv.Itoa(index)
 	}
 	newUser := models.NewUser{
@@ -106,10 +112,10 @@ func TestCreateUserExecutorWithoutSpecInDB(t *testing.T) {
 	mockEncrypter := mock.NewMockPasswordEncrypter(ctrl)
 	mockEncrypter.EXPECT().BeforeCreate(newUser).Times(1).Return(newReturnUser, nil)
 
-	useCase := UseCase{
-		userRepository:       mockUserRepo,
-		specializeRepository: mockSpecializeRepo,
-		encrypter:            mockEncrypter,
+	useCase := userUseCase.UseCase{
+		UserRepository:       mockUserRepo,
+		SpecializeRepository: mockSpecializeRepo,
+		Encrypter:            mockEncrypter,
 	}
 	userBasicInfo, err := useCase.Create(newUser, ctx)
 	require.NoError(t, err)
@@ -123,7 +129,7 @@ func TestCreateUserExecutorWithSpecInDB(t *testing.T) {
 	defer ctrl.Finish()
 
 	spec := make(pq.StringArray, 2)
-	for index, _ := range spec {
+	for index := range spec {
 		spec[index] = "123" + strconv.Itoa(index)
 	}
 	newUser := models.NewUser{
@@ -152,10 +158,10 @@ func TestCreateUserExecutorWithSpecInDB(t *testing.T) {
 
 	mockEncrypter := mock.NewMockPasswordEncrypter(ctrl)
 	mockEncrypter.EXPECT().BeforeCreate(newUser).Times(1).Return(newReturnUser, nil)
-	useCase := UseCase{
-		userRepository:       mockUserRepo,
-		specializeRepository: mockSpecializeRepo,
-		encrypter:            mockEncrypter,
+	useCase := userUseCase.UseCase{
+		UserRepository:       mockUserRepo,
+		SpecializeRepository: mockSpecializeRepo,
+		Encrypter:            mockEncrypter,
 	}
 	userBasicInfo, err := useCase.Create(newUser, ctx)
 	require.NoError(t, err)
@@ -169,7 +175,7 @@ func TestGetByIDExecutor(t *testing.T) {
 	defer ctrl.Finish()
 
 	spec := make(pq.StringArray, 2)
-	for index, _ := range spec {
+	for index := range spec {
 		spec[index] = "123" + strconv.Itoa(index)
 	}
 	userInfo := &models.UserInfo{
@@ -199,17 +205,16 @@ func TestGetByIDExecutor(t *testing.T) {
 	mockReviewRepo := mock3.NewMockRepository(ctrl)
 	mockReviewRepo.EXPECT().GetAvgScoreByUserId(uint64(1), ctx).Times(1).Return(userReviewInfo, nil)
 
-	useCase := UseCase{
-		userRepository:       mockUserRepo,
-		specializeRepository: mockSpecializeRepo,
-		reviewsRepository:    mockReviewRepo,
+	useCase := userUseCase.UseCase{
+		UserRepository:       mockUserRepo,
+		SpecializeRepository: mockSpecializeRepo,
+		ReviewsRepository:    mockReviewRepo,
 	}
 	userInfo, err := useCase.GetById(1, ctx)
 	require.NoError(t, err)
 	require.Equal(t, userInfo.ID, uint64(1))
 	require.Equal(t, userInfo.ReviewCount, userReviewInfo.ReviewCount)
 	require.Equal(t, userInfo.Rating, userReviewInfo.Rating)
-
 }
 
 //Тестирование поиска информации о юзере по id, когда юзер является исоплнителем
@@ -240,16 +245,15 @@ func TestGetByIDClient(t *testing.T) {
 	mockReviewRepo := mock3.NewMockRepository(ctrl)
 	mockReviewRepo.EXPECT().GetAvgScoreByUserId(uint64(1), ctx).Times(1).Return(userReviewInfo, nil)
 
-	useCase := UseCase{
-		userRepository:    mockUserRepo,
-		reviewsRepository: mockReviewRepo,
+	useCase := userUseCase.UseCase{
+		UserRepository:    mockUserRepo,
+		ReviewsRepository: mockReviewRepo,
 	}
 	userInfo, err := useCase.GetById(1, ctx)
 	require.NoError(t, err)
 	require.Equal(t, userInfo.ID, uint64(1))
 	require.Equal(t, userInfo.ReviewCount, userReviewInfo.ReviewCount)
 	require.Equal(t, userInfo.Rating, userReviewInfo.Rating)
-
 }
 
 //Тестирование изменение юзера при наличии в базе необходимых специадизаций
@@ -258,7 +262,7 @@ func TestChangeUserWithSpecInDB(t *testing.T) {
 	defer ctrl.Finish()
 
 	spec := make(pq.StringArray, 2)
-	for index, _ := range spec {
+	for index := range spec {
 		spec[index] = "123" + strconv.Itoa(index)
 	}
 	changeUser := models.ChangeUser{
@@ -300,10 +304,10 @@ func TestChangeUserWithSpecInDB(t *testing.T) {
 	mockEncrypter.EXPECT().CompPass(userInfo.Password, changeUser.Password).Times(1).Return(true)
 	mockEncrypter.EXPECT().BeforeChange(newChangeUser).Times(1).Return(newChangeUser, nil)
 	fmt.Println(changeUser)
-	useCase := UseCase{
-		userRepository:       mockUserRepo,
-		specializeRepository: mockSpecializeRepo,
-		encrypter:            mockEncrypter,
+	useCase := userUseCase.UseCase{
+		UserRepository:       mockUserRepo,
+		SpecializeRepository: mockSpecializeRepo,
+		Encrypter:            mockEncrypter,
 	}
 	_, err := useCase.Change(changeUser, ctx)
 	require.NoError(t, err)
@@ -315,7 +319,7 @@ func TestUserVerification(t *testing.T) {
 	defer ctrl.Finish()
 
 	spec := make(pq.StringArray, 2)
-	for index, _ := range spec {
+	for index := range spec {
 		spec[index] = "123" + strconv.Itoa(index)
 	}
 	newUser := models.NewUser{
@@ -350,9 +354,9 @@ func TestUserVerification(t *testing.T) {
 
 	encrypt := passwordencrypt.PasswordEncrypter{}
 
-	useCase := UseCase{
-		userRepository: mockUserRepo,
-		encrypter:      encrypt,
+	useCase := userUseCase.UseCase{
+		UserRepository: mockUserRepo,
+		Encrypter:      encrypt,
 	}
 	userBasicInfo, err := useCase.Verification(newUser.Email, newUser.Password, ctx)
 	require.NoError(t, err)
@@ -382,11 +386,102 @@ func TestUserVerificationBadPass(t *testing.T) {
 	mockUserRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo.EXPECT().FindUserByEmail("asdas@mail.ru", ctx).Times(1).Return(userInfo, nil)
 
-	useCase := UseCase{
-		userRepository: mockUserRepo,
-		encrypter:      encrypter,
+	useCase := userUseCase.UseCase{
+		UserRepository: mockUserRepo,
+		Encrypter:      encrypter,
 	}
 	_, err := useCase.Verification("asdas@mail.ru", "SAdadasdsda", ctx)
+	require.Error(t, err)
+}
+
+func TestGetUsers(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userInfos := []models.UserInfo{
+		models.UserInfo{
+			ID:          1,
+			Email:       "abc@mail.ru",
+			Login:       "abcdefg",
+			NameSurname: "abc bdf",
+			Password:    []byte{1, 2, 4, 5, 6, 4, 2, 4, 6, 3, 45, 3, 3},
+			Rating:      3,
+			ReviewCount: 2,
+			Executor:    false,
+		},
+	}
+	ID := uint64(1)
+	specs := pq.StringArray{"1", "2"}
+	ctxParent := context.Background()
+	param := map[string]interface{}{
+		"category": "",
+	}
+	ctx := context.WithValue(ctxParent, ctxParam, param)
+	mockUserRepo := mock.NewMockRepository(ctrl)
+	mockUserRepo.EXPECT().GetUsers(ctx).Times(1).Return(userInfos, nil)
+
+	mockSpecRep := mock2.NewMockRepository(ctrl)
+
+	mockSpecRep.EXPECT().FindByUserID(ID, ctx).Return(specs, nil)
+	useCase := userUseCase.UseCase{
+		UserRepository:       mockUserRepo,
+		SpecializeRepository: mockSpecRep,
+	}
+
+	_, err := useCase.GetUsers(ctx)
+	require.NoError(t, err)
+}
+
+func TestGetUsersCategory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userInfos := []models.UserInfo{
+		models.UserInfo{
+			ID:          1,
+			Email:       "abc@mail.ru",
+			Login:       "abcdefg",
+			NameSurname: "abc bdf",
+			Password:    []byte{1, 2, 4, 5, 6, 4, 2, 4, 6, 3, 45, 3, 3},
+			Rating:      3,
+			ReviewCount: 2,
+			Executor:    false,
+		},
+	}
+	ID := uint64(1)
+	specs := pq.StringArray{"1", "2"}
+	ctxParent := context.Background()
+	param := map[string]interface{}{
+		"category": "sdaasDAS",
+	}
+	ctx := context.WithValue(ctxParent, ctxParam, param)
+	mockUserRepo := mock.NewMockRepository(ctrl)
+	mockUserRepo.EXPECT().GetUsers(ctx).Times(1).Return(userInfos, nil)
+
+	mockSpecRep := mock2.NewMockRepository(ctrl)
+
+	mockSpecRep.EXPECT().FindByUserID(ID, ctx).Return(specs, nil)
+	useCase := userUseCase.UseCase{
+		UserRepository:       mockUserRepo,
+		SpecializeRepository: mockSpecRep,
+	}
+
+	_, err := useCase.GetUsers(ctx)
+	require.NoError(t, err)
+}
+
+func TestGetUsersErrInGetUsersRep(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	ctx := context.Background()
+	mockUserRepo := mock.NewMockRepository(ctrl)
+	mockUserRepo.EXPECT().GetUsers(ctx).Times(1).Return(nil, errors.New("test err"))
+
+	useCase := userUseCase.UseCase{
+		UserRepository: mockUserRepo,
+	}
+
+	_, err := useCase.GetUsers(ctx)
 	require.Error(t, err)
 }
 
@@ -401,8 +496,8 @@ func TestSetImgUser(t *testing.T) {
 	mockUserRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo.EXPECT().SetUserImg(uint64(1), img, ctx).Times(1).Return(nil)
 
-	useCase := UseCase{
-		userRepository: mockUserRepo,
+	useCase := userUseCase.UseCase{
+		UserRepository: mockUserRepo,
 	}
 	err := useCase.SetImg(1, img, ctx)
 	require.NoError(t, err)
@@ -415,8 +510,52 @@ func TestNewUser(t *testing.T) {
 	mockUserRepo := mock.NewMockRepository(ctrl)
 	mockSpecializeRepo := mock2.NewMockRepository(ctrl)
 	mockReviewRepo := mock3.NewMockRepository(ctrl)
-	u := New(mockUserRepo, mockSpecializeRepo, mockReviewRepo)
-	require.Equal(t, u.userRepository, mockUserRepo)
-	require.Equal(t, u.specializeRepository, mockSpecializeRepo)
-	require.Equal(t, u.reviewsRepository, mockReviewRepo)
+	u := userUseCase.New(mockUserRepo, mockSpecializeRepo, mockReviewRepo)
+	require.Equal(t, u.UserRepository, mockUserRepo)
+	require.Equal(t, u.SpecializeRepository, mockSpecializeRepo)
+	require.Equal(t, u.ReviewsRepository, mockReviewRepo)
+}
+
+func TestSuggestUsersTitle(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	ctx := context.Background()
+
+	suggestWord := "kek"
+	res := []models.SuggestUsersTittle{
+		{Title: suggestWord}}
+	mockUserRepo := mock.NewMockRepository(ctrl)
+	mockUserRepo.EXPECT().
+		SuggestUsersTitle(suggestWord, ctx).
+		Times(1).
+		Return(res, nil)
+
+	useCase := userUseCase.UseCase{
+		UserRepository: mockUserRepo,
+	}
+
+	_, err := useCase.SuggestUsersTitle(suggestWord, ctx)
+	require.NoError(t, err)
+}
+
+func TestSuggestUsersTitleErr(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	ctx := context.Background()
+
+	suggestWord := "kek"
+	res := []models.SuggestUsersTittle{
+		{Title: suggestWord}}
+	mockUserRepo := mock.NewMockRepository(ctrl)
+	mockUserRepo.EXPECT().
+		SuggestUsersTitle(suggestWord, ctx).
+		Times(1).
+		Return(res, errors.New("kek"))
+
+	useCase := userUseCase.UseCase{
+		UserRepository: mockUserRepo,
+	}
+
+	_, err := useCase.SuggestUsersTitle(suggestWord, ctx)
+	require.Error(t, err)
 }

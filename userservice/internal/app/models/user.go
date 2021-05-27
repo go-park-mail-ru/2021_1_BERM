@@ -37,8 +37,8 @@ type UserInfo struct {
 	Specializes pq.StringArray `json:"specializes" db:"specializes,omitempty"`
 	Executor    bool           `json:"executor,omitempty" db:"executor"`
 	Img         string         `json:"img,omitempty" db:"img"`
-	Rating      float64        `json:"rating,omitempty"`
-	ReviewCount uint64         `json:"reviews_count"`
+	Rating      float64        `json:"rating" db:"rating"`
+	ReviewCount uint64         `json:"reviews_count" db:"reviews_count"`
 }
 
 type UserBasicInfo struct {
@@ -48,4 +48,8 @@ type UserBasicInfo struct {
 	Executor    bool   `json:"executor"`
 	Login       string `json:"login,omitempty"`
 	NameSurname string `json:"name_surname,omitempty"`
+}
+
+type SuggestUsersTittle struct {
+	Title string `json:"title" db:"name_surname"`
 }

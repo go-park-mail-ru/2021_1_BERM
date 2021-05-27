@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
@@ -6,17 +6,22 @@ import (
 	"encoding/json"
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 	"user/internal/app/models"
+	userHandlers "user/internal/app/user/handlers"
 	userMock "user/internal/app/user/mock"
-	//specializeMock "user/internal/app/specialize/mock"
 	"user/pkg/metric"
+	"user/pkg/types"
 )
 
-const ctxKeyStartReqTime uint8 = 5
+const (
+	ctxKeyReqID        types.CtxKey = 1
+	ctxKeyStartReqTime types.CtxKey = 5
+)
 
 func TestCreateUserWithValidUrl(t *testing.T) {
 	metric.New()
@@ -25,7 +30,7 @@ func TestCreateUserWithValidUrl(t *testing.T) {
 
 	mockUserUseCase := userMock.NewMockUseCase(ctrl)
 
-	handle := New(mockUserUseCase)
+	handle := userHandlers.New(mockUserUseCase)
 
 	changeUser := &models.ChangeUser{
 		ID:          1,
@@ -76,7 +81,7 @@ func TestCreateUserWithInvalidUrl(t *testing.T) {
 
 	mockUserUseCase := userMock.NewMockUseCase(ctrl)
 
-	handle := New(mockUserUseCase)
+	handle := userHandlers.New(mockUserUseCase)
 
 	changeUser := &models.ChangeUser{
 		ID:          1,
@@ -112,13 +117,81 @@ func TestCreateUserWithInvalidUrl(t *testing.T) {
 	metric.Destroy()
 }
 
+func TestGetUsers(t *testing.T) {
+	metric.New()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserUseCase := userMock.NewMockUseCase(ctrl)
+
+	handle := userHandlers.New(mockUserUseCase)
+
+	req, err := http.NewRequest("GET", "/profile/users", bytes.NewBuffer([]byte{}))
+
+	ctx := req.Context()
+	reqID := uint64(2281488)
+	ctx = context.WithValue(ctx, ctxKeyReqID, reqID)
+	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
+	req.URL.Query().Add("suggest_word", "")
+	mockUserUseCase.EXPECT().SuggestUsersTitle("", context.Background()).Times(1).Return([]models.SuggestUsersTittle{}, nil)
+	req = req.WithContext(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	recorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(handle.SuggestUsers)
+
+	handler.ServeHTTP(recorder, req)
+
+	if status := recorder.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+	metric.Destroy()
+}
+
+func TestSuggestErr(t *testing.T) {
+	metric.New()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserUseCase := userMock.NewMockUseCase(ctrl)
+
+	handle := userHandlers.New(mockUserUseCase)
+
+	req, err := http.NewRequest("GET", "/profile/users", bytes.NewBuffer([]byte{}))
+
+	ctx := req.Context()
+	reqID := uint64(2281488)
+	ctx = context.WithValue(ctx, ctxKeyReqID, reqID)
+	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
+	req.URL.Query().Add("suggest_word", "")
+	mockUserUseCase.EXPECT().SuggestUsersTitle("", context.Background()).Times(1).Return(nil, errors.New("hunia"))
+	req = req.WithContext(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	recorder := httptest.NewRecorder()
+	handler := http.HandlerFunc(handle.SuggestUsers)
+
+	handler.ServeHTTP(recorder, req)
+
+	if status := recorder.Code; status != http.StatusInternalServerError {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+	metric.Destroy()
+}
+
 func TestGetUserInfo(t *testing.T) {
 	metric.New()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockUserUseCase := userMock.NewMockUseCase(ctrl)
-	handle := New(mockUserUseCase)
+	handle := userHandlers.New(mockUserUseCase)
 
 	req, err := http.NewRequest("GET", "/profile/1", nil)
 	vars := map[string]string{

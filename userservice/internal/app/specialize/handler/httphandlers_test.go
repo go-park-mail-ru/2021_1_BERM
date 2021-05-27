@@ -1,4 +1,4 @@
-package handler
+package handler_test
 
 import (
 	"bytes"
@@ -11,12 +11,17 @@ import (
 	"testing"
 	"time"
 	"user/internal/app/models"
+	specializeHandlers "user/internal/app/specialize/handler"
 	specializeMock "user/internal/app/specialize/mock"
 	userMock "user/internal/app/user/mock"
 	"user/pkg/metric"
+	"user/pkg/types"
 )
 
-const ctxKeyStartReqTime uint8 = 5
+const (
+	ctxKeyStartReqTime types.CtxKey = 5
+	ctxKeyReqID        types.CtxKey = 1
+)
 
 func TestCreateSpecialize(t *testing.T) {
 	metric.New()
@@ -49,7 +54,7 @@ func TestCreateSpecialize(t *testing.T) {
 
 	mockSpecializeUseCase := specializeMock.NewMockUseCase(ctrl)
 	mockSpecializeUseCase.EXPECT().AssociateWithUser(uint64(1), specialize.Name, ctx).Times(1).Return(nil)
-	handle := New(mockSpecializeUseCase, mockUserUseCase)
+	handle := specializeHandlers.New(mockSpecializeUseCase, mockUserUseCase)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.Create)
@@ -92,7 +97,7 @@ func TestRemoveSpecialize(t *testing.T) {
 	mockUserUseCase := userMock.NewMockUseCase(ctrl)
 	mockSpecializeUseCase := specializeMock.NewMockUseCase(ctrl)
 	mockSpecializeUseCase.EXPECT().Remove(uint64(1), specialize.Name, ctx).Times(1).Return(nil)
-	handle := New(mockSpecializeUseCase, mockUserUseCase)
+	handle := specializeHandlers.New(mockSpecializeUseCase, mockUserUseCase)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.Remove)

@@ -1,8 +1,9 @@
-package usecase
+package usecase_test
 
 import (
 	"authorizationservice/internal/app/models"
 	"authorizationservice/internal/app/profile/mock"
+	profUCase "authorizationservice/internal/app/profile/usecase"
 	"context"
 	"errors"
 	"github.com/golang/mock/gomock"
@@ -20,8 +21,8 @@ func TestCreateProfile(t *testing.T) {
 	basicUseInfi := &models.UserBasicInfo{}
 	mockProfileRep := mock.NewMockRepository(ctrl)
 	mockProfileRep.EXPECT().Create(*newUser, ctx).Times(1).Return(basicUseInfi, nil)
-	useCase := UseCase{
-		profileRepository: mockProfileRep,
+	useCase := profUCase.UseCase{
+		ProfileRepository: mockProfileRep,
 	}
 
 	_, err := useCase.Create(*newUser, ctx)
@@ -37,8 +38,8 @@ func TestCreateProfileErr(t *testing.T) {
 	basicUseInfi := &models.UserBasicInfo{}
 	mockProfileRep := mock.NewMockRepository(ctrl)
 	mockProfileRep.EXPECT().Create(*newUser, ctx).Times(1).Return(basicUseInfi, errors.New("err"))
-	useCase := UseCase{
-		profileRepository: mockProfileRep,
+	useCase := profUCase.UseCase{
+		ProfileRepository: mockProfileRep,
 	}
 
 	_, err := useCase.Create(*newUser, ctx)
@@ -53,8 +54,8 @@ func TestAuthenticationProfile(t *testing.T) {
 	basicUseInfi := &models.UserBasicInfo{}
 	mockProfileRep := mock.NewMockRepository(ctrl)
 	mockProfileRep.EXPECT().Authentication("1", "1", ctx).Times(1).Return(basicUseInfi, nil)
-	useCase := UseCase{
-		profileRepository: mockProfileRep,
+	useCase := profUCase.UseCase{
+		ProfileRepository: mockProfileRep,
 	}
 
 	_, err := useCase.Authentication("1", "1", ctx)
@@ -69,8 +70,8 @@ func TestAuthenticationProfileErr(t *testing.T) {
 	basicUseInfi := &models.UserBasicInfo{}
 	mockProfileRep := mock.NewMockRepository(ctrl)
 	mockProfileRep.EXPECT().Authentication("1", "1", ctx).Times(1).Return(basicUseInfi, errors.New("Err"))
-	useCase := UseCase{
-		profileRepository: mockProfileRep,
+	useCase := profUCase.UseCase{
+		ProfileRepository: mockProfileRep,
 	}
 
 	_, err := useCase.Authentication("1", "1", ctx)
@@ -83,7 +84,7 @@ func TestNewProfile(t *testing.T) {
 
 	mockProfileRepo := mock.NewMockRepository(ctrl)
 
-	uc := New(mockProfileRepo)
+	uc := profUCase.New(mockProfileRepo)
 
-	require.Equal(t, uc.profileRepository, mockProfileRepo)
+	require.Equal(t, uc.ProfileRepository, mockProfileRepo)
 }

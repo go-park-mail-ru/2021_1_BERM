@@ -138,12 +138,13 @@ func (mr *MockUseCaseMockRecorder) FindByUserID(arg0, arg1 interface{}) *gomock.
 }
 
 // GetActualOrders mocks base method.
-func (m *MockUseCase) GetActualOrders(arg0 context.Context) ([]models.Order, error) {
+func (m *MockUseCase) GetActualOrders(arg0 context.Context) ([]models.Order, uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetActualOrders", arg0)
 	ret0, _ := ret[0].([]models.Order)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(uint64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetActualOrders indicates an expected call of GetActualOrders.
@@ -194,4 +195,19 @@ func (m *MockUseCase) SelectExecutor(arg0 models.Order, arg1 context.Context) er
 func (mr *MockUseCaseMockRecorder) SelectExecutor(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectExecutor", reflect.TypeOf((*MockUseCase)(nil).SelectExecutor), arg0, arg1)
+}
+
+// SuggestOrderTitle mocks base method.
+func (m *MockUseCase) SuggestOrderTitle(arg0 string, arg1 context.Context) ([]models.SuggestOrderTitle, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SuggestOrderTitle", arg0, arg1)
+	ret0, _ := ret[0].([]models.SuggestOrderTitle)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SuggestOrderTitle indicates an expected call of SuggestOrderTitle.
+func (mr *MockUseCaseMockRecorder) SuggestOrderTitle(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SuggestOrderTitle", reflect.TypeOf((*MockUseCase)(nil).SuggestOrderTitle), arg0, arg1)
 }

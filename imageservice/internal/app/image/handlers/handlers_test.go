@@ -11,6 +11,7 @@ import (
 	"imageservice/internal/app/image/mock"
 	"imageservice/internal/app/metric"
 	"imageservice/internal/app/models"
+	"imageservice/internal/app/types"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,10 +19,8 @@ import (
 )
 
 const (
-	ctxKeySession      uint8 = 3
-	ctxKeyReqID        uint8 = 1
-	ctxUserInfo        uint8 = 2
-	ctxKeyStartReqTime uint8 = 5
+	ctxKeyReqID        types.CtxKey = 1
+	ctxKeyStartReqTime types.CtxKey = 5
 )
 
 func TestHandlers_PutAvatar(t *testing.T) {
@@ -42,8 +41,8 @@ func TestHandlers_PutAvatar(t *testing.T) {
 	req, err := http.NewRequest("POST", "/api/profile/avatar", bytes.NewBuffer(body))
 
 	ctx := req.Context()
-	var val2 uint64
-	val2 = 2281488
+
+	val2 := uint64(2281488)
 	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
 	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 
@@ -91,8 +90,8 @@ func TestHandlers_PutAvatarErr(t *testing.T) {
 	req, err := http.NewRequest("POST", "/api/profile/avatar", bytes.NewBuffer(body))
 
 	ctx := req.Context()
-	var val2 uint64
-	val2 = 2281488
+
+	val2 := uint64(2281488)
 	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
 	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 
@@ -135,8 +134,7 @@ func TestHandlers_PutAvatarErrJson(t *testing.T) {
 	req, err := http.NewRequest("POST", "/api/profile/avatar", bytes.NewBuffer(body))
 
 	ctx := req.Context()
-	var val2 uint64
-	val2 = 2281488
+	val2 := uint64(2281488)
 	ctx = context.WithValue(ctx, ctxKeyReqID, val2)
 	ctx = context.WithValue(ctx, ctxKeyStartReqTime, time.Now())
 

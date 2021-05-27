@@ -7,17 +7,17 @@ import (
 )
 
 type UseCase struct {
-	sessionRepository session.Repository
+	SessionRepository session.Repository
 }
 
 func New(sessionRepository session.Repository) *UseCase {
 	return &UseCase{
-		sessionRepository: sessionRepository,
+		SessionRepository: sessionRepository,
 	}
 }
 
 func (useCase *UseCase) Check(sessionID string, ctx context.Context) (*models.UserBasicInfo, error) {
-	u, err := useCase.sessionRepository.Check(sessionID, ctx)
+	u, err := useCase.SessionRepository.Check(sessionID, ctx)
 	if err != nil {
 		return nil, err
 	}

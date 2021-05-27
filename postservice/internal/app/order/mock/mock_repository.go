@@ -197,6 +197,21 @@ func (mr *MockRepositoryMockRecorder) GetArchiveOrdersByExecutorID(arg0, arg1 in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArchiveOrdersByExecutorID", reflect.TypeOf((*MockRepository)(nil).GetArchiveOrdersByExecutorID), arg0, arg1)
 }
 
+// GetOrderNum mocks base method.
+func (m *MockRepository) GetOrderNum(arg0 context.Context) (uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrderNum", arg0)
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrderNum indicates an expected call of GetOrderNum.
+func (mr *MockRepositoryMockRecorder) GetOrderNum(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrderNum", reflect.TypeOf((*MockRepository)(nil).GetOrderNum), arg0)
+}
+
 // SearchOrders mocks base method.
 func (m *MockRepository) SearchOrders(arg0 string, arg1 context.Context) ([]models.Order, error) {
 	m.ctrl.T.Helper()
@@ -210,6 +225,21 @@ func (m *MockRepository) SearchOrders(arg0 string, arg1 context.Context) ([]mode
 func (mr *MockRepositoryMockRecorder) SearchOrders(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchOrders", reflect.TypeOf((*MockRepository)(nil).SearchOrders), arg0, arg1)
+}
+
+// SuggestOrderTitle mocks base method.
+func (m *MockRepository) SuggestOrderTitle(arg0 string, arg1 context.Context) ([]models.SuggestOrderTitle, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SuggestOrderTitle", arg0, arg1)
+	ret0, _ := ret[0].([]models.SuggestOrderTitle)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SuggestOrderTitle indicates an expected call of SuggestOrderTitle.
+func (mr *MockRepositoryMockRecorder) SuggestOrderTitle(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SuggestOrderTitle", reflect.TypeOf((*MockRepository)(nil).SuggestOrderTitle), arg0, arg1)
 }
 
 // UpdateExecutor mocks base method.

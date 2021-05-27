@@ -51,7 +51,10 @@ func main() {
 	opts := tarantool.Opts{
 		User: "guest",
 	}
-	conn, err := tarantool.Connect(config.DatabaseURL, opts)
+	conn, err := tarantool.Connect(config.Host+config.DatabaseURL, opts)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	defer conn.Close()
 	sessionRepository := repository.New(conn)
 
@@ -81,7 +84,7 @@ func main() {
 
 	// grpc connect to UserService
 	grpcConn, err := grpc.Dial(
-		":8081",
+		config.Host+":8081",
 		grpc.WithInsecure(),
 		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
 	)

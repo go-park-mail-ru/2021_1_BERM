@@ -1,4 +1,4 @@
-package repository
+package repository_test
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 	"user/internal/app/models"
+	specializeRep "user/internal/app/specialize/repository"
 )
 
 func TestFindSpecializeByName(t *testing.T) {
@@ -16,7 +17,7 @@ func TestFindSpecializeByName(t *testing.T) {
 	}
 	defer db.Close()
 
-	store := Repository{
+	store := specializeRep.Repository{
 		Db: db,
 	}
 	testSpec := models.Specialize{

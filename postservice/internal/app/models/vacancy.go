@@ -10,8 +10,13 @@ type Vacancy struct {
 	Salary      uint64 `json:"salary,omitempty" db:"salary"`
 	Login       string `json:"user_login,omitempty"`
 	Img         string `json:"user_img,omitempty"`
+	IsArchived  bool   `json:"is_archived" db:"is_archived"`
 }
 
 type VacancySearch struct {
 	Keyword string `json:"keyword"`
+}
+
+type SuggestVacancyTittle struct {
+	Title string `json:"title" db:"vacancy_name"`
 }

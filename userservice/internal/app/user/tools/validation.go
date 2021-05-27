@@ -26,7 +26,6 @@ func ValidationCreateUser(user *models.NewUser) error {
 }
 
 func ValidationChangeUser(user models.ChangeUser) error {
-
 	err := validation.ValidateStruct(
 		&user,
 		validation.Field(&user.Email, is.Email),

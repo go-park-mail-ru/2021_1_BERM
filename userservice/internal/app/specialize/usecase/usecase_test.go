@@ -1,4 +1,4 @@
-package usecase
+package usecase_test
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"testing"
 	"user/internal/app/specialize/mock"
+	useCaseSpecialize "user/internal/app/specialize/usecase"
 	customError "user/pkg/error"
 )
 
@@ -20,8 +21,8 @@ func TestCreateSpecialize(t *testing.T) {
 	spec := "spec"
 	mockSpecializeMock.EXPECT().Create(spec, ctx).Times(1).Return(uint64(1), nil)
 
-	useCase := UseCase{
-		specializeRepository: mockSpecializeMock,
+	useCase := useCaseSpecialize.UseCase{
+		SpecializeRepository: mockSpecializeMock,
 	}
 	ID, err := useCase.Create(spec, ctx)
 	require.NoError(t, err)
@@ -38,8 +39,8 @@ func TestRemoveSpecialize(t *testing.T) {
 	spec := "spec"
 	mockSpecializeMock.EXPECT().FindByName(spec, ctx).Times(1).Return(uint64(1), nil)
 	mockSpecializeMock.EXPECT().RemoveAssociateSpecializationWithUser(uint64(1), uint64(1), ctx).Times(1).Return(nil)
-	useCase := UseCase{
-		specializeRepository: mockSpecializeMock,
+	useCase := useCaseSpecialize.UseCase{
+		SpecializeRepository: mockSpecializeMock,
 	}
 	err := useCase.Remove(1, spec, ctx)
 	require.NoError(t, err)
@@ -56,8 +57,8 @@ func TestAssociateSpecWithUsser(t *testing.T) {
 	mockSpecializeMock.EXPECT().FindByName(spec, ctx).Times(1).Return(uint64(0), customError.ErrorDuplicate)
 	mockSpecializeMock.EXPECT().Create(spec, ctx).Times(1).Return(uint64(1), nil)
 	mockSpecializeMock.EXPECT().AssociateSpecializationWithUser(uint64(1), uint64(1), ctx).Times(1).Return(nil)
-	useCase := UseCase{
-		specializeRepository: mockSpecializeMock,
+	useCase := useCaseSpecialize.UseCase{
+		SpecializeRepository: mockSpecializeMock,
 	}
 	err := useCase.AssociateWithUser(1, spec, ctx)
 	require.NoError(t, err)
@@ -75,8 +76,8 @@ func TestAssociateSpecWithUsserWithDuplicate(t *testing.T) {
 	mockSpecializeMock.EXPECT().AssociateSpecializationWithUser(uint64(1), uint64(1), ctx).Times(1).Return(&pq.Error{
 		Code: "23505",
 	})
-	useCase := UseCase{
-		specializeRepository: mockSpecializeMock,
+	useCase := useCaseSpecialize.UseCase{
+		SpecializeRepository: mockSpecializeMock,
 	}
 	err := useCase.AssociateWithUser(1, spec, ctx)
 	require.Error(t, err)
@@ -87,6 +88,6 @@ func TestNewUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockSpecializeRepo := mock.NewMockRepository(ctrl)
-	s := New(mockSpecializeRepo)
-	require.Equal(t, s.specializeRepository, mockSpecializeRepo)
+	s := useCaseSpecialize.New(mockSpecializeRepo)
+	require.Equal(t, s.SpecializeRepository, mockSpecializeRepo)
 }

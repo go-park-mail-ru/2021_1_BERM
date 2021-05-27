@@ -12,6 +12,11 @@ import (
 	"strings"
 )
 
+const (
+	fullAcces = 0777
+	quality   = 75
+)
+
 type SubImager interface {
 	SubImage(r image.Rectangle) image.Image
 }
@@ -41,17 +46,20 @@ func (i *ImgCreator) CreateImg(imgBase64 string) (string, error) {
 		return "", err
 	}
 	jpegFilename, err := randomFilename16Char()
+	if err != nil {
+		return "", err
+	}
 	jpegFilename += ".jpeg"
 	f, err := os.Create("image/" + jpegFilename)
 	if err != nil {
 		return "", err
 	}
-	err = f.Chmod(0777)
+	err = f.Chmod(fullAcces)
 	if err != nil {
 		return "", err
 	}
 
-	err = jpeg.Encode(f, m, &jpeg.Options{Quality: 75})
+	err = jpeg.Encode(f, m, &jpeg.Options{Quality: quality})
 	if err != nil {
 		return "", err
 	}
@@ -86,7 +94,6 @@ func (i *ImgCreator) CropImg(imgURL string) (string, error) {
 			return "", err
 		}
 		return imgURL, nil
-	} else {
-		return "", err
 	}
+	return "", err
 }

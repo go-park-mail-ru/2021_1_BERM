@@ -6,3 +6,5 @@ content_dir = "/home/ubuntu/2021_1_BERM/imgUsrs"
 # content_dir = "/home/aleksey/Base"
 https = false
 dsn = "user=postgres dbname=postgres password=admin host=127.0.0.1 port=5432 sslmode=disable"
+host = "findfreelancer.ru"
+# host = ""

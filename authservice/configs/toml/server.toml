@@ -1,5 +1,7 @@
 bind_addr = ":8084"
 log_level = "error"
-database_url = "127.0.0.1:3001"
+database_url = ":3001"
 origin = ["http://localhost", "http://localhost:80", "http://localhost:8000", "http://localhost:63342", "http://localhost:63343", "https://fldebploy.netlify.app", "https://findfreelancer.ru"]
 https = false
+host = "findfreelancer.ru"
+# host = ""

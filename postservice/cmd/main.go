@@ -96,7 +96,7 @@ func main() {
 
 	// connect to user service
 	conn, err := grpc.Dial(
-		"localhost:8081",
+		config.Host+":8081",
 		grpc.WithInsecure(),
 		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
 	)
@@ -108,7 +108,7 @@ func main() {
 
 	// connect to auth service
 	grpcConn, err := grpc.Dial(
-		":8085",
+		config.Host+":8085",
 		grpc.WithInsecure(),
 		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
 	)
@@ -160,6 +160,7 @@ func main() {
 	order.HandleFunc("/{id}/close", orderHandler.CloseOrder).Methods(http.MethodDelete)
 	order.HandleFunc("/profile/{id:[0-9]+}/archive", orderHandler.GetAllArchiveUserOrders).Methods(http.MethodGet)
 	order.HandleFunc("/search", orderHandler.SearchOrder).Methods(http.MethodPatch)
+	order.HandleFunc("/suggest", orderHandler.SuggestOrderTitle).Methods(http.MethodGet)
 
 	vacancy := apiRoute.PathPrefix("/vacancy").Subrouter()
 	vacancy.Use(csrfMiddleware)
@@ -178,6 +179,7 @@ func main() {
 	vacancy.HandleFunc("/{id}/close", vacancyHandler.CloseVacancy).Methods(http.MethodDelete)
 	vacancy.HandleFunc("/profile/{id:[0-9]+}/archive", vacancyHandler.GetAllArchiveUserVacancies).Methods(http.MethodGet)
 	vacancy.HandleFunc("/search", vacancyHandler.SearchVacancy).Methods(http.MethodPatch)
+	vacancy.HandleFunc("/suggest", vacancyHandler.SuggestVacancyTitle).Methods(http.MethodGet)
 
 	c := middleware.CorsMiddleware(config.Origin)
 

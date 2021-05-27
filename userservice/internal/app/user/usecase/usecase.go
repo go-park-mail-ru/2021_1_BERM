@@ -11,17 +11,22 @@ import (
 	"user/internal/app/user/tools"
 	"user/internal/app/user/tools/passwordencrypt"
 	customErrors "user/pkg/error"
+	"user/pkg/types"
+)
+
+const (
+	ctxParam types.CtxKey = 4
 )
 
 type UseCase struct {
-	userRepository       user.Repository
-	specializeRepository specialize2.Repository
-	reviewsRepository    review2.Repository
-	encrypter            tools.PasswordEncrypter
+	UserRepository       user.Repository
+	SpecializeRepository specialize2.Repository
+	ReviewsRepository    review2.Repository
+	Encrypter            tools.PasswordEncrypter
 }
 
 func (useCase *UseCase) SetImg(ID uint64, img string, ctx context.Context) error {
-	err := useCase.userRepository.SetUserImg(ID, img, ctx)
+	err := useCase.UserRepository.SetUserImg(ID, img, ctx)
 	if err != nil {
 		return err
 	}
@@ -33,25 +38,25 @@ func (useCase *UseCase) Create(user models.NewUser, ctx context.Context) (*model
 	if err != nil {
 		return nil, errors.Wrap(err, "Validation error")
 	}
-	if user, err = useCase.encrypter.BeforeCreate(user); err != nil {
+	if user, err = useCase.Encrypter.BeforeCreate(user); err != nil {
 		return nil, errors.Wrap(err, "Encrypt password error")
 	}
-	ID, err := useCase.userRepository.Create(user, ctx)
+	ID, err := useCase.UserRepository.Create(user, ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error in user repository.")
 	}
 
 	for _, spec := range user.Specializes {
-		specID, err := useCase.specializeRepository.FindByName(spec, ctx)
+		specID, err := useCase.SpecializeRepository.FindByName(spec, ctx)
 		if err != nil {
 			if errors.Is(err, customErrors.ErrorNoRows) {
-				specID, err = useCase.specializeRepository.Create(spec, ctx)
+				specID, err = useCase.SpecializeRepository.Create(spec, ctx)
 				if err != nil {
 					return nil, errors.Wrap(err, "Error in data sourse")
 				}
 			}
 		}
-		err = useCase.specializeRepository.AssociateSpecializationWithUser(specID, ID, ctx)
+		err = useCase.SpecializeRepository.AssociateSpecializationWithUser(specID, ID, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -63,12 +68,13 @@ func (useCase *UseCase) Create(user models.NewUser, ctx context.Context) (*model
 	}, nil
 }
 
-func (useCase *UseCase) Verification(email string, password string, ctx context.Context) (*models.UserBasicInfo, error) {
-	user, err := useCase.userRepository.FindUserByEmail(email, ctx)
+func (useCase *UseCase) Verification(email string,
+	password string, ctx context.Context) (*models.UserBasicInfo, error) {
+	user, err := useCase.UserRepository.FindUserByEmail(email, ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error in user repository.")
 	}
-	if !useCase.encrypter.CompPass(user.Password, password) {
+	if !useCase.Encrypter.CompPass(user.Password, password) {
 		return nil, customErrors.ErrorInvalidPassword
 	}
 
@@ -79,23 +85,23 @@ func (useCase *UseCase) Verification(email string, password string, ctx context.
 }
 
 func (useCase *UseCase) GetById(ID uint64, ctx context.Context) (*models.UserInfo, error) {
-	user, err := useCase.userRepository.FindUserByID(ID, ctx)
+	userInfo, err := useCase.UserRepository.FindUserByID(ID, ctx)
 	if err != nil {
 		return nil, err
 	}
-	if user.Executor {
-		user.Specializes, err = useCase.specializeRepository.FindByUserID(user.ID, ctx)
+	if userInfo.Executor {
+		userInfo.Specializes, err = useCase.SpecializeRepository.FindByUserID(userInfo.ID, ctx)
 		if err != nil {
 			return nil, errors.Wrap(err, "Error in specialize repository.")
 		}
 	}
-	userReviewInfo, err := useCase.reviewsRepository.GetAvgScoreByUserId(ID, ctx)
+	userReviewInfo, err := useCase.ReviewsRepository.GetAvgScoreByUserId(ID, ctx)
 	if err != nil {
 		return nil, err
 	}
-	user.Rating = userReviewInfo.Rating
-	user.ReviewCount = userReviewInfo.ReviewCount
-	return user, nil
+	userInfo.Rating = userReviewInfo.Rating
+	userInfo.ReviewCount = userReviewInfo.ReviewCount
+	return userInfo, nil
 }
 
 func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (*models.UserBasicInfo, error) {
@@ -104,19 +110,19 @@ func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (*mo
 	if err != nil {
 		return nil, err
 	}
-	oldUser, err := useCase.userRepository.FindUserByID(user.ID, ctx)
+	oldUser, err := useCase.UserRepository.FindUserByID(user.ID, ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "User db error")
 	}
 
-	if !useCase.encrypter.CompPass(oldUser.Password, user.Password) {
+	if !useCase.Encrypter.CompPass(oldUser.Password, user.Password) {
 		return nil, customErrors.ErrorInvalidPassword
 	}
 	if user.NewPassword != "" {
 		user.Password = user.NewPassword
 	}
 	fmt.Println(user)
-	if user, err = useCase.encrypter.BeforeChange(user); err != nil {
+	if user, err = useCase.Encrypter.BeforeChange(user); err != nil {
 		return nil, err
 	}
 	if user.Email == "" {
@@ -139,24 +145,24 @@ func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (*mo
 		user.NameSurname = oldUser.NameSurname
 	}
 
-	for _, spec := range oldUser.Specializes {
-		user.Specializes = append(user.Specializes, spec)
+	for i := range oldUser.Specializes {
+		user.Specializes = append(user.Specializes, oldUser.Specializes[i])
 	}
-	err = useCase.userRepository.Change(user, ctx)
+	err = useCase.UserRepository.Change(user, ctx)
 	if err != nil {
 		return nil, err
 	}
-	for _, spec := range user.Specializes {
-		specID, err := useCase.specializeRepository.FindByName(spec, ctx)
+	for i := range user.Specializes {
+		specID, err := useCase.SpecializeRepository.FindByName(user.Specializes[i], ctx)
 		if err != nil {
 			if err == customErrors.ErrorNoRows {
-				specID, err = useCase.specializeRepository.Create(spec, ctx)
+				specID, err = useCase.SpecializeRepository.Create(user.Specializes[i], ctx)
 				if err != nil {
 					return nil, errors.Wrap(err, "Error in data sourse")
 				}
 			}
 		}
-		err = useCase.specializeRepository.AssociateSpecializationWithUser(specID, oldUser.ID, ctx)
+		err = useCase.SpecializeRepository.AssociateSpecializationWithUser(specID, oldUser.ID, ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -172,11 +178,61 @@ func (useCase *UseCase) Change(user models.ChangeUser, ctx context.Context) (*mo
 	}, nil
 }
 
+func (u *UseCase) SuggestUsersTitle(suggestWord string, ctx context.Context) ([]models.SuggestUsersTittle, error) {
+	suggestTittles, err := u.UserRepository.SuggestUsersTitle(suggestWord, ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "Error in data sourse")
+	}
+	if suggestTittles == nil {
+		return []models.SuggestUsersTittle{}, nil
+	}
+	return suggestTittles, nil
+}
+
+func (useCase *UseCase) GetUsers(ctx context.Context) ([]models.UserInfo, error) {
+	uInf, err := useCase.UserRepository.GetUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	param := ctx.Value(ctxParam).(map[string]interface{})
+	category := param["category"].(string)
+
+	var res []models.UserInfo
+	for i := range uInf {
+		uInf[i].Specializes, err = useCase.SpecializeRepository.FindByUserID(uInf[i].ID, ctx)
+		if uInf[i].Specializes == nil {
+			uInf[i].Specializes = []string{}
+		}
+		if err != nil {
+			return nil, err
+		}
+		if category != "" {
+			flag := false
+			for _, spec := range uInf[i].Specializes {
+				if spec == category {
+					flag = true
+				}
+			}
+			if flag {
+				res = append(res, uInf[i])
+				//uInf[i], uInf[len(uInf)-1] = uInf[len(uInf)-1], uInf[i]
+				//uInf = uInf[:len(uInf)-1]
+			}
+		} else {
+			res = append(res, uInf[i])
+		}
+	}
+	if res == nil {
+		return []models.UserInfo{}, nil
+	}
+	return res, nil
+}
+
 func New(userRep user.Repository, specRep specialize2.Repository, reviewsRepository review2.Repository) *UseCase {
 	return &UseCase{
-		specializeRepository: specRep,
-		userRepository:       userRep,
-		reviewsRepository:    reviewsRepository,
-		encrypter:            &passwordencrypt.PasswordEncrypter{},
+		SpecializeRepository: specRep,
+		UserRepository:       userRep,
+		ReviewsRepository:    reviewsRepository,
+		Encrypter:            &passwordencrypt.PasswordEncrypter{},
 	}
 }

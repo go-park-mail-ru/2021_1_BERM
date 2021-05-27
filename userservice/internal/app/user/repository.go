@@ -12,4 +12,6 @@ type Repository interface {
 	FindUserByID(ID uint64, ctx context.Context) (*models.UserInfo, error)
 	FindUserByEmail(email string, ctx context.Context) (*models.UserInfo, error)
 	SetUserImg(ID uint64, img string, ctx context.Context) error
+	GetUsers(ctx context.Context) ([]models.UserInfo, error)
+	SuggestUsersTitle(suggestWord string, ctx context.Context) ([]models.SuggestUsersTittle, error)
 }

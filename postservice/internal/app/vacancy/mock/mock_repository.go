@@ -93,6 +93,21 @@ func (mr *MockRepositoryMockRecorder) DeleteVacancy(arg0, arg1 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVacancy", reflect.TypeOf((*MockRepository)(nil).DeleteVacancy), arg0, arg1)
 }
 
+// FindArchiveByID mocks base method.
+func (m *MockRepository) FindArchiveByID(arg0 uint64, arg1 context.Context) (*models.Vacancy, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindArchiveByID", arg0, arg1)
+	ret0, _ := ret[0].(*models.Vacancy)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindArchiveByID indicates an expected call of FindArchiveByID.
+func (mr *MockRepositoryMockRecorder) FindArchiveByID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindArchiveByID", reflect.TypeOf((*MockRepository)(nil).FindArchiveByID), arg0, arg1)
+}
+
 // FindByCustomerID mocks base method.
 func (m *MockRepository) FindByCustomerID(arg0 uint64, arg1 context.Context) ([]models.Vacancy, error) {
 	m.ctrl.T.Helper()
@@ -168,6 +183,51 @@ func (mr *MockRepositoryMockRecorder) GetArchiveVacancies(arg0 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArchiveVacancies", reflect.TypeOf((*MockRepository)(nil).GetArchiveVacancies), arg0)
 }
 
+// GetArchiveVacanciesByCustomerID mocks base method.
+func (m *MockRepository) GetArchiveVacanciesByCustomerID(arg0 uint64, arg1 context.Context) ([]models.Vacancy, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArchiveVacanciesByCustomerID", arg0, arg1)
+	ret0, _ := ret[0].([]models.Vacancy)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArchiveVacanciesByCustomerID indicates an expected call of GetArchiveVacanciesByCustomerID.
+func (mr *MockRepositoryMockRecorder) GetArchiveVacanciesByCustomerID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArchiveVacanciesByCustomerID", reflect.TypeOf((*MockRepository)(nil).GetArchiveVacanciesByCustomerID), arg0, arg1)
+}
+
+// GetArchiveVacanciesByExecutorID mocks base method.
+func (m *MockRepository) GetArchiveVacanciesByExecutorID(arg0 uint64, arg1 context.Context) ([]models.Vacancy, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArchiveVacanciesByExecutorID", arg0, arg1)
+	ret0, _ := ret[0].([]models.Vacancy)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArchiveVacanciesByExecutorID indicates an expected call of GetArchiveVacanciesByExecutorID.
+func (mr *MockRepositoryMockRecorder) GetArchiveVacanciesByExecutorID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArchiveVacanciesByExecutorID", reflect.TypeOf((*MockRepository)(nil).GetArchiveVacanciesByExecutorID), arg0, arg1)
+}
+
+// GetVacancyNum mocks base method.
+func (m *MockRepository) GetVacancyNum(arg0 context.Context) (uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVacancyNum", arg0)
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVacancyNum indicates an expected call of GetVacancyNum.
+func (mr *MockRepositoryMockRecorder) GetVacancyNum(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVacancyNum", reflect.TypeOf((*MockRepository)(nil).GetVacancyNum), arg0)
+}
+
 // SearchVacancy mocks base method.
 func (m *MockRepository) SearchVacancy(arg0 string, arg1 context.Context) ([]models.Vacancy, error) {
 	m.ctrl.T.Helper()
@@ -181,6 +241,21 @@ func (m *MockRepository) SearchVacancy(arg0 string, arg1 context.Context) ([]mod
 func (mr *MockRepositoryMockRecorder) SearchVacancy(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchVacancy", reflect.TypeOf((*MockRepository)(nil).SearchVacancy), arg0, arg1)
+}
+
+// SuggestVacancyTitle mocks base method.
+func (m *MockRepository) SuggestVacancyTitle(arg0 string, arg1 context.Context) ([]models.SuggestVacancyTittle, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SuggestVacancyTitle", arg0, arg1)
+	ret0, _ := ret[0].([]models.SuggestVacancyTittle)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SuggestVacancyTitle indicates an expected call of SuggestVacancyTitle.
+func (mr *MockRepositoryMockRecorder) SuggestVacancyTitle(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SuggestVacancyTitle", reflect.TypeOf((*MockRepository)(nil).SuggestVacancyTitle), arg0, arg1)
 }
 
 // UpdateExecutor mocks base method.

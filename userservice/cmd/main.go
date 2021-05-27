@@ -101,7 +101,7 @@ func main() {
 
 	//connect to auth service
 	grpcConnAuth, err := grpc.Dial(
-		":8085",
+		config.Host+":8085",
 		grpc.WithInsecure(),
 		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
 	)
@@ -112,7 +112,7 @@ func main() {
 
 	//connect to order service
 	grpcConnOrder, err := grpc.Dial(
-		":8086",
+		config.Host+":8086",
 		grpc.WithInsecure(),
 		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
 	)
@@ -147,10 +147,12 @@ func main() {
 	apiRoute.Use(middleware.LoggingRequest)
 	apiRoute.Use(sessionMiddleWare.CheckSession)
 	apiRoute.Use(csrfMiddleware)
+	apiRoute.HandleFunc("/profile/users", userHandler.GetUsers).Methods(http.MethodGet)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.GetUserInfo).Methods(http.MethodGet)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}", userHandler.ChangeProfile).Methods(http.MethodPatch)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Create).Methods(http.MethodPost)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/specialize", specializeHandler.Remove).Methods(http.MethodDelete)
+	apiRoute.HandleFunc("/profile/users/suggest", userHandler.SuggestUsers).Methods(http.MethodGet)
 
 	apiRoute.HandleFunc("/profile/review", reviewHandler.Create).Methods(http.MethodPost)
 	apiRoute.HandleFunc("/profile/{id:[0-9]+}/review", reviewHandler.GetAllByUserId).Methods(http.MethodGet)

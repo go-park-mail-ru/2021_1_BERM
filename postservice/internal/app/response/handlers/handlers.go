@@ -8,13 +8,13 @@ import (
 	"post/internal/app/models"
 	responseUseCase "post/internal/app/response"
 	"post/pkg/httputils"
+	"post/pkg/types"
 	"strconv"
 )
 
 const (
-	ctxKeySession uint8 = 3
-	ctxKeyReqID   uint8 = 1
-	ctxUserID     uint8 = 2
+	ctxKeyReqID types.CtxKey = 1
+	ctxUserID   types.CtxKey = 2
 )
 
 type Handlers struct {

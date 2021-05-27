@@ -1,4 +1,4 @@
-package order
+package order_test
 
 import (
 	"context"
@@ -8,7 +8,13 @@ import (
 	"post/api"
 	"post/internal/app/models"
 	"post/internal/app/order/mock"
+	ordUCase "post/internal/app/order/usecase"
+	"post/pkg/types"
 	"testing"
+)
+
+const (
+	ctxUserID types.CtxKey = 2
 )
 
 func TestDeleteExecutor(t *testing.T) {
@@ -24,7 +30,7 @@ func TestDeleteExecutor(t *testing.T) {
 
 	mockUserRepo := mock.NewMockUserClient(ctrl)
 
-	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+	useCase := ordUCase.NewUseCase(mockOrderRepo, mockUserRepo)
 
 	err := useCase.DeleteExecutor(order, ctx)
 
@@ -43,7 +49,7 @@ func TestDeleteExecutorErr(t *testing.T) {
 	mockOrderRepo.EXPECT().UpdateExecutor(order, ctx).Times(1).Return(errors.New("Db dead"))
 	mockUserRepo := mock.NewMockUserClient(ctrl)
 
-	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+	useCase := ordUCase.NewUseCase(mockOrderRepo, mockUserRepo)
 
 	err := useCase.DeleteExecutor(order, ctx)
 	require.Error(t, err)
@@ -77,7 +83,7 @@ func TestCreateOrder(t *testing.T) {
 	ctx := context.Background()
 	mockOrderRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+	useCase := ordUCase.NewUseCase(mockOrderRepo, mockUserRepo)
 
 	mockOrderRepo.EXPECT().
 		Create(order, ctx).
@@ -99,7 +105,7 @@ func TestCreateOrder(t *testing.T) {
 		Times(1).
 		Return(id, errors.New("DB error"))
 
-	respOrder, err = useCase.Create(order, ctx)
+	_, err = useCase.Create(order, ctx)
 	require.Error(t, err)
 
 	id = 1
@@ -112,10 +118,9 @@ func TestCreateOrder(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, errors.New("GRPC Err"))
 
-	respOrder, err = useCase.Create(order, ctx)
+	_, err = useCase.Create(order, ctx)
 	require.Error(t, err)
 
-	id = 1
 	wrongOrder := models.Order{
 		OrderName:  "Keke",
 		CustomerID: 1,
@@ -124,7 +129,7 @@ func TestCreateOrder(t *testing.T) {
 		Category:   "Back",
 	}
 
-	respOrder, err = useCase.Create(wrongOrder, ctx)
+	_, err = useCase.Create(wrongOrder, ctx)
 	require.Error(t, err)
 }
 
@@ -152,12 +157,12 @@ func TestFindByID(t *testing.T) {
 		UserLogin:   "Mem",
 		ID:          1,
 	}
-	var id uint64
-	id = 1
+
+	id := uint64(1)
 	ctx := context.Background()
 	mockOrderRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+	useCase := ordUCase.NewUseCase(mockOrderRepo, mockUserRepo)
 
 	mockOrderRepo.EXPECT().
 		FindByID(id, ctx).
@@ -196,7 +201,7 @@ func TestFindByID(t *testing.T) {
 		Times(1).
 		Return(order, errors.New("DB err"))
 
-	respOrder, err = useCase.FindByID(id, ctx)
+	_, err = useCase.FindByID(id, ctx)
 
 	require.Error(t, err)
 
@@ -209,7 +214,7 @@ func TestFindByID(t *testing.T) {
 		Times(1).
 		Return(nil, nil)
 
-	respOrder, err = useCase.FindByID(id, ctx)
+	_, err = useCase.FindByID(id, ctx)
 
 	require.NoError(t, err)
 
@@ -226,7 +231,7 @@ func TestFindByID(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, errors.New("GRPC err"))
 
-	respOrder, err = useCase.FindByID(id, ctx)
+	_, err = useCase.FindByID(id, ctx)
 
 	require.Error(t, err)
 }
@@ -235,12 +240,11 @@ func TestFindByUserID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	var id uint64
-	id = 1
+	id := uint64(1)
 	ctx := context.Background()
 	mockOrderRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+	useCase := ordUCase.NewUseCase(mockOrderRepo, mockUserRepo)
 
 	orders := []models.Order{
 		{
@@ -263,6 +267,8 @@ func TestFindByUserID(t *testing.T) {
 			Deadline:    22842212,
 			Description: "Aue jizn voram",
 			Category:    "Back",
+			UserLogin:   "Mem",
+			UserImg:     "kek",
 		},
 	}
 
@@ -285,7 +291,7 @@ func TestFindByUserID(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek", Executor: true}, errors.New("GRPC Err"))
 
-	respOrders, err = useCase.FindByUserID(id, ctx)
+	_, err = useCase.FindByUserID(id, ctx)
 
 	require.Error(t, err)
 
@@ -327,7 +333,7 @@ func TestFindByUserID(t *testing.T) {
 		Times(1).
 		Return(nil, errors.New("DB err"))
 
-	respOrders, err = useCase.FindByUserID(id, ctx)
+	_, err = useCase.FindByUserID(id, ctx)
 
 	require.Error(t, err)
 }
@@ -365,12 +371,11 @@ func TestChangeOrder(t *testing.T) {
 		UserLogin:   "Mem",
 		ID:          1,
 	}
-	var id uint64
-	id = 1
+	id := uint64(1)
 	ctx := context.Background()
 	mockOrderRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+	useCase := ordUCase.NewUseCase(mockOrderRepo, mockUserRepo)
 
 	mockOrderRepo.EXPECT().
 		FindByID(id, ctx).
@@ -417,7 +422,7 @@ func TestChangeOrder(t *testing.T) {
 		Times(1).
 		Return(oldOrder, errors.New("DB err"))
 
-	respOrder, err = useCase.ChangeOrder(*orderWithoutFields, ctx)
+	_, err = useCase.ChangeOrder(*orderWithoutFields, ctx)
 
 	require.Error(t, err)
 
@@ -430,7 +435,7 @@ func TestChangeOrder(t *testing.T) {
 		Times(1).
 		Return(errors.New("DB err"))
 
-	respOrder, err = useCase.ChangeOrder(*order, ctx)
+	_, err = useCase.ChangeOrder(*order, ctx)
 	require.Error(t, err)
 
 	mockOrderRepo.EXPECT().
@@ -446,7 +451,7 @@ func TestChangeOrder(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, errors.New("GRPC err"))
 
-	respOrder, err = useCase.ChangeOrder(*order, ctx)
+	_, err = useCase.ChangeOrder(*order, ctx)
 
 	require.Error(t, err)
 }
@@ -454,12 +459,11 @@ func TestChangeOrder(t *testing.T) {
 func TestDeleteOrder(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	var id uint64
-	id = 1
+	id := uint64(1)
 	ctx := context.Background()
 	mockOrderRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+	useCase := ordUCase.NewUseCase(mockOrderRepo, mockUserRepo)
 
 	mockOrderRepo.EXPECT().
 		DeleteOrder(id, ctx).
@@ -484,12 +488,12 @@ func TestGetActualOrders(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	var id uint64
-	id = 1
+	id := uint64(1)
+
 	ctx := context.Background()
 	mockOrderRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+	useCase := ordUCase.NewUseCase(mockOrderRepo, mockUserRepo)
 
 	orders := []models.Order{
 		{
@@ -517,6 +521,11 @@ func TestGetActualOrders(t *testing.T) {
 		},
 	}
 
+	ctx = context.WithValue(ctx, ctxUserID, uint64(1))
+	mockUserRepo.EXPECT().
+		GetUserById(context.Background(), &api.UserRequest{Id: id}).
+		Times(1).
+		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek", Executor: true}, nil)
 	mockUserRepo.EXPECT().
 		GetUserById(ctx, &api.UserRequest{Id: id}).
 		Times(1).
@@ -525,8 +534,12 @@ func TestGetActualOrders(t *testing.T) {
 		GetActualOrders(ctx).
 		Times(1).
 		Return(orders, nil)
+	mockOrderRepo.EXPECT().
+		GetOrderNum(ctx).
+		Times(1).
+		Return(uint64(1), nil)
 
-	respOrders, err := useCase.GetActualOrders(ctx)
+	respOrders, _, err := useCase.GetActualOrders(ctx)
 
 	require.Equal(t, respOrders, expectOrders)
 	require.NoError(t, err)
@@ -536,12 +549,12 @@ func TestGetActualOrders(t *testing.T) {
 		Times(1).
 		Return(orders, errors.New("DB err"))
 
-	respOrders, err = useCase.GetActualOrders(ctx)
+	_, _, err = useCase.GetActualOrders(ctx)
 
 	require.Error(t, err)
 
 	mockUserRepo.EXPECT().
-		GetUserById(ctx, &api.UserRequest{Id: id}).
+		GetUserById(context.Background(), &api.UserRequest{Id: id}).
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek", Executor: true}, errors.New("GRPC error"))
 	mockOrderRepo.EXPECT().
@@ -549,7 +562,7 @@ func TestGetActualOrders(t *testing.T) {
 		Times(1).
 		Return(orders, nil)
 
-	respOrders, err = useCase.GetActualOrders(ctx)
+	_, _, err = useCase.GetActualOrders(ctx)
 
 	require.Error(t, err)
 
@@ -560,7 +573,7 @@ func TestGetActualOrders(t *testing.T) {
 		Times(1).
 		Return(nil, nil)
 
-	respOrders, err = useCase.GetActualOrders(ctx)
+	respOrders, _, err = useCase.GetActualOrders(ctx)
 
 	require.Equal(t, respOrders, emptyOrders)
 	require.NoError(t, err)
@@ -572,7 +585,7 @@ func TestSelectExecutor(t *testing.T) {
 	ctx := context.Background()
 	mockOrderRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+	useCase := ordUCase.NewUseCase(mockOrderRepo, mockUserRepo)
 
 	order := &models.Order{
 		ID:          1,
@@ -656,10 +669,9 @@ func TestCloseOrder(t *testing.T) {
 	ctx := context.Background()
 	mockOrderRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+	useCase := ordUCase.NewUseCase(mockOrderRepo, mockUserRepo)
 
-	var id uint64
-	id = 1
+	var id = uint64(1)
 
 	order := &models.Order{
 		ID:          1,
@@ -735,7 +747,7 @@ func TestGetArchiveOrders(t *testing.T) {
 	ctx := context.Background()
 	mockOrderRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+	useCase := ordUCase.NewUseCase(mockOrderRepo, mockUserRepo)
 
 	var id uint64
 	id = 1
@@ -806,7 +818,7 @@ func TestGetArchiveOrders(t *testing.T) {
 		Times(1).
 		Return(order, errors.New("DB err"))
 
-	resOrders, err = useCase.GetArchiveOrders(userInfo, ctx)
+	_, err = useCase.GetArchiveOrders(userInfo, ctx)
 
 	require.Error(t, err)
 
@@ -819,7 +831,7 @@ func TestGetArchiveOrders(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, errors.New("GRPC err"))
 
-	resOrders, err = useCase.GetArchiveOrders(userInfo, ctx)
+	_, err = useCase.GetArchiveOrders(userInfo, ctx)
 	require.Error(t, err)
 
 	mockOrderRepo.EXPECT().
@@ -839,7 +851,7 @@ func TestSearchOrders(t *testing.T) {
 	ctx := context.Background()
 	mockOrderRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockOrderRepo, mockUserRepo)
+	useCase := ordUCase.NewUseCase(mockOrderRepo, mockUserRepo)
 
 	keyword := "Aue"
 	orders := []models.Order{
@@ -900,7 +912,7 @@ func TestSearchOrders(t *testing.T) {
 		Times(1).
 		Return(orders, errors.New("DB error"))
 
-	resOrders, err = useCase.SearchOrders(keyword, ctx)
+	_, err = useCase.SearchOrders(keyword, ctx)
 
 	require.Error(t, err)
 
@@ -913,7 +925,7 @@ func TestSearchOrders(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, errors.New("GRPC err"))
 
-	resOrders, err = useCase.SearchOrders(keyword, ctx)
+	_, err = useCase.SearchOrders(keyword, ctx)
 
 	require.Error(t, err)
 }

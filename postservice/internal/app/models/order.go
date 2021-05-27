@@ -11,8 +11,13 @@ type Order struct {
 	Category    string `json:"category,omitempty" db:"category"`
 	UserLogin   string `json:"user_login,omitempty"`
 	UserImg     string `json:"user_img,omitempty"`
+	IsArchived  bool   `json:"is_archived" db:"is_archived"`
 }
 
 type OrderSearch struct {
 	Keyword string `json:"keyword"`
+}
+
+type SuggestOrderTitle struct {
+	Title string `json:"title" db:"order_name"`
 }

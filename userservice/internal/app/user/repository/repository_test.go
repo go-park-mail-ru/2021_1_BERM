@@ -1,4 +1,4 @@
-package user
+package user_test
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 	"user/internal/app/models"
+	userRep "user/internal/app/user/repository"
 )
 
 func TestUserCreate(t *testing.T) {
@@ -16,7 +17,7 @@ func TestUserCreate(t *testing.T) {
 	}
 	defer db.Close()
 
-	store := Repository{Db: db}
+	store := userRep.Repository{Db: db}
 
 	testUser := models.NewUser{
 		Email:           "kek@me.ru",
@@ -81,7 +82,7 @@ func TestFindUserByID(t *testing.T) {
 	}
 	defer db.Close()
 
-	store := Repository{Db: db}
+	store := userRep.Repository{Db: db}
 
 	testUser := &models.UserInfo{
 		ID:          1,
@@ -139,7 +140,7 @@ func TestFindUserByEmail(t *testing.T) {
 	}
 	defer db.Close()
 
-	store := Repository{Db: db}
+	store := userRep.Repository{Db: db}
 
 	testUser := &models.UserInfo{
 		ID:          1,

@@ -8,13 +8,15 @@ import (
 	"post/internal/app/models"
 	vacancyUseCase "post/internal/app/vacancy"
 	"post/pkg/httputils"
+	"post/pkg/types"
 	"strconv"
 )
 
 const (
-	ctxKeySession uint8 = iota
-	ctxKeyReqID   uint8 = 1
-	ctxUserID     uint8 = 2
+	ctxKeyReqID types.CtxKey = 1
+	ctxUserID   types.CtxKey = 2
+	ctxParam    types.CtxKey = 4
+	ctxExecutor types.CtxKey = 3
 )
 
 type Handlers struct {
@@ -68,13 +70,73 @@ func (h *Handlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	v, err := h.useCase.GetActualVacancies(context.Background())
+
+	param := make(map[string]interface{})
+	param["search_str"] = r.URL.Query().Get("search_str")
+	if searchStr := r.URL.Query().Get("search_str"); searchStr != "" {
+		param["search_str"] = searchStr
+	} else {
+		param["search_str"] = "~"
+	}
+	if salaryFrom := r.URL.Query().Get("from"); salaryFrom != "" {
+		salaryFromInt, err := strconv.Atoi(salaryFrom)
+		if err == nil {
+			param["from"] = salaryFromInt
+		}
+	} else {
+		param["from"] = 0
+	}
+	if salaryTo := r.URL.Query().Get("to"); salaryTo != "" {
+		salaryToInt, err := strconv.Atoi(salaryTo)
+		if err == nil {
+			param["to"] = salaryToInt
+		}
+	} else {
+		param["to"] = 0
+	}
+
+	if desc := r.URL.Query().Get("desc"); desc != "" {
+		descBool, err := strconv.ParseBool(desc)
+		if err == nil {
+			param["desc"] = descBool
+		}
+	} else {
+		param["desc"] = false
+	}
+
+	if category := r.URL.Query().Get("category"); category != "" {
+		param["category"] = category
+	} else {
+		param["category"] = "~"
+	}
+
+	if limit := r.URL.Query().Get("limit"); limit != "" {
+		limitInt, err := strconv.Atoi(limit)
+		if err == nil {
+			param["limit"] = limitInt
+		}
+	} else {
+		param["limit"] = 15
+	}
+	if offset := r.URL.Query().Get("offset"); offset != "" {
+		offsetInt, err := strconv.Atoi(offset)
+		if err == nil {
+			param["offset"] = offsetInt
+		}
+	} else {
+		param["offset"] = 0
+	}
+
+	v, num, err := h.useCase.GetActualVacancies(context.WithValue(r.Context(), ctxParam, param))
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, v)
+	vacancyResponse := make(map[string]interface{})
+	vacancyResponse["vacancy"] = v
+	vacancyResponse["size"] = num
+	httputils.Respond(w, r, reqID, http.StatusOK, vacancyResponse)
 }
 
 func (h *Handlers) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
@@ -208,11 +270,20 @@ func (h *Handlers) CloseVacancy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetAllArchiveUserVacancies(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	userInfo := models.UserBasicInfo{}
+	var err error
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
-	v, err := h.useCase.GetArchiveVacancies(context.Background())
+	userInfo.ID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	userInfo.Executor = r.Context().Value(ctxExecutor).(bool)
 
+	v, err := h.useCase.GetArchiveVacancies(userInfo, context.Background())
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
 	httputils.Respond(w, r, reqID, http.StatusOK, v)
@@ -233,4 +304,15 @@ func (h *Handlers) SearchVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httputils.Respond(w, r, reqID, http.StatusOK, v)
+}
+
+func (h *Handlers) SuggestVacancyTitle(w http.ResponseWriter, r *http.Request) {
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	suggestWord := r.URL.Query().Get("suggest_word")
+	suggestTitles, err := h.useCase.SuggestVacancyTitle(suggestWord, context.Background())
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, suggestTitles)
 }
