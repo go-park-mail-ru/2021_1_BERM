@@ -23,21 +23,21 @@ jobs:
       - name: linters check post service
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.29
+          version: latest
           working-directory: postservice
           args: -c .golangci-lint.yml
 
       - name: linters check image service
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.29
+          version: latest
           working-directory: imageservice
           args: -c .golangci-lint.yml
 
       - name: linters check user service
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.29
+          version: latest
           working-directory: userservice
           args: -c .golangci-lint.yml
 
