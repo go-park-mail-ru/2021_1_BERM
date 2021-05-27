@@ -195,3 +195,18 @@ func (mr *MockUseCaseMockRecorder) SelectExecutor(arg0, arg1 interface{}) *gomoc
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectExecutor", reflect.TypeOf((*MockUseCase)(nil).SelectExecutor), arg0, arg1)
 }
+
+// SuggestVacancyTitle mocks base method.
+func (m *MockUseCase) SuggestVacancyTitle(arg0 string, arg1 context.Context) ([]models.SuggestVacancyTittle, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SuggestVacancyTitle", arg0, arg1)
+	ret0, _ := ret[0].([]models.SuggestVacancyTittle)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SuggestVacancyTitle indicates an expected call of SuggestVacancyTitle.
+func (mr *MockUseCaseMockRecorder) SuggestVacancyTitle(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SuggestVacancyTitle", reflect.TypeOf((*MockUseCase)(nil).SuggestVacancyTitle), arg0, arg1)
+}

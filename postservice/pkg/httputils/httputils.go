@@ -7,30 +7,31 @@ import (
 	"post/pkg/error/errortools"
 	"post/pkg/logger"
 	"post/pkg/metric"
+	"post/pkg/types"
 )
 
 const (
-	ctxKeyReqID uint8 = 1
+	ctxKeyReqID types.CtxKey = 1
 )
 
-func Respond(w http.ResponseWriter, r *http.Request, requestId uint64, code int, data interface{}) {
+func Respond(w http.ResponseWriter, r *http.Request, requestID uint64, code int, data interface{}) {
 	w.WriteHeader(code)
 	if data != nil {
 		err := json.NewEncoder(w).Encode(data)
 		if err != nil {
-			RespondError(w, r, requestId, err)
+			RespondError(w, r, requestID, err)
 			return
 		}
 	}
 	//metric.CrateRequestHits(code, r)
-	logger.LoggingResponse(requestId, code)
+	logger.LoggingResponse(requestID, code)
 }
 
-func RespondError(w http.ResponseWriter, r *http.Request, requestId uint64, err error) {
-	logger.LoggingError(requestId, err)
+func RespondError(w http.ResponseWriter, r *http.Request, requestID uint64, err error) {
+	logger.LoggingError(requestID, err)
 	responseBody, code := errortools.ErrorHandle(err)
 	metric.CrateRequestError(err)
-	Respond(w, r, requestId, code, responseBody)
+	Respond(w, r, requestID, code, responseBody)
 }
 
 func RespondCSRF() http.Handler {

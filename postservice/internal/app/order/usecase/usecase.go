@@ -9,12 +9,13 @@ import (
 	"post/internal/app/models"
 	orderRepo "post/internal/app/order"
 	customErr "post/pkg/error"
+	"post/pkg/types"
 	"reflect"
 )
 
 const (
-	orderUseCaseError = "Order use case error"
-	ctxUserID      uint8 = 2
+	orderUseCaseError              = "Order use case error"
+	ctxUserID         types.CtxKey = 2
 )
 
 type UseCase struct {
@@ -80,7 +81,7 @@ func (u *UseCase) FindByUserID(userID uint64, ctx context.Context) ([]models.Ord
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)
 	}
-	for i, _ := range orders {
+	for i := range orders {
 		err = u.supplementingTheOrderModel(&orders[i])
 		if err != nil {
 			return nil, errors.Wrap(err, orderUseCaseError)
@@ -133,10 +134,6 @@ func (u *UseCase) DeleteOrder(id uint64, ctx context.Context) error {
 	return nil
 }
 
-const (
-	ctxQueryParams uint8 = 4
-)
-
 func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, error) {
 	orders, err := u.OrderRepo.GetActualOrders(ctx)
 	if err != nil {
@@ -159,8 +156,8 @@ func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, error) {
 	}
 
 	counter := 0
-	for _, spec := range user.Specializes{
-		for i, _ := range orders {
+	for _, spec := range user.Specializes {
+		for i := range orders {
 			if reflect.DeepEqual(orders[i].Category, spec) {
 				orders[counter], orders[i] = orders[i], orders[counter]
 				counter++
@@ -175,7 +172,7 @@ func (u *UseCase) SelectExecutor(order models.Order, ctx context.Context) error 
 	if err != nil {
 		return errors.Wrap(err, orderUseCaseError)
 	}
-	if userR.GetExecutor() == false {
+	if !userR.GetExecutor() {
 		return customErr.ErrorUserNotExecutor
 	}
 	if order.ExecutorID == order.CustomerID {
@@ -255,7 +252,7 @@ func (u *UseCase) SearchOrders(keyword string, ctx context.Context) ([]models.Or
 	return orders, err
 }
 
-func (u *UseCase) SuggestOrderTitle(suggestWord string,ctx context.Context) ([]models.SuggestOrderTitle, error) {
+func (u *UseCase) SuggestOrderTitle(suggestWord string, ctx context.Context) ([]models.SuggestOrderTitle, error) {
 	suggestTittles, err := u.OrderRepo.SuggestOrderTitle(suggestWord, ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, orderUseCaseError)

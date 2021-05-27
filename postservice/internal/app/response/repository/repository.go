@@ -9,11 +9,6 @@ import (
 )
 
 const (
-	duplicateErrorCode = "23505"
-	sqlDbSourceError   = "SQL sb source error"
-)
-
-const (
 	insertResponse = `INSERT INTO post.responses (
                             post_id, 
                             user_id, 

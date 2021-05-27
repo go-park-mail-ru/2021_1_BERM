@@ -1,4 +1,4 @@
-package order
+package order_test
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"post/internal/app/models"
 	"reflect"
 	"testing"
+	ordRepo "post/internal/app/order/repository"
 )
 
 func TestRepository_Create(t *testing.T) {
@@ -16,7 +17,7 @@ func TestRepository_Create(t *testing.T) {
 	}
 	defer db.Close()
 
-	repo := NewRepo(db)
+	repo := ordRepo.NewRepo(db)
 
 	restOrder := models.Order{
 		CustomerID:  1,
@@ -84,7 +85,7 @@ func TestRepository_FindByID(t *testing.T) {
 	}
 	defer db.Close()
 
-	store := NewRepo(db)
+	store := ordRepo.NewRepo(db)
 
 	restOrder := &models.Order{
 		ID:          1,
@@ -143,7 +144,7 @@ func TestRepository_FindByExecutorID(t *testing.T) {
 	}
 	defer db.Close()
 
-	store := NewRepo(db)
+	store := ordRepo.NewRepo(db)
 
 	restOrder := []models.Order{
 		{ID: 1,
@@ -201,7 +202,7 @@ func TestRepository_FindByCustomerID(t *testing.T) {
 	}
 	defer db.Close()
 
-	store := NewRepo(db)
+	store := ordRepo.NewRepo(db)
 
 	restOrder := []models.Order{
 		{ID: 1,

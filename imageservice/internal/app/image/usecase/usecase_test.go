@@ -21,27 +21,27 @@ func TestUseCase_SetImage(t *testing.T) {
 	mockUserRepo := mock.NewMockUserClient(ctrl)
 	useCase := uCase.NewUseCase(mockUserRepo, mockCr)
 
-	imgUrl := "kek.jpeg"
+	imgURL := "kek.jpeg"
 	user := models.UserImg{
 		Img: "/9j/4AAQSkZJRgA",
 		ID:  1,
 	}
 	expectUser := models.UserImg{
-		Img: imgUrl,
+		Img: imgURL,
 		ID:  1,
 	}
 	mockUserRepo.EXPECT().
-		SetImgUrl(context.Background(), &api.SetImgUrlRequest{Id: user.ID, ImgIrl: imgUrl}).
+		SetImgUrl(context.Background(), &api.SetImgUrlRequest{Id: user.ID, ImgIrl: imgURL}).
 		Times(1).
 		Return(&api.UserInfoResponse{}, nil)
 	mockCr.EXPECT().
 		CreateImg(user.Img).
 		Times(1).
-		Return(imgUrl, nil)
+		Return(imgURL, nil)
 	mockCr.EXPECT().
-		CropImg(imgUrl).
+		CropImg(imgURL).
 		Times(1).
-		Return(imgUrl, nil)
+		Return(imgURL, nil)
 	resp, err := useCase.SetImage(user)
 
 	require.NoError(t, err)

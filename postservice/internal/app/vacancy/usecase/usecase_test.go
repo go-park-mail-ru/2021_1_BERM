@@ -1,4 +1,4 @@
-package vacancy
+package vacancy_test
 
 import (
 	"context"
@@ -8,8 +8,12 @@ import (
 	"post/api"
 	"post/internal/app/models"
 	"post/internal/app/vacancy/mock"
+	vacUseCase "post/internal/app/vacancy/usecase"
+	"post/pkg/types"
 	"testing"
 )
+
+const ctxUserID types.CtxKey = 2
 
 func TestDeleteExecutor(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -24,7 +28,7 @@ func TestDeleteExecutor(t *testing.T) {
 
 	mockUserRepo := mock.NewMockUserClient(ctrl)
 
-	useCase := NewUseCase(mockVacancyRepo, mockUserRepo)
+	useCase := vacUseCase.NewUseCase(mockVacancyRepo, mockUserRepo)
 
 	err := useCase.DeleteExecutor(vacancy, ctx)
 
@@ -43,7 +47,7 @@ func TestDeleteExecutorErr(t *testing.T) {
 	mockVacancyRepo.EXPECT().UpdateExecutor(vacancy, ctx).Times(1).Return(errors.New("Db dead"))
 	mockUserRepo := mock.NewMockUserClient(ctrl)
 
-	useCase := NewUseCase(mockVacancyRepo, mockUserRepo)
+	useCase := vacUseCase.NewUseCase(mockVacancyRepo, mockUserRepo)
 
 	err := useCase.DeleteExecutor(vacancy, ctx)
 	require.Error(t, err)
@@ -75,7 +79,7 @@ func TestCreateVacancy(t *testing.T) {
 	ctx := context.Background()
 	mockVacancyRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockVacancyRepo, mockUserRepo)
+	useCase := vacUseCase.NewUseCase(mockVacancyRepo, mockUserRepo)
 
 	mockVacancyRepo.EXPECT().
 		Create(vacancy, ctx).
@@ -97,7 +101,7 @@ func TestCreateVacancy(t *testing.T) {
 		Times(1).
 		Return(id, errors.New("DB error"))
 
-	respVacancy, err = useCase.Create(vacancy, ctx)
+	_, err = useCase.Create(vacancy, ctx)
 	require.Error(t, err)
 
 	id = 1
@@ -110,7 +114,7 @@ func TestCreateVacancy(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, errors.New("GRPC Err"))
 
-	respVacancy, err = useCase.Create(vacancy, ctx)
+	_, err = useCase.Create(vacancy, ctx)
 	require.Error(t, err)
 }
 
@@ -136,12 +140,12 @@ func TestFindByID(t *testing.T) {
 		Img:         "kek",
 		Login:       "Mem",
 	}
-	var id uint64
-	id = 1
+
+	id := uint64(1)
 	ctx := context.Background()
 	mockVacancyRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockVacancyRepo, mockUserRepo)
+	useCase := vacUseCase.NewUseCase(mockVacancyRepo, mockUserRepo)
 
 	mockVacancyRepo.EXPECT().
 		FindByID(id, ctx).
@@ -189,7 +193,7 @@ func TestFindByUserID(t *testing.T) {
 	ctx := context.Background()
 	mockVacancyRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockVacancyRepo, mockUserRepo)
+	useCase := vacUseCase.NewUseCase(mockVacancyRepo, mockUserRepo)
 
 	vacancies := []models.Vacancy{
 		{
@@ -210,6 +214,8 @@ func TestFindByUserID(t *testing.T) {
 			Salary:      1488,
 			Description: "Aue jizn voram",
 			Category:    "Back",
+			Login:       "Mem",
+			Img:         "kek",
 		},
 	}
 
@@ -314,7 +320,7 @@ func TestChangeVacancy(t *testing.T) {
 	ctx := context.Background()
 	mockVacancyRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockVacancyRepo, mockUserRepo)
+	useCase := vacUseCase.NewUseCase(mockVacancyRepo, mockUserRepo)
 
 	mockVacancyRepo.EXPECT().
 		FindByID(id, ctx).
@@ -403,7 +409,7 @@ func TestDeleteVacancy(t *testing.T) {
 	ctx := context.Background()
 	mockVacancyRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockVacancyRepo, mockUserRepo)
+	useCase := vacUseCase.NewUseCase(mockVacancyRepo, mockUserRepo)
 
 	mockVacancyRepo.EXPECT().
 		DeleteVacancy(id, ctx).
@@ -432,7 +438,7 @@ func TestGetActualVacancies(t *testing.T) {
 	id = 1
 	mockVacancyRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockVacancyRepo, mockUserRepo)
+	useCase := vacUseCase.NewUseCase(mockVacancyRepo, mockUserRepo)
 
 	vacancies := []models.Vacancy{
 		{
@@ -518,7 +524,7 @@ func TestSelectExecutor(t *testing.T) {
 	ctx := context.Background()
 	mockVacancyRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockVacancyRepo, mockUserRepo)
+	useCase := vacUseCase.NewUseCase(mockVacancyRepo, mockUserRepo)
 
 	vacancy := &models.Vacancy{
 		ID:          1,
@@ -600,7 +606,7 @@ func TestCloseVacancy(t *testing.T) {
 	ctx := context.Background()
 	mockVacancyRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockVacancyRepo, mockUserRepo)
+	useCase := vacUseCase.NewUseCase(mockVacancyRepo, mockUserRepo)
 
 	var id uint64
 	id = 1
@@ -678,7 +684,7 @@ func TestCloseVacancy(t *testing.T) {
 //	ctx := context.Background()
 //	mockVacancyRepo := mock.NewMockRepository(ctrl)
 //	mockUserRepo := mock.NewMockUserClient(ctrl)
-//	useCase := NewUseCase(mockVacancyRepo, mockUserRepo)
+//	useCase := vacUseCase.NewUseCase(mockVacancyRepo, mockUserRepo)
 //
 //	vacancy := []models.Vacancy{
 //		{
@@ -749,7 +755,7 @@ func TestSearchVacancies(t *testing.T) {
 	ctx := context.Background()
 	mockVacancyrRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockVacancyrRepo, mockUserRepo)
+	useCase := vacUseCase.NewUseCase(mockVacancyrRepo, mockUserRepo)
 
 	keyword := "Aue"
 	vacancies := []models.Vacancy{

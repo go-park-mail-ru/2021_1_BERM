@@ -8,16 +8,15 @@ import (
 	"post/internal/app/models"
 	vacancyUseCase "post/internal/app/vacancy"
 	"post/pkg/httputils"
+	"post/pkg/types"
 	"strconv"
 )
 
 const (
-	ctxKeySession uint8 = iota
-	ctxKeyReqID   uint8 = 1
-	ctxUserID     uint8 = 2
-	ctxParam      uint8 = 4
-	ctxExecutor   uint8 = 3
-
+	ctxKeyReqID types.CtxKey = 1
+	ctxUserID   types.CtxKey = 2
+	ctxParam    types.CtxKey = 4
+	ctxExecutor types.CtxKey = 3
 )
 
 type Handlers struct {

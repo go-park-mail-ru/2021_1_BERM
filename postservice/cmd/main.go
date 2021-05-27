@@ -96,7 +96,7 @@ func main() {
 
 	// connect to user service
 	conn, err := grpc.Dial(
-		config.Host + ":8081",
+		config.Host+":8081",
 		grpc.WithInsecure(),
 		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
 	)
@@ -108,7 +108,7 @@ func main() {
 
 	// connect to auth service
 	grpcConn, err := grpc.Dial(
-		config.Host + ":8085",
+		config.Host+":8085",
 		grpc.WithInsecure(),
 		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
 	)
@@ -180,7 +180,6 @@ func main() {
 	vacancy.HandleFunc("/profile/{id:[0-9]+}/archive", vacancyHandler.GetAllArchiveUserVacancies).Methods(http.MethodGet)
 	vacancy.HandleFunc("/search", vacancyHandler.SearchVacancy).Methods(http.MethodPatch)
 	vacancy.HandleFunc("/suggest", vacancyHandler.SuggestVacancyTitle).Methods(http.MethodGet)
-
 
 	c := middleware.CorsMiddleware(config.Origin)
 

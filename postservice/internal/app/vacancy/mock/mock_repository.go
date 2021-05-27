@@ -228,6 +228,21 @@ func (mr *MockRepositoryMockRecorder) SearchVacancy(arg0, arg1 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchVacancy", reflect.TypeOf((*MockRepository)(nil).SearchVacancy), arg0, arg1)
 }
 
+// SuggestVacancyTitle mocks base method.
+func (m *MockRepository) SuggestVacancyTitle(arg0 string, arg1 context.Context) ([]models.SuggestVacancyTittle, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SuggestVacancyTitle", arg0, arg1)
+	ret0, _ := ret[0].([]models.SuggestVacancyTittle)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SuggestVacancyTitle indicates an expected call of SuggestVacancyTitle.
+func (mr *MockRepositoryMockRecorder) SuggestVacancyTitle(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SuggestVacancyTitle", reflect.TypeOf((*MockRepository)(nil).SuggestVacancyTitle), arg0, arg1)
+}
+
 // UpdateExecutor mocks base method.
 func (m *MockRepository) UpdateExecutor(arg0 models.Vacancy, arg1 context.Context) error {
 	m.ctrl.T.Helper()
