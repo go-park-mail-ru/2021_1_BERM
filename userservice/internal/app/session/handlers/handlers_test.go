@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
@@ -11,11 +11,16 @@ import (
 	"testing"
 	"time"
 	"user/internal/app/models"
+	sessionGandlers "user/internal/app/session/handlers"
 	sessionMock "user/internal/app/session/mock"
 	"user/pkg/metric"
+	"user/pkg/types"
 )
 
-const ctxKeyStartReqTime uint8 = 5
+const (
+	ctxKeyStartReqTime types.CtxKey = 5
+	ctxKeyReqID        types.CtxKey = 1
+)
 
 func TestCreateSession(t *testing.T) {
 	metric.New()
@@ -52,7 +57,7 @@ func TestCreateSession(t *testing.T) {
 		ID:       1,
 		Executor: true,
 	}, nil)
-	handle := New(mockSessionUseCase)
+	handle := sessionGandlers.New(mockSessionUseCase)
 
 	recorder := httptest.NewRecorder()
 	handler := handle.CheckSession(http.NotFoundHandler())

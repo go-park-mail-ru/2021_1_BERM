@@ -7,73 +7,101 @@ import (
 	"strings"
 	"user/internal/app/models"
 	"user/pkg/error/errortools"
+	"user/pkg/types"
 )
 
 const (
-	ctxParam       uint8 = 4
-	getUsersRating       = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating, COUNT(reviews) AS reviews_count
+	ctxParam       types.CtxKey = 4
+	getUsersRating              = `SELECT users.id, email, password,
+       login, name_surname, about, executor, img, coalesce(AVG(score), 0) 
+           AS rating, COUNT(reviews) AS reviews_count
 		FROM userservice.users AS users
 		LEFT JOIN userservice.reviews
 		 ON users.id = reviews.to_user_id
-		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
-		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
-		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score)
+		FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 
+		    THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		AND CASE WHEN $3 != '~' 
+		    THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
 		GROUP BY users.id
 		ORDER BY rating LIMIT $4 OFFSET $5`
 
-	getUsersRatingDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating, COUNT(reviews) AS reviews_count
+	getUsersRatingDesc = `SELECT users.id, email, password,
+       login, name_surname, about, executor, img, coalesce(AVG(score), 0) 
+           AS rating, COUNT(reviews) AS reviews_count
 		FROM userservice.users AS users
 		LEFT JOIN userservice.reviews
 		 ON users.id = reviews.to_user_id
-		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
-		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
-		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score)
+		FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score)
+		FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		AND CASE WHEN $3 != '~' 
+		    THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
 		GROUP BY users.id
 		ORDER BY rating DESC LIMIT $4 OFFSET $5`
 
-	getUsersNick = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating, COUNT(reviews) AS reviews_count
+	getUsersNick = `SELECT users.id, email, 
+       password, login, name_surname, about, executor,
+       img, coalesce(AVG(score), 0) AS rating, COUNT(reviews) AS reviews_count
 		FROM userservice.users AS users
 		LEFT JOIN userservice.reviews
 		 ON users.id = reviews.to_user_id
-		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
-		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) 
+		FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) 
+		FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
 		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
 		GROUP BY users.id, name_surname
 		ORDER BY name_surname LIMIT $4 OFFSET $5`
 
-	getUsersNickDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating, COUNT(reviews) AS reviews_count
+	getUsersNickDesc = `SELECT users.id, email, password, login, name_surname, about,
+       executor, img, coalesce(AVG(score), 0) AS rating, COUNT(reviews) AS reviews_count
 		FROM userservice.users AS users
 		LEFT JOIN userservice.reviews
 		 ON users.id = reviews.to_user_id
-		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
-		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score)
+		FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) 
+		FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
 		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
 		GROUP BY users.id, name_surname
 		ORDER BY name_surname DESC LIMIT $4 OFFSET $5`
 
-	getUsersReviewDesc = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating, COUNT(reviews) AS reviews_count
+	getUsersReviewDesc = `SELECT users.id, email, password,
+       login, name_surname, about, executor, img, coalesce(AVG(score), 0)
+           AS rating, COUNT(reviews) AS reviews_count
 		FROM userservice.users AS users
 		LEFT JOIN userservice.reviews
 		 ON users.id = reviews.to_user_id
-		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
-		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score)
+		FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) 
+		FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
 		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
 		GROUP BY users.id, name_surname
 		ORDER BY reviews_count DESC LIMIT $4 OFFSET $5`
 
-	getUsersReview = `SELECT users.id, email, password, login, name_surname, about, executor, img, coalesce(AVG(score), 0) AS rating, COUNT(reviews) AS reviews_count
+	getUsersReview = `SELECT users.id, email,
+       password, login, name_surname, about, executor, img, coalesce(AVG(score), 0)
+           AS rating, COUNT(reviews) AS reviews_count
 		FROM userservice.users AS users
 		LEFT JOIN userservice.reviews 
 		 ON users.id = reviews.to_user_id
-		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
-		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score) FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
+		WHERE CASE WHEN $1 != 0 THEN (SELECT AVG(score) 
+		FROM userservice.reviews WHERE to_user_id = users.id) >= $1 ELSE true END
+		AND CASE WHEN $2 != 0 THEN (SELECT AVG(score)
+		FROM userservice.reviews WHERE to_user_id = users.id) <= $2 ELSE true END
 		AND CASE WHEN $3 != '~' THEN to_tsvector(name_surname) @@ to_tsquery($3) ELSE true END
 		GROUP BY users.id, name_surname
 		ORDER BY reviews_count LIMIT $4 OFFSET $5`
 
-	selectTittle = `SELECT DISTINCT name_surname FROM userservice.users WHERE name_surname LIKE $1 LIMIT 5`
+	selectTittle = `SELECT DISTINCT name_surname
+FROM userservice.users WHERE name_surname LIKE $1 LIMIT 5`
 
-	selectAllTittle = `SELECT DISTINCT name_surname FROM userservice.users LIMIT 5`
+	selectAllTittle = `SELECT DISTINCT name_surname
+FROM userservice.users LIMIT 5`
 )
 
 type Repository struct {
@@ -160,12 +188,11 @@ func (r *Repository) GetUsers(ctx context.Context) ([]models.UserInfo, error) {
 		search := strings.Split(searchStr, " ")
 		var res string
 		for i, s := range search {
-			if i == len(search) - 1 {
+			if i == len(search)-1 {
 				res += " " + s
 				break
 			}
 			res += s + " <->"
-
 		}
 		searchStr = res
 		searchStr += ":*"
@@ -188,7 +215,6 @@ func (r *Repository) GetUsers(ctx context.Context) ([]models.UserInfo, error) {
 				return nil, errors.Wrap(customErr, err.Error())
 			}
 		}
-
 	} else {
 		switch sort {
 		case "rating":

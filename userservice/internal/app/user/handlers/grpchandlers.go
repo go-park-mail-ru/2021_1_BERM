@@ -52,7 +52,8 @@ func (s *GRPCServer) RegistrationUser(ctx context.Context, in *api.NewUserReques
 	}, nil
 }
 
-func (s *GRPCServer) AuthorizationUser(ctx context.Context, in *api.AuthorizationUserRequest) (*api.UserResponse, error) {
+func (s *GRPCServer) AuthorizationUser(ctx context.Context,
+	in *api.AuthorizationUserRequest) (*api.UserResponse, error) {
 	answer, err := s.userUseCase.Verification(in.GetEmail(), in.GetPassword(), ctx)
 	if err != nil {
 		errData, codeUint32 := errortools.ErrorHandle(err)
@@ -104,8 +105,8 @@ func (s *GRPCServer) GetUserById(ctx context.Context, in *api.UserRequest) (*api
 	}, nil
 }
 
-func (s *GRPCServer) GetSpecializeByUserId(ctx context.Context, in *api.UserRequest) (*api.GetUserSpecializeResponse, error) {
-
+func (s *GRPCServer) GetSpecializeByUserId(ctx context.Context,
+	in *api.UserRequest) (*api.GetUserSpecializeResponse, error) {
 	return nil, nil
 }
 

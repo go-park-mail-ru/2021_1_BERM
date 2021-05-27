@@ -122,3 +122,18 @@ func (mr *MockRepositoryMockRecorder) SetUserImg(arg0, arg1, arg2 interface{}) *
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserImg", reflect.TypeOf((*MockRepository)(nil).SetUserImg), arg0, arg1, arg2)
 }
+
+// SuggestUsersTitle mocks base method.
+func (m *MockRepository) SuggestUsersTitle(arg0 string, arg1 context.Context) ([]models.SuggestUsersTittle, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SuggestUsersTitle", arg0, arg1)
+	ret0, _ := ret[0].([]models.SuggestUsersTittle)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SuggestUsersTitle indicates an expected call of SuggestUsersTitle.
+func (mr *MockRepositoryMockRecorder) SuggestUsersTitle(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SuggestUsersTitle", reflect.TypeOf((*MockRepository)(nil).SuggestUsersTitle), arg0, arg1)
+}

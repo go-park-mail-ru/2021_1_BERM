@@ -8,10 +8,11 @@ import (
 	"user/internal/app/models"
 	"user/internal/app/review"
 	"user/pkg/httputils"
+	"user/pkg/types"
 )
 
 const (
-	ctxKeyReqID uint8 = 1
+	ctxKeyReqID types.CtxKey = 1
 )
 
 type Handler struct {
