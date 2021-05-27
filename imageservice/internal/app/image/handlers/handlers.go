@@ -5,11 +5,12 @@ import (
 	"imageservice/internal/app/httputils"
 	imgUseCase "imageservice/internal/app/image"
 	"imageservice/internal/app/models"
+	"imageservice/internal/app/types"
 	"net/http"
 )
 
 const (
-	ctxKeyReqID   uint8 = 1
+	ctxKeyReqID   types.CtxKey = 1
 )
 
 type Handlers struct {

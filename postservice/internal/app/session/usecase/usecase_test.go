@@ -1,4 +1,4 @@
-package usecase
+package usecase_test
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"post/internal/app/models"
 	"post/internal/app/session/mock"
+	sessUCase "post/internal/app/session/usecase"
 	"testing"
 )
 
@@ -17,11 +18,11 @@ func TestCreateSpecialize(t *testing.T) {
 	ctx := context.Background()
 	mockSessionRepository := mock.NewMockRepository(ctrl)
 	sessionID := "wsdadkjSAHDBASDNjl"
-	mockSessionRepository.EXPECT().Check(sessionID, ctx).Times(1).Return(&models.UserBasicInfo{ID: 1,
+	mockSessionRepository.EXPECT().Check(ctx, sessionID).Times(1).Return(&models.UserBasicInfo{ID: 1,
 		Executor: true}, nil)
 
-	useCase := UseCase{
-		sessionRepository: mockSessionRepository,
+	useCase := sessUCase.UseCase{
+		SessionRepository: mockSessionRepository,
 	}
 	u, err := useCase.Check(sessionID, ctx)
 	require.NoError(t, err)

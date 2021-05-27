@@ -166,7 +166,7 @@ func TestFindByID(t *testing.T) {
 		Times(1).
 		Return(vacancy, errors.New("DB err"))
 
-	respVacancy, err = useCase.FindByID(id, ctx)
+	_, err = useCase.FindByID(id, ctx)
 
 	require.Error(t, err)
 
@@ -179,7 +179,7 @@ func TestFindByID(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, errors.New("GRPC err"))
 
-	respVacancy, err = useCase.FindByID(id, ctx)
+	_, err = useCase.FindByID(id, ctx)
 
 	require.Error(t, err)
 }
@@ -188,8 +188,7 @@ func TestFindByUserID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	var id uint64
-	id = 1
+	id := uint64(1)
 	ctx := context.Background()
 	mockVacancyRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
@@ -238,7 +237,7 @@ func TestFindByUserID(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek", Executor: true}, errors.New("GRPC Err"))
 
-	resVac, err = useCase.FindByUserID(id, ctx)
+	_, err = useCase.FindByUserID(id, ctx)
 
 	require.Error(t, err)
 
@@ -280,7 +279,7 @@ func TestFindByUserID(t *testing.T) {
 		Times(1).
 		Return(nil, errors.New("DB err"))
 
-	resVac, err = useCase.FindByUserID(id, ctx)
+	_, err = useCase.FindByUserID(id, ctx)
 
 	require.Error(t, err)
 }
@@ -315,8 +314,7 @@ func TestChangeVacancy(t *testing.T) {
 		Login:       "Mem",
 		ID:          1,
 	}
-	var id uint64
-	id = 1
+	id := uint64(1)
 	ctx := context.Background()
 	mockVacancyRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
@@ -367,7 +365,7 @@ func TestChangeVacancy(t *testing.T) {
 		Times(1).
 		Return(oldVacancy, errors.New("DB err"))
 
-	resVacancy, err = useCase.ChangeVacancy(*vacancyWithoutFields, ctx)
+	_, err = useCase.ChangeVacancy(*vacancyWithoutFields, ctx)
 
 	require.Error(t, err)
 
@@ -380,7 +378,7 @@ func TestChangeVacancy(t *testing.T) {
 		Times(1).
 		Return(errors.New("DB err"))
 
-	resVacancy, err = useCase.ChangeVacancy(*vacancy, ctx)
+	_, err = useCase.ChangeVacancy(*vacancy, ctx)
 	require.Error(t, err)
 
 	mockVacancyRepo.EXPECT().
@@ -396,7 +394,7 @@ func TestChangeVacancy(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, errors.New("GRPC err"))
 
-	resVacancy, err = useCase.ChangeVacancy(*vacancy, ctx)
+	_, err = useCase.ChangeVacancy(*vacancy, ctx)
 
 	require.Error(t, err)
 }
@@ -404,8 +402,7 @@ func TestChangeVacancy(t *testing.T) {
 func TestDeleteVacancy(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	var id uint64
-	id = 1
+	var id = uint64(1)
 	ctx := context.Background()
 	mockVacancyRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
@@ -434,8 +431,7 @@ func TestGetActualVacancies(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	var id uint64
-	id = 1
+	id := uint64(1)
 	mockVacancyRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
 	useCase := vacUseCase.NewUseCase(mockVacancyRepo, mockUserRepo)
@@ -477,8 +473,12 @@ func TestGetActualVacancies(t *testing.T) {
 		GetActualVacancies(ctx).
 		Times(1).
 		Return(vacancies, nil)
+	mockVacancyRepo.EXPECT().
+		GetVacancyNum(ctx).
+		Times(1).
+		Return(uint64(1), nil)
 
-	respVacancies, err := useCase.GetActualVacancies(ctx)
+	respVacancies, _, err := useCase.GetActualVacancies(ctx)
 
 	require.Equal(t, respVacancies, expectVacancies)
 	require.NoError(t, err)
@@ -488,7 +488,7 @@ func TestGetActualVacancies(t *testing.T) {
 		Times(1).
 		Return(vacancies, errors.New("DB err"))
 
-	respVacancies, err = useCase.GetActualVacancies(ctx)
+	_, _, err = useCase.GetActualVacancies(ctx)
 
 	require.Error(t, err)
 
@@ -501,7 +501,7 @@ func TestGetActualVacancies(t *testing.T) {
 		Times(1).
 		Return(vacancies, nil)
 
-	respVacancies, err = useCase.GetActualVacancies(ctx)
+	_, _, err = useCase.GetActualVacancies(ctx)
 
 	require.Error(t, err)
 
@@ -512,7 +512,7 @@ func TestGetActualVacancies(t *testing.T) {
 		Times(1).
 		Return(nil, nil)
 
-	respVacancies, err = useCase.GetActualVacancies(ctx)
+	respVacancies, _, err = useCase.GetActualVacancies(ctx)
 
 	require.Equal(t, respVacancies, emptyVacancies)
 	require.NoError(t, err)
@@ -608,8 +608,7 @@ func TestCloseVacancy(t *testing.T) {
 	mockUserRepo := mock.NewMockUserClient(ctrl)
 	useCase := vacUseCase.NewUseCase(mockVacancyRepo, mockUserRepo)
 
-	var id uint64
-	id = 1
+	id := uint64(1)
 
 	vacancy := &models.Vacancy{
 		ID:          1,
@@ -814,7 +813,7 @@ func TestSearchVacancies(t *testing.T) {
 		Times(1).
 		Return(vacancies, errors.New("DB error"))
 
-	resVacancies, err = useCase.SearchVacancy(keyword, ctx)
+	_, err = useCase.SearchVacancy(keyword, ctx)
 
 	require.Error(t, err)
 
@@ -827,7 +826,7 @@ func TestSearchVacancies(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, errors.New("GRPC err"))
 
-	resVacancies, err = useCase.SearchVacancy(keyword, ctx)
+	_, err = useCase.SearchVacancy(keyword, ctx)
 
 	require.Error(t, err)
 }

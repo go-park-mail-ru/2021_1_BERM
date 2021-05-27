@@ -92,7 +92,7 @@ func TestCreateOrder(t *testing.T) {
 		Times(1).
 		Return(retVacancy, sql.ErrNoRows)
 
-	req, err = http.NewRequest("POST", "/api/vacancy", bytes.NewBuffer(body))
+	req, _ = http.NewRequest("POST", "/api/vacancy", bytes.NewBuffer(body))
 	ctx = req.Context()
 	val1 = 1
 	val2 = 2281488
@@ -108,9 +108,8 @@ func TestCreateOrder(t *testing.T) {
 			status, http.StatusInternalServerError)
 	}
 
-	var byte22 string
-	byte22 = "kek"
-	req, err = http.NewRequest("POST", "/api/vacancy", bytes.NewBuffer([]byte(byte22)))
+	byte22 := "kek"
+	req, _ = http.NewRequest("POST", "/api/vacancy", bytes.NewBuffer([]byte(byte22)))
 	ctx = req.Context()
 	val1 = 1
 	val2 = 2281488
@@ -307,7 +306,7 @@ func TestGetVacancy(t *testing.T) {
 	val2 = 2281488
 	ctx2 = context.WithValue(ctx2, ctxUserID, val1)
 	ctx2 = context.WithValue(ctx2, ctxKeyReqID, val2)
-	ctx2 = context.WithValue(ctx2, ctxKeyStartReqTime, time.Now())
+	_ = context.WithValue(ctx2, ctxKeyStartReqTime, time.Now())
 
 	req1 = req1.WithContext(ctx)
 	if err != nil {

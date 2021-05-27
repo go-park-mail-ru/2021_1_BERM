@@ -142,7 +142,6 @@ func (r *Repository) GetActualVacancies(ctx context.Context) ([]models.Vacancy, 
 				break
 			}
 			res += s + " <->"
-
 		}
 		searchStr = res
 		searchStr += ":*"
@@ -337,7 +336,9 @@ func (r *Repository) GetArchiveVacanciesByCustomerID(customerID uint64, ctx cont
 	return vacancies, nil
 }
 
-func (r *Repository) SuggestVacancyTitle(suggestWord string, ctx context.Context) ([]models.SuggestVacancyTittle, error) {
+func (r *Repository) SuggestVacancyTitle(
+	suggestWord string,
+	ctx context.Context) ([]models.SuggestVacancyTittle, error) {
 	var suggestTittles []models.SuggestVacancyTittle
 	if suggestWord == "" {
 		if err := r.db.Select(&suggestTittles, selectAllTittle); err != nil {

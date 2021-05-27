@@ -319,7 +319,7 @@ func TestGetOrder(t *testing.T) {
 	val2 = 2281488
 	ctx2 = context.WithValue(ctx2, ctxUserID, val1)
 	ctx2 = context.WithValue(ctx2, ctxKeyReqID, val2)
-	ctx2 = context.WithValue(ctx2, ctxKeyStartReqTime, time.Now())
+	_ = context.WithValue(ctx2, ctxKeyStartReqTime, time.Now())
 
 	req1 = req1.WithContext(ctx)
 	if err != nil {

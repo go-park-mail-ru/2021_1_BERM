@@ -138,12 +138,13 @@ func (mr *MockUseCaseMockRecorder) FindByUserID(arg0, arg1 interface{}) *gomock.
 }
 
 // GetActualOrders mocks base method.
-func (m *MockUseCase) GetActualOrders(arg0 context.Context) ([]models.Order, error) {
+func (m *MockUseCase) GetActualOrders(arg0 context.Context) ([]models.Order, uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetActualOrders", arg0)
 	ret0, _ := ret[0].([]models.Order)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(uint64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetActualOrders indicates an expected call of GetActualOrders.
