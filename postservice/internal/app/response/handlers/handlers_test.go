@@ -12,11 +12,12 @@ import (
 	"post/internal/app/models"
 	"post/internal/app/response/mock"
 	"post/pkg/metric"
+	"post/pkg/types"
 	"testing"
 	"time"
 )
 
-const ctxKeyStartReqTime uint8 = 5
+const ctxKeyStartReqTime types.CtxKey = 5
 
 func TestHandlers_CreatePostResponse(t *testing.T) {
 	metric.New()

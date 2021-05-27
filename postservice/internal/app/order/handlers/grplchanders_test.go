@@ -1,4 +1,4 @@
-package order
+package order_test
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"post/api"
 	"post/internal/app/models"
+	ordHandlers "post/internal/app/order/handlers"
 	"post/internal/app/order/mock"
 	"post/pkg/metric"
 	"testing"
@@ -38,14 +39,14 @@ func TestGRPCServer_GetOrderById(t *testing.T) {
 	}
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewGRPCServer(mockUseCase)
+	handle := ordHandlers.NewGRPCServer(mockUseCase)
 
 	mockUseCase.EXPECT().
 		FindByID(uint64(1), context.Background()).
 		Times(1).
 		Return(&orderInfo, nil)
 
-	response, err := handle.GetOrderById(context.Background(), &api.OrderRequest{Id: 1})
+	response, err := handle.GetOrderByID(context.Background(), &api.OrderRequest{Id: 1})
 	require.NoError(t, err)
 	require.Equal(t, expectResponse, response)
 	metric.Destroy()
@@ -77,14 +78,14 @@ func TestGRPCServer_GetOrderByIdErr(t *testing.T) {
 	}
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewGRPCServer(mockUseCase)
+	handle := ordHandlers.NewGRPCServer(mockUseCase)
 
 	mockUseCase.EXPECT().
 		FindByID(uint64(1), context.Background()).
 		Times(1).
 		Return(&orderInfo, errors.New("ERR"))
 
-	response, err := handle.GetOrderById(context.Background(), &api.OrderRequest{Id: 1})
+	response, err := handle.GetOrderByID(context.Background(), &api.OrderRequest{Id: 1})
 	require.Error(t, err)
 	require.Equal(t, expectResponse, response)
 	metric.Destroy()

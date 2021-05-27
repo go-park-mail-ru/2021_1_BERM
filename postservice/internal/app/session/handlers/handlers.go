@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"post/internal/app/session"
 	"post/pkg/httputils"
+	"post/pkg/types"
 )
 
 const (
-	ctxUserInfo uint8 = 2
-	ctxKeyReqID uint8 = 1
-	ctxExecutor uint8 = 3
+	ctxUserInfo types.CtxKey = 2
+	ctxKeyReqID types.CtxKey = 1
+	ctxExecutor types.CtxKey = 3
 )
 
 type MidleWhare struct {

@@ -8,13 +8,13 @@ import (
 	"post/internal/app/models"
 	vacancyRepo "post/internal/app/vacancy"
 	customErr "post/pkg/error"
+	"post/pkg/types"
 	"reflect"
 )
 
 const (
-	vacancyUseCaseError       = "Vacancy use case error"
-	ctxParam            uint8 = 4
-	ctxUserID           uint8 = 2
+	vacancyUseCaseError              = "Vacancy use case error"
+	ctxUserID           types.CtxKey = 2
 )
 
 type UseCase struct {
@@ -80,7 +80,7 @@ func (u *UseCase) GetActualVacancies(ctx context.Context) ([]models.Vacancy, uin
 
 	counter := 0
 	for _, spec := range user.Specializes {
-		for i, _ := range vacancies {
+		for i := range vacancies {
 			if reflect.DeepEqual(vacancies[i], spec) {
 				vacancies[i], vacancies[counter] = vacancies[counter], vacancies[i]
 				counter++
@@ -147,7 +147,7 @@ func (u *UseCase) FindByUserID(userID uint64, ctx context.Context) ([]models.Vac
 	if err != nil {
 		return nil, errors.Wrap(err, vacancyUseCaseError)
 	}
-	for i, _ := range vacancies {
+	for i := range vacancies {
 		err = u.supplementingTheVacancyModel(&vacancies[i])
 		if err != nil {
 			return nil, errors.Wrap(err, vacancyUseCaseError)
@@ -164,11 +164,9 @@ func (u *UseCase) SelectExecutor(vacancy models.Vacancy, ctx context.Context) er
 	if err != nil {
 		return errors.Wrap(err, vacancyUseCaseError)
 	}
-	//TODO: изменить интернал на экстернал
-	if userR.GetExecutor() == false {
+	if !userR.GetExecutor() {
 		return customErr.ErrorUserNotExecutor
 	}
-	//TODO: изменить интернал на экстернал
 	if vacancy.ExecutorID == vacancy.CustomerID {
 		return customErr.ErrorSameID
 	}

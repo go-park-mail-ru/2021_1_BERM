@@ -7,11 +7,12 @@ import (
 	"github.com/pkg/errors"
 	"post/internal/app/models"
 	"post/pkg/error/errortools"
+	"post/pkg/types"
 	"strings"
 )
 
 const (
-	ctxParam      uint8 = 4
+	ctxParam      types.CtxKey = 4
 	insertVacancy       = `INSERT INTO post.vacancy (
 						  category, 
 						  vacancy_name,
@@ -42,7 +43,6 @@ const (
                  executor_id =:executor_id
 				 WHERE id = :id`
 
-	selectVacancies = "SELECT * from post.vacancy"
 
 	selectArchiveVacancies = "SELECT * FROM post.archive_vacancy"
 
@@ -137,7 +137,7 @@ func (r *Repository) GetActualVacancies(ctx context.Context) ([]models.Vacancy, 
 		search := strings.Split(searchStr, " ")
 		var res string
 		for i, s := range search {
-			if i == len(search) - 1 {
+			if i == len(search)-1 {
 				res += " " + s
 				break
 			}
@@ -148,12 +148,30 @@ func (r *Repository) GetActualVacancies(ctx context.Context) ([]models.Vacancy, 
 		searchStr += ":*"
 	}
 	if desk {
-		if err := r.db.Select(&vacancies, getActualVacancy, salaryFrom, salaryTo, searchStr, category, limit, offset); err != nil {
+		if err := r.db.Select(
+			&vacancies,
+			getActualVacancy,
+			salaryFrom,
+			salaryTo,
+			searchStr,
+			category,
+			limit,
+			offset);
+		err != nil {
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
 		}
 	} else {
-		if err := r.db.Select(&vacancies, getActualVacancyDesc, salaryFrom, salaryTo, searchStr, category, limit, offset); err != nil {
+		if err := r.db.Select(
+			&vacancies,
+			getActualVacancyDesc,
+			salaryFrom,
+			salaryTo,
+			searchStr,
+			category,
+			limit,
+			offset);
+		err != nil {
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
 		}

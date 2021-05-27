@@ -212,6 +212,21 @@ func (mr *MockRepositoryMockRecorder) SearchOrders(arg0, arg1 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchOrders", reflect.TypeOf((*MockRepository)(nil).SearchOrders), arg0, arg1)
 }
 
+// SuggestOrderTitle mocks base method.
+func (m *MockRepository) SuggestOrderTitle(arg0 string, arg1 context.Context) ([]models.SuggestOrderTitle, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SuggestOrderTitle", arg0, arg1)
+	ret0, _ := ret[0].([]models.SuggestOrderTitle)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SuggestOrderTitle indicates an expected call of SuggestOrderTitle.
+func (mr *MockRepositoryMockRecorder) SuggestOrderTitle(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SuggestOrderTitle", reflect.TypeOf((*MockRepository)(nil).SuggestOrderTitle), arg0, arg1)
+}
+
 // UpdateExecutor mocks base method.
 func (m *MockRepository) UpdateExecutor(arg0 models.Order, arg1 context.Context) error {
 	m.ctrl.T.Helper()

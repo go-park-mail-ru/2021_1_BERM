@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"post/internal/app/models"
 	"post/pkg/error/errortools"
+	"post/pkg/types"
 	"strings"
 )
 
@@ -104,7 +105,7 @@ const (
 	selectAllTittle = `SELECT DISTINCT order_name FROM post.orders LIMIT 5`
 )
 const (
-	ctxQueryParams uint8 = 4
+	ctxQueryParams types.CtxKey = 4
 )
 
 type Repository struct {
@@ -214,18 +215,26 @@ func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error
 		search := strings.Split(searchStr, " ")
 		var res string
 		for i, s := range search {
-			if i == len(search) - 1 {
+			if i == len(search)-1 {
 				res += " " + s
 				break
 			}
 			res += s + " <->"
-
 		}
 		searchStr = res
 		searchStr += ":*"
 	}
 	if desk {
-		if err := r.db.Select(&orders, getActualOrdersDesk, budgetFrom, budgetTo, searchStr, category, limit, offset); err != nil {
+		if err := r.db.Select(
+			&orders,
+			getActualOrdersDesk,
+			budgetFrom,
+			budgetTo,
+			searchStr,
+			category,
+			limit,
+			offset);
+		err != nil {
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
 		}
@@ -246,20 +255,6 @@ func (r* Repository)GetOrderNum(ctx context.Context) (uint64, error){
 	}
 	return num, nil
 }
-
-
-//
-//- search_str: fffff
-//
-//- budget-from: 300
-//- budget-to: 400
-//
-//- sort: {title, salary}
-//- desc: {true, false} - сортировка по возрастанию\убыванию
-//- category: 'Использование человеческих ресурсов'
-//- suggest: 'Использование человеческих ресурсов'
-//- limit: 1
-//- offset: 25
 
 func (r *Repository) UpdateExecutor(order models.Order, ctx context.Context) error {
 	tx, err := r.db.Beginx()

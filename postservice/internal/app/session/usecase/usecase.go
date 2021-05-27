@@ -17,7 +17,7 @@ func New(sessionRepository session.Repository) *UseCase {
 }
 
 func (useCase *UseCase) Check(sessionID string, ctx context.Context) (*models.UserBasicInfo, error) {
-	u, err := useCase.sessionRepository.Check(sessionID, ctx)
+	u, err := useCase.sessionRepository.Check(ctx, sessionID)
 	if err != nil {
 		return nil, err
 	}

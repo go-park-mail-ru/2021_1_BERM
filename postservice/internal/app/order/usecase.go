@@ -18,5 +18,5 @@ type UseCase interface {
 	CloseOrder(orderID uint64, ctx context.Context) error
 	GetArchiveOrders(userInfo models.UserBasicInfo, ctx context.Context) ([]models.Order, error)
 	SearchOrders(keyword string, ctx context.Context) ([]models.Order, error)
-	SuggestOrderTitle(suggestWord string,ctx context.Context) ([]models.SuggestOrderTitle, error)
+	SuggestOrderTitle(suggestWord string, ctx context.Context) ([]models.SuggestOrderTitle, error)
 }

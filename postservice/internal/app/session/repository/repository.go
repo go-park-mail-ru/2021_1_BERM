@@ -17,7 +17,7 @@ func New(client api.SessionClient) *Repository {
 	}
 }
 
-func (r *Repository) Check(sessionID string, ctx context.Context) (*models.UserBasicInfo, error) {
+func (r *Repository) Check(ctx context.Context, sessionID string) (*models.UserBasicInfo, error) {
 	timeOutCtx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	u, err := r.client.Check(timeOutCtx, &api.SessionCheckRequest{

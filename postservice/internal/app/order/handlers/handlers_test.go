@@ -1,4 +1,4 @@
-package order
+package order_test
 
 import (
 	"bytes"
@@ -11,13 +11,20 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"post/internal/app/models"
+	ordHandler "post/internal/app/order/handlers"
 	"post/internal/app/order/mock"
 	"post/pkg/metric"
+	"post/pkg/types"
 	"testing"
 	"time"
 )
 
-const ctxKeyStartReqTime uint8 = 5
+const (
+	ctxKeyReqID        types.CtxKey = 1
+	ctxUserID          types.CtxKey = 2
+	ctxExecutor        types.CtxKey = 3
+	ctxKeyStartReqTime types.CtxKey = 5
+)
 
 func TestCreateOrder(t *testing.T) {
 	metric.New()
@@ -26,7 +33,7 @@ func TestCreateOrder(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 
 	order := models.Order{
 		OrderName:   "Сверстать сайт",
@@ -88,7 +95,7 @@ func TestCreateOrder(t *testing.T) {
 		Times(1).
 		Return(retOrder, sql.ErrNoRows)
 
-	req, err = http.NewRequest("POST", "/api/order", bytes.NewBuffer(body))
+	req, _ = http.NewRequest("POST", "/api/order", bytes.NewBuffer(body))
 	ctx = req.Context()
 	val1 = 1
 	val2 = 2281488
@@ -104,9 +111,8 @@ func TestCreateOrder(t *testing.T) {
 			status, http.StatusInternalServerError)
 	}
 
-	var byte22 string
-	byte22 = "kek"
-	req, err = http.NewRequest("POST", "/api/order", bytes.NewBuffer([]byte(byte22)))
+	byte22 := "kek"
+	req, _ = http.NewRequest("POST", "/api/order", bytes.NewBuffer([]byte(byte22)))
 	ctx = req.Context()
 	val1 = 1
 	val2 = 2281488
@@ -204,7 +210,8 @@ func TestCreateOrder(t *testing.T) {
 //		},
 //	}
 //
-//	req, err := http.NewRequest("GET", "/api/order?search_str=kek&from=1&to=2&desc=false&category=mem&limit=1&offset=2", nil)
+//	req, err := http.NewRequest("GET",
+//	"/api/order?search_str=kek&from=1&to=2&desc=false&category=mem&limit=1&offset=2", nil)
 //
 //	ctx := req.Context()
 //	var val1 uint64
@@ -253,7 +260,7 @@ func TestGetOrder(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 
 	retOrder := &models.Order{
 		ID:          1,
@@ -331,7 +338,6 @@ func TestGetOrder(t *testing.T) {
 }
 
 func TestGetOrderErr(t *testing.T) {
-
 	metric.New()
 
 	ctrl := gomock.NewController(t)
@@ -339,7 +345,7 @@ func TestGetOrderErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 
 	retOrder := &models.Order{
 		ID:          1,
@@ -396,7 +402,7 @@ func TestChangeOrder(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	order := models.Order{
 		ID:          1,
 		OrderName:   "Сверстать сайт",
@@ -466,7 +472,7 @@ func TestChangeOrderBadJson(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 
 	byte22 := "kek"
 	req, err := http.NewRequest("GET", "/api/order/1", bytes.NewBuffer([]byte(byte22)))
@@ -518,7 +524,8 @@ func TestChangeOrderErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
+
 	order := models.Order{
 		ID:          1,
 		OrderName:   "Сверстать сайт",
@@ -584,7 +591,7 @@ func TestChangeOrderErrParse(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	order := models.Order{
 		ID:          1,
 		OrderName:   "Сверстать сайт",
@@ -636,7 +643,7 @@ func TestDeleteOrder(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("GET", "/api/order/1", nil)
 
 	ctx := req.Context()
@@ -683,7 +690,7 @@ func TestDeleteOrderErrVar(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("GET", "/api/order/1", nil)
 
 	ctx := req.Context()
@@ -726,7 +733,7 @@ func TestDeleteOrderErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("GET", "/api/order/1", nil)
 
 	ctx := req.Context()
@@ -779,7 +786,7 @@ func TestSelectEx(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("POST", "/api/order/1/select", bytes.NewBuffer(body))
 
 	ctx := req.Context()
@@ -826,7 +833,7 @@ func TestSelectExErrJson(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 	byte22 := "kek"
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("POST", "/api/order/1/select", bytes.NewBuffer([]byte(byte22)))
 
 	ctx := req.Context()
@@ -874,7 +881,7 @@ func TestSelectBarVar(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("POST", "/api/order/1/select", bytes.NewBuffer(body))
 
 	ctx := req.Context()
@@ -923,7 +930,7 @@ func TestSelectExErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("POST", "/api/order/1/select", bytes.NewBuffer(body))
 
 	ctx := req.Context()
@@ -975,7 +982,7 @@ func TestDeleteExecutor(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("DELETE", "/api/order/1/select", bytes.NewBuffer(body))
 
 	ctx := req.Context()
@@ -1022,7 +1029,7 @@ func TestDeleteExecutorErrVar(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("POST", "/api/order/1/select", nil)
 
 	ctx := req.Context()
@@ -1070,7 +1077,7 @@ func TestDeleteExecutorErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("DELETE", "/api/order/1/select", bytes.NewBuffer(body))
 
 	ctx := req.Context()
@@ -1135,7 +1142,7 @@ func TestGetAllOrders(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("GET", "/api/order/profile/1", bytes.NewBuffer(body))
 
 	ctx := req.Context()
@@ -1187,7 +1194,7 @@ func TestGetAllOrdersErrVar(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("GET", "/api/order/profile/1", bytes.NewBuffer(body))
 
 	ctx := req.Context()
@@ -1248,7 +1255,7 @@ func TestGetAllOrdersErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("GET", "/api/order/profile/1", bytes.NewBuffer(body))
 
 	ctx := req.Context()
@@ -1295,7 +1302,7 @@ func TestCloseOrder(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("DELETE", "/api/order/1/close", nil)
 
 	ctx := req.Context()
@@ -1342,7 +1349,7 @@ func TestCloseOrderErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("DELETE", "/api/order/1/close", nil)
 
 	ctx := req.Context()
@@ -1389,7 +1396,7 @@ func TestCloseOrderErrVar(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 	req, err := http.NewRequest("DELETE", "/api/order/1/close", nil)
 
 	ctx := req.Context()
@@ -1432,7 +1439,7 @@ func TestGetAllArchiveUserOrders(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 
 	retOrder := []models.Order{
 		{
@@ -1494,7 +1501,7 @@ func TestGetAllArchiveUserOrdersErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 
 	retOrder := []models.Order{
 		{
@@ -1553,7 +1560,7 @@ func TestSearchOrder(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 
 	retOrder := []models.Order{
 		{
@@ -1620,7 +1627,7 @@ func TestSearchOrderErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 
 	retOrder := []models.Order{
 		{
@@ -1684,7 +1691,7 @@ func TestSearchOrderJsonErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := ordHandler.NewHandler(mockUseCase)
 
 	byte22 := "meem"
 	req, err := http.NewRequest("GET", "/api/order/profile/1/archive", bytes.NewBuffer([]byte(byte22)))

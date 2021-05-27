@@ -30,13 +30,12 @@ func New() {
 	}, []string{"error"})
 
 	Timings = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name:    "timings",
+		Name: "timings",
 		Buckets: []float64{0.01, 0.02, 0.03, 0.04, 0.05, 0.1,
 			0.15, 0.2, 0.4, 0.6, 0.8, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 15, 20},
 	}, []string{"method", "URL"})
 	prometheus.MustRegister(hits, errors, Timings)
 }
-
 
 func CrateRequestHits(status int, r *http.Request) {
 	route := mux.CurrentRoute(r)

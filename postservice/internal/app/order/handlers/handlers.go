@@ -8,14 +8,15 @@ import (
 	"post/internal/app/models"
 	orderUseCase "post/internal/app/order"
 	"post/pkg/httputils"
+	"post/pkg/types"
 	"strconv"
 )
 
 const (
-	ctxKeyReqID    uint8 = 1
-	ctxUserID      uint8 = 2
-	ctxExecutor    uint8 = 3
-	ctxQueryParams uint8 = 4
+	ctxKeyReqID    types.CtxKey = 1
+	ctxUserID      types.CtxKey = 2
+	ctxExecutor    types.CtxKey = 3
+	ctxQueryParams types.CtxKey = 4
 )
 
 type Handlers struct {
@@ -271,11 +272,14 @@ func (h *Handlers) GetAllArchiveUserOrders(w http.ResponseWriter, r *http.Reques
 	userInfo := models.UserBasicInfo{}
 	var err error
 	userInfo.ID, err = strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
 	userInfo.Executor = r.Context().Value(ctxExecutor).(bool)
 	o, err := h.useCase.GetArchiveOrders(userInfo, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
 		return
 	}
 	httputils.Respond(w, r, reqID, http.StatusOK, o)

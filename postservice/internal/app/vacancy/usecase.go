@@ -18,5 +18,5 @@ type UseCase interface {
 	CloseVacancy(vacancyID uint64, ctx context.Context) error
 	GetArchiveVacancies(info models.UserBasicInfo, ctx context.Context) ([]models.Vacancy, error)
 	SearchVacancy(keyword string, ctx context.Context) ([]models.Vacancy, error)
-	SuggestVacancyTitle(suggestWord string,ctx context.Context) ([]models.SuggestVacancyTittle, error)
+	SuggestVacancyTitle(suggestWord string, ctx context.Context) ([]models.SuggestVacancyTittle, error)
 }

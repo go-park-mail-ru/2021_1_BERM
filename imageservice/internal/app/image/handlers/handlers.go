@@ -9,9 +9,7 @@ import (
 )
 
 const (
-	ctxKeySession uint8 = 3
 	ctxKeyReqID   uint8 = 1
-	ctxUserInfo   uint8 = 2
 )
 
 type Handlers struct {
