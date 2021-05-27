@@ -9,7 +9,6 @@ import (
 
 const grcpcErrCode codes.Code = 16
 
-
 func GrpcErrorHandle(err error) (interface{}, int, bool) {
 	if grpcErr, ok := status.FromError(err); ok {
 		if grpcErr.Code() <= grcpcErrCode {

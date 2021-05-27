@@ -22,5 +22,5 @@ type Repository interface {
 	GetArchiveVacanciesByExecutorID(executorID uint64, ctx context.Context) ([]models.Vacancy, error)
 	GetArchiveVacanciesByCustomerID(customerID uint64, ctx context.Context) ([]models.Vacancy, error)
 	GetVacancyNum(ctx context.Context) (uint64, error)
-	SuggestVacancyTitle(suggestWord string,ctx context.Context) ([]models.SuggestVacancyTittle, error)
+	SuggestVacancyTitle(suggestWord string, ctx context.Context) ([]models.SuggestVacancyTittle, error)
 }

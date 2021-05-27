@@ -192,5 +192,3 @@ func TestGetUserInfo(t *testing.T) {
 	}
 	metric.Destroy()
 }
-
-

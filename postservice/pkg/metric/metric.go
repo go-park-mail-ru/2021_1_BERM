@@ -7,7 +7,6 @@ import (
 	"strconv"
 )
 
-
 var (
 	hits    *prometheus.CounterVec
 	errors  *prometheus.CounterVec

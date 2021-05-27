@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	ctxKeyReqID   types.CtxKey = 1
+	ctxKeyReqID types.CtxKey = 1
 )
 
 type Handlers struct {

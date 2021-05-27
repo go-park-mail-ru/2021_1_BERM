@@ -5,9 +5,9 @@ import (
 	"fmt"
 	sqlxmock "github.com/zhashkevych/go-sqlxmock"
 	"post/internal/app/models"
+	ordRepo "post/internal/app/order/repository"
 	"reflect"
 	"testing"
-	ordRepo "post/internal/app/order/repository"
 )
 
 func TestRepository_Create(t *testing.T) {

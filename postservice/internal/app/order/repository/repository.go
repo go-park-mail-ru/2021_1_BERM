@@ -231,8 +231,7 @@ func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error
 			searchStr,
 			category,
 			limit,
-			offset);
-		err != nil {
+			offset); err != nil {
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
 		}
@@ -245,8 +244,7 @@ func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error
 			searchStr,
 			category,
 			limit,
-			offset);
-		err != nil {
+			offset); err != nil {
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
 		}
@@ -254,7 +252,7 @@ func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error
 	return orders, nil
 }
 
-func (r* Repository)GetOrderNum(ctx context.Context) (uint64, error){
+func (r *Repository) GetOrderNum(ctx context.Context) (uint64, error) {
 	var num uint64
 	if err := r.db.Get(&num, "SELECT COUNT(id) FROM post.orders"); err != nil {
 		customErr := errortools.SqlErrorChoice(err)
