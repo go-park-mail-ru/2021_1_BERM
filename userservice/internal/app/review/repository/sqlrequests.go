@@ -7,5 +7,5 @@ const (
 	SelectAllReviewsByUseIDRequest = "SELECT * FROM userservice.reviews WHERE to_user_id = $1"
 	SelectAvgScore                 = "SELECT CASE WHEN SUM(score) IS NULL THEN 0 " +
 		"ELSE AVG(score) END AS rating, COUNT(*) AS reviews_count " +
-		"пшеFROM userservice.reviews WHERE to_user_id = $1"
+		"FROM userservice.reviews WHERE to_user_id = $1"
 )

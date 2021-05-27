@@ -117,12 +117,8 @@ func TestCreateUserWithInvalidUrl(t *testing.T) {
 	metric.Destroy()
 }
 
-const (
 
-	ctxParam    types.CtxKey = 4
-)
-
-func TestSuggest(t *testing.T) {
+func TestGetUsers(t *testing.T) {
 	metric.New()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
