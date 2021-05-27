@@ -3,6 +3,7 @@ package middleware
 import (
 	"authorizationservice/pkg/logger"
 	"authorizationservice/pkg/metric"
+	"authorizationservice/pkg/types"
 	"authorizationservice/pkg/utils"
 	"context"
 	"github.com/gorilla/csrf"
@@ -14,8 +15,9 @@ import (
 )
 
 const (
-	ctxKeyReqID        uint8 = 1
-	ctxKeyStartReqTime uint8 = 5
+	ctxKeyReqID       types.CtxKey = 1
+	MaxAgeDay         int          = 86400
+	MaxAgeQuarterHour int          = 900
 )
 
 func LoggingRequest(next http.Handler) http.Handler {
@@ -30,7 +32,6 @@ func LoggingRequest(next http.Handler) http.Handler {
 	})
 }
 
-
 func CorsMiddleware(origin []string) *cors.Cors {
 	return cors.New(cors.Options{
 		AllowedOrigins:   origin,
@@ -38,7 +39,7 @@ func CorsMiddleware(origin []string) *cors.Cors {
 		AllowedHeaders:   []string{"Content-Type", "X-Requested-With", "Accept", "X-Csrf-Token"},
 		ExposedHeaders:   []string{"X-Csrf-Token"},
 		AllowCredentials: true,
-		MaxAge:           86400,
+		MaxAge:           MaxAgeDay,
 	})
 }
 
@@ -47,7 +48,7 @@ func CSRFMiddleware(https bool) func(http.Handler) http.Handler {
 		[]byte("very-secret-string"),
 		csrf.SameSite(csrf.SameSiteLaxMode),
 		csrf.Secure(https),
-		csrf.MaxAge(900),
+		csrf.MaxAge(MaxAgeQuarterHour),
 		csrf.Path("/"),
 		csrf.ErrorHandler(utils.RespondCSRF()))
 }

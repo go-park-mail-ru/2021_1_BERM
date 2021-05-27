@@ -30,6 +30,10 @@ func (h *Handler) CheckLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 	sessionId := cookie.Value
 	session, err := h.sessionUseCase.Get(sessionId, context.Background())
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	utils.Respond(w, r, reqId, http.StatusAccepted, session)
 }
 

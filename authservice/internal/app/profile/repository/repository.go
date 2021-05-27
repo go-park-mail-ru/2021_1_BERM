@@ -36,7 +36,10 @@ func (r *Repository) Create(newUser models2.NewUser, ctx context.Context) (*mode
 	}, err
 }
 
-func (r *Repository) Authentication(email string, password string, ctx context.Context) (*models2.UserBasicInfo, error) {
+func (r *Repository) Authentication(
+	email string,
+	password string,
+	ctx context.Context) (*models2.UserBasicInfo, error) {
 	//timeOutCtx, cancel := context.WithTimeout(ctx, time.Second)
 	//defer cancel()
 	userResponse, err := r.client.AuthorizationUser(context.Background(), &api.AuthorizationUserRequest{

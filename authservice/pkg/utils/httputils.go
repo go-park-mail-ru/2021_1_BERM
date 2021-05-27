@@ -5,6 +5,7 @@ import (
 	"authorizationservice/pkg/error/errortools"
 	"authorizationservice/pkg/logger"
 	"authorizationservice/pkg/metric"
+	"authorizationservice/pkg/types"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 )
 
 const (
-	ctxKeyReqID uint8 = 1
+	ctxKeyReqID types.CtxKey = 1
 )
 
 func Respond(w http.ResponseWriter, r *http.Request, requestId uint64, code int, data interface{}) {
@@ -61,7 +62,7 @@ func CreateCookie(session *models2.Session, w http.ResponseWriter) {
 }
 
 func RemoveCookies(cookies []*http.Cookie, w http.ResponseWriter) {
-	for i, _ := range cookies {
+	for i := range cookies {
 		cookies[i].Expires = time.Now().AddDate(0, 0, -1)
 		cookies[i].HttpOnly = true
 		http.SetCookie(w, cookies[i])

@@ -7,25 +7,28 @@ import (
 )
 
 type UseCase struct {
-	profileRepository profile2.Repository
+	ProfileRepository profile2.Repository
 }
 
 func New(profileRepository profile2.Repository) *UseCase {
 	return &UseCase{
-		profileRepository: profileRepository,
+		ProfileRepository: profileRepository,
 	}
 }
 
 func (useCase *UseCase) Create(newUser models2.NewUser, ctx context.Context) (*models2.UserBasicInfo, error) {
-	userBasicInfo, err := useCase.profileRepository.Create(newUser, ctx)
+	userBasicInfo, err := useCase.ProfileRepository.Create(newUser, ctx)
 	if err != nil {
 		return nil, err
 	}
 	return userBasicInfo, nil
 }
 
-func (useCase *UseCase) Authentication(email string, password string, ctx context.Context) (*models2.UserBasicInfo, error) {
-	userBasicInfo, err := useCase.profileRepository.Authentication(email, password, ctx)
+func (useCase *UseCase) Authentication(
+	email string,
+	password string,
+	ctx context.Context) (*models2.UserBasicInfo, error) {
+	userBasicInfo, err := useCase.ProfileRepository.Authentication(email, password, ctx)
 	if err != nil {
 		return nil, err
 	}
