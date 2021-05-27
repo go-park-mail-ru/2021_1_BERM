@@ -70,13 +70,6 @@ func (h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) GetUsers(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	param := make(map[string]interface{})
-	param["search_str"] = r.URL.Query().Get("search_str")
-	if searchStr := r.URL.Query().Get("search_str"); searchStr != "" {
-		param["search_str"] = searchStr
-	} else {
-		param["search_str"] = "~"
-	}
-
 	if searchStr := r.URL.Query().Get("search_str"); searchStr != "" {
 		param["search_str"] = searchStr
 	} else {
