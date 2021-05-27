@@ -1,4 +1,4 @@
-package usecase
+package usecase_test
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"testing"
 	"user/internal/app/models"
 	"user/internal/app/session/mock"
+	sessionUseCase "user/internal/app/session/usecase"
 )
 
 //Проверка сессии
@@ -20,8 +21,8 @@ func TestCreateSpecialize(t *testing.T) {
 	mockSessionRepository.EXPECT().Check(sessionID, ctx).Times(1).Return(&models.UserBasicInfo{ID: 1,
 		Executor: true}, nil)
 
-	useCase := UseCase{
-		sessionRepository: mockSessionRepository,
+	useCase := sessionUseCase.UseCase{
+		SessionRepository: mockSessionRepository,
 	}
 	u, err := useCase.Check(sessionID, ctx)
 	require.NoError(t, err)

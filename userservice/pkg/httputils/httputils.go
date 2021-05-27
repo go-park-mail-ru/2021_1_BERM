@@ -7,10 +7,11 @@ import (
 	"user/pkg/error/errortools"
 	"user/pkg/logger"
 	"user/pkg/metric"
+	"user/pkg/types"
 )
 
 const (
-	ctxKeyReqID uint8 = 1
+	ctxKeyReqID types.CtxKey = 1
 )
 
 func Respond(w http.ResponseWriter, r *http.Request, requestId uint64, code int, data interface{}) {

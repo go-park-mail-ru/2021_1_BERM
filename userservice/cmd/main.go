@@ -101,7 +101,7 @@ func main() {
 
 	//connect to auth service
 	grpcConnAuth, err := grpc.Dial(
-		config.Host + ":8085",
+		config.Host+":8085",
 		grpc.WithInsecure(),
 		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
 	)
@@ -112,7 +112,7 @@ func main() {
 
 	//connect to order service
 	grpcConnOrder, err := grpc.Dial(
-		config.Host + ":8086",
+		config.Host+":8086",
 		grpc.WithInsecure(),
 		grpc.WithUnaryInterceptor(traceutils.OpenTracingClientInterceptor(tracer)),
 	)

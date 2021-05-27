@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
@@ -11,12 +11,16 @@ import (
 	"testing"
 	"time"
 	"user/internal/app/models"
+	userHandlers "user/internal/app/user/handlers"
 	userMock "user/internal/app/user/mock"
-	//specializeMock "user/internal/app/specialize/mock"
 	"user/pkg/metric"
+	"user/pkg/types"
 )
 
-const ctxKeyStartReqTime uint8 = 5
+const (
+	ctxKeyReqID        types.CtxKey = 1
+	ctxKeyStartReqTime types.CtxKey = 5
+)
 
 func TestCreateUserWithValidUrl(t *testing.T) {
 	metric.New()
@@ -25,7 +29,7 @@ func TestCreateUserWithValidUrl(t *testing.T) {
 
 	mockUserUseCase := userMock.NewMockUseCase(ctrl)
 
-	handle := New(mockUserUseCase)
+	handle := userHandlers.New(mockUserUseCase)
 
 	changeUser := &models.ChangeUser{
 		ID:          1,
@@ -76,7 +80,7 @@ func TestCreateUserWithInvalidUrl(t *testing.T) {
 
 	mockUserUseCase := userMock.NewMockUseCase(ctrl)
 
-	handle := New(mockUserUseCase)
+	handle := userHandlers.New(mockUserUseCase)
 
 	changeUser := &models.ChangeUser{
 		ID:          1,
@@ -118,7 +122,7 @@ func TestGetUserInfo(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockUserUseCase := userMock.NewMockUseCase(ctrl)
-	handle := New(mockUserUseCase)
+	handle := userHandlers.New(mockUserUseCase)
 
 	req, err := http.NewRequest("GET", "/profile/1", nil)
 	vars := map[string]string{

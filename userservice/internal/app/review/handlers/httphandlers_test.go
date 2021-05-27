@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
@@ -12,11 +12,16 @@ import (
 	"testing"
 	"time"
 	"user/internal/app/models"
+	userHandlers "user/internal/app/review/handlers"
 	reviewMock "user/internal/app/review/mock"
 	"user/pkg/metric"
+	"user/pkg/types"
 )
 
-const ctxKeyStartReqTime uint8 = 5
+const (
+	ctxKeyStartReqTime types.CtxKey = 5
+	ctxKeyReqID        types.CtxKey = 1
+)
 
 func TestCreateReview(t *testing.T) {
 	metric.New()
@@ -50,7 +55,7 @@ func TestCreateReview(t *testing.T) {
 
 	mockReviewUseCase := reviewMock.NewMockUseCase(ctrl)
 	mockReviewUseCase.EXPECT().Create(review, ctx).Times(1).Return(&review, nil)
-	handle := New(mockReviewUseCase)
+	handle := userHandlers.New(mockReviewUseCase)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.Create)
@@ -83,7 +88,7 @@ func TestCreateReviewErr(t *testing.T) {
 	}
 
 	mockReviewUseCase := reviewMock.NewMockUseCase(ctrl)
-	handle := New(mockReviewUseCase)
+	handle := userHandlers.New(mockReviewUseCase)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.Create)
@@ -129,7 +134,7 @@ func TestCreateReviewErr2(t *testing.T) {
 
 	mockReviewUseCase := reviewMock.NewMockUseCase(ctrl)
 	mockReviewUseCase.EXPECT().Create(review, ctx).Times(1).Return(&review, sql.ErrNoRows)
-	handle := New(mockReviewUseCase)
+	handle := userHandlers.New(mockReviewUseCase)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.Create)
@@ -166,7 +171,7 @@ func TestGetAllByUserID(t *testing.T) {
 	mockReviewUseCase := reviewMock.NewMockUseCase(ctrl)
 	mockReviewUseCase.EXPECT().GetAllReviewByUserId(uint64(1), ctx).Times(1).Return(&models.UserReviews{}, nil)
 
-	handle := New(mockReviewUseCase)
+	handle := userHandlers.New(mockReviewUseCase)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.GetAllByUserId)
@@ -203,7 +208,7 @@ func TestGetAllByUserIDErr(t *testing.T) {
 	mockReviewUseCase := reviewMock.NewMockUseCase(ctrl)
 	mockReviewUseCase.EXPECT().GetAllReviewByUserId(uint64(1), ctx).Times(1).Return(&models.UserReviews{}, sql.ErrNoRows)
 
-	handle := New(mockReviewUseCase)
+	handle := userHandlers.New(mockReviewUseCase)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.GetAllByUserId)
@@ -239,7 +244,7 @@ func TestGetAllByUserIDErr1(t *testing.T) {
 
 	mockReviewUseCase := reviewMock.NewMockUseCase(ctrl)
 
-	handle := New(mockReviewUseCase)
+	handle := userHandlers.New(mockReviewUseCase)
 
 	recorder := httptest.NewRecorder()
 	handler := http.HandlerFunc(handle.GetAllByUserId)

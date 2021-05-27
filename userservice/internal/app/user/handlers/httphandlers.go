@@ -9,11 +9,12 @@ import (
 	"user/internal/app/models"
 	"user/internal/app/user"
 	"user/pkg/httputils"
+	"user/pkg/types"
 )
 
 const (
-	ctxKeyReqID uint8 = 1
-	ctxParam uint8 = 4
+	ctxKeyReqID types.CtxKey = 1
+	ctxParam    types.CtxKey = 4
 )
 
 type Handlers struct {
@@ -81,10 +82,10 @@ func (h *Handlers) GetUsers(w http.ResponseWriter, r *http.Request) {
 	} else {
 		param["search_str"] = "~"
 	}
-	if sort := r.URL.Query().Get("sort"); sort != ""{
-		param["sort"] = sort;
-	}else{
-		param[sort] = "~";
+	if sort := r.URL.Query().Get("sort"); sort != "" {
+		param["sort"] = sort
+	} else {
+		param[sort] = "~"
 	}
 	if salaryFrom := r.URL.Query().Get("from"); salaryFrom != "" {
 		salaryFromInt, err := strconv.Atoi(salaryFrom)
@@ -135,7 +136,7 @@ func (h *Handlers) GetUsers(w http.ResponseWriter, r *http.Request) {
 		param["offset"] = 0
 	}
 	u, err := h.userUseCase.GetUsers(context.WithValue(r.Context(), ctxParam, param))
-	if err != nil{
+	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}

@@ -8,17 +8,17 @@ import (
 )
 
 type UseCase struct {
-	specializeRepository specialize.Repository
+	SpecializeRepository specialize.Repository
 }
 
 func New(specializeRepository specialize.Repository) *UseCase {
 	return &UseCase{
-		specializeRepository: specializeRepository,
+		SpecializeRepository: specializeRepository,
 	}
 }
 
 func (useCase *UseCase) Create(specialize string, ctx context.Context) (uint64, error) {
-	ID, err := useCase.specializeRepository.Create(specialize, ctx)
+	ID, err := useCase.SpecializeRepository.Create(specialize, ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -26,11 +26,11 @@ func (useCase *UseCase) Create(specialize string, ctx context.Context) (uint64, 
 }
 
 func (useCase *UseCase) Remove(ID uint64, spec string, ctx context.Context) error {
-	specID, err := useCase.specializeRepository.FindByName(spec, ctx)
+	specID, err := useCase.SpecializeRepository.FindByName(spec, ctx)
 	if err != nil {
 		return err
 	}
-	err = useCase.specializeRepository.RemoveAssociateSpecializationWithUser(specID, ID, ctx)
+	err = useCase.SpecializeRepository.RemoveAssociateSpecializationWithUser(specID, ID, ctx)
 	if err != nil {
 		return err
 	}
@@ -38,14 +38,14 @@ func (useCase *UseCase) Remove(ID uint64, spec string, ctx context.Context) erro
 }
 
 func (useCase *UseCase) AssociateWithUser(ID uint64, spec string, ctx context.Context) error {
-	specID, err := useCase.specializeRepository.FindByName(spec, ctx)
+	specID, err := useCase.SpecializeRepository.FindByName(spec, ctx)
 	if err != nil {
-		specID, err = useCase.specializeRepository.Create(spec, ctx)
+		specID, err = useCase.SpecializeRepository.Create(spec, ctx)
 		if err != nil {
 			return err
 		}
 	}
-	err = useCase.specializeRepository.AssociateSpecializationWithUser(specID, ID, ctx)
+	err = useCase.SpecializeRepository.AssociateSpecializationWithUser(specID, ID, ctx)
 	pqErr := &pq.Error{}
 	if errors.As(err, &pqErr) {
 		if pqErr.Code == "23505" {

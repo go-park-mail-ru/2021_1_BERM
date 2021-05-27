@@ -7,14 +7,13 @@ import (
 	customError "user/pkg/error"
 )
 
-type grpcErrorInfo struct {
-	Code    codes.Code
-	Handler func(error) (interface{}, int)
-}
+const (
+	ec codes.Code = 16
+)
 
 func grpcErrorHandle(err error) (interface{}, int, bool) {
 	if grpcErr, ok := status.FromError(err); ok {
-		if grpcErr.Code() <= 16 {
+		if grpcErr.Code() <= ec {
 			return map[string]string{
 				"message": customError.InternalServerErrorMsg,
 			}, http.StatusInternalServerError, true

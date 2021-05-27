@@ -9,6 +9,10 @@ import (
 
 const (
 	saltLength = 8
+	time       = 1
+	mem        = 64 * 1024
+	threads    = 4
+	keyLen     = 32
 )
 
 type PasswordEncrypter struct {
@@ -51,6 +55,6 @@ func (p PasswordEncrypter) BeforeChange(user models.ChangeUser) (models.ChangeUs
 }
 
 func (p PasswordEncrypter) hashPass(salt []byte, plainPassword string) []byte {
-	hashedPass := argon2.IDKey([]byte(plainPassword), []byte(salt), 1, 64*1024, 4, 32)
+	hashedPass := argon2.IDKey([]byte(plainPassword), salt, time, mem, threads, keyLen)
 	return append(salt, hashedPass...)
 }

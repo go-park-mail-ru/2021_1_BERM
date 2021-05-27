@@ -1,4 +1,4 @@
-package usecase
+package usecase_test
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"user/internal/app/models"
 	orderMock "user/internal/app/order/mock"
 	reviewMock "user/internal/app/review/mock"
+	reviewUseCase "user/internal/app/review/usecase"
 	userMock "user/internal/app/user/mock"
 )
 
@@ -34,10 +35,10 @@ func TestCreateReview(t *testing.T) {
 	mockReviewRepo := reviewMock.NewMockRepository(ctrl)
 	mockReviewRepo.EXPECT().Create(*review, ctx).Times(1).Return(review, nil)
 
-	useCase := UseCase{
-		reviewRepository: mockReviewRepo,
+	useCase := reviewUseCase.UseCase{
+		ReviewRepository: mockReviewRepo,
 	}
-	review, err := useCase.Create(*review, ctx)
+	_, err := useCase.Create(*review, ctx)
 	require.NoError(t, err)
 }
 
@@ -61,10 +62,10 @@ func TestCreateReviewErr(t *testing.T) {
 	mockReviewRepo := reviewMock.NewMockRepository(ctrl)
 	mockReviewRepo.EXPECT().Create(*review, ctx).Times(1).Return(review, errors.New("kkek"))
 
-	useCase := UseCase{
-		reviewRepository: mockReviewRepo,
+	useCase := reviewUseCase.UseCase{
+		ReviewRepository: mockReviewRepo,
 	}
-	review, err := useCase.Create(*review, ctx)
+	_, err := useCase.Create(*review, ctx)
 	require.Error(t, err)
 }
 
@@ -94,10 +95,10 @@ func TestGetAllReviewsByUserID(t *testing.T) {
 
 	mockOrderRepository := orderMock.NewMockRepository(ctrl)
 	mockOrderRepository.EXPECT().GetByID(review.OrderId, ctx).Times(1).Return(&models.OrderInfo{}, nil)
-	useCase := UseCase{
-		reviewRepository: mockReviewRepo,
-		userRepository:   mockUserRepository,
-		orderRepository:  mockOrderRepository,
+	useCase := reviewUseCase.UseCase{
+		ReviewRepository: mockReviewRepo,
+		UserRepository:   mockUserRepository,
+		OrderRepository:  mockOrderRepository,
 	}
 	userRewiews, err := useCase.GetAllReviewByUserId(2, ctx)
 	require.NoError(t, err)
@@ -127,10 +128,10 @@ func TestGetAllReviewsByUserIDErr(t *testing.T) {
 	mockUserRepository := userMock.NewMockRepository(ctrl)
 
 	mockOrderRepository := orderMock.NewMockRepository(ctrl)
-	useCase := UseCase{
-		reviewRepository: mockReviewRepo,
-		userRepository:   mockUserRepository,
-		orderRepository:  mockOrderRepository,
+	useCase := reviewUseCase.UseCase{
+		ReviewRepository: mockReviewRepo,
+		UserRepository:   mockUserRepository,
+		OrderRepository:  mockOrderRepository,
 	}
 	_, err := useCase.GetAllReviewByUserId(2, ctx)
 	require.Error(t, err)
@@ -162,10 +163,10 @@ func TestGetAllReviewsByUserIDErr2(t *testing.T) {
 
 	mockOrderRepository := orderMock.NewMockRepository(ctrl)
 	mockOrderRepository.EXPECT().GetByID(review.OrderId, ctx).Times(1).Return(&models.OrderInfo{}, nil)
-	useCase := UseCase{
-		reviewRepository: mockReviewRepo,
-		userRepository:   mockUserRepository,
-		orderRepository:  mockOrderRepository,
+	useCase := reviewUseCase.UseCase{
+		ReviewRepository: mockReviewRepo,
+		UserRepository:   mockUserRepository,
+		OrderRepository:  mockOrderRepository,
 	}
 	userRewiews, err := useCase.GetAllReviewByUserId(2, ctx)
 	require.NoError(t, err)
@@ -179,8 +180,8 @@ func TestNewUser(t *testing.T) {
 	mockReviewRepo := reviewMock.NewMockRepository(ctrl)
 	mockUserRepo := userMock.NewMockRepository(ctrl)
 	mockOrderRepo := orderMock.NewMockRepository(ctrl)
-	r := New(mockReviewRepo, mockUserRepo, mockOrderRepo)
-	require.Equal(t, r.reviewRepository, mockReviewRepo)
-	require.Equal(t, r.userRepository, mockUserRepo)
-	require.Equal(t, r.orderRepository, mockOrderRepo)
+	r := reviewUseCase.New(mockReviewRepo, mockUserRepo, mockOrderRepo)
+	require.Equal(t, r.ReviewRepository, mockReviewRepo)
+	require.Equal(t, r.UserRepository, mockUserRepo)
+	require.Equal(t, r.OrderRepository, mockOrderRepo)
 }
