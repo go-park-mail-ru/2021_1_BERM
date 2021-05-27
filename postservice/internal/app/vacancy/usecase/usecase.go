@@ -247,6 +247,17 @@ func (u *UseCase) SearchVacancy(keyword string, ctx context.Context) ([]models.V
 	return vacancies, err
 }
 
+func (u *UseCase) SuggestVacancyTitle(suggestWord string, ctx context.Context) ([]models.SuggestVacancyTittle, error) {
+	suggestTittles, err := u.VacancyRepo.SuggestVacancyTitle(suggestWord, ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, vacancyUseCaseError)
+	}
+	if suggestTittles == nil {
+		return []models.SuggestVacancyTittle{}, nil
+	}
+	return suggestTittles, nil
+}
+
 func (u *UseCase) supplementingTheVacancyModel(vacancy *models.Vacancy) error {
 	userR, err := u.UserRepo.GetUserById(context.Background(), &api.UserRequest{Id: vacancy.CustomerID})
 	if err != nil {

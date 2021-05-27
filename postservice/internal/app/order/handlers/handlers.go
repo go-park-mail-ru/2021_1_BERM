@@ -111,10 +111,12 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
 	orderResponse := make(map[string]interface{})
 	orderResponse["order"] = o
 	orderResponse["size"] = num
 	httputils.Respond(w, r, reqID, http.StatusOK, orderResponse)
+
 }
 
 func (h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
@@ -294,4 +296,16 @@ func (h *Handlers) SearchOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httputils.Respond(w, r, reqID, http.StatusOK, o)
+}
+
+func (h *Handlers) SuggestOrderTitle(w http.ResponseWriter, r *http.Request) {
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
+	suggestWord := r.URL.Query().Get("suggest_word")
+	suggestTitles, err := h.useCase.SuggestOrderTitle(suggestWord, context.Background())
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, suggestTitles)
 }

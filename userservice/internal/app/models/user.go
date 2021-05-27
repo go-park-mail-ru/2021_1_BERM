@@ -49,3 +49,7 @@ type UserBasicInfo struct {
 	Login       string `json:"login,omitempty"`
 	NameSurname string `json:"name_surname,omitempty"`
 }
+
+type SuggestUsersTittle struct {
+	Title string `json:"title" db:"name_surname"`
+}

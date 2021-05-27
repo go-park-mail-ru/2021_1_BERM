@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"post/internal/app/models"
 	"post/pkg/error/errortools"
+	"strings"
 )
 
 const (
@@ -91,12 +92,16 @@ const (
 		"AND CASE WHEN $3 != '~' THEN to_tsvector(order_name) @@ to_tsquery($3) ELSE true END " +
 		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY budget LIMIT $5 OFFSET $6"
-	getActualOrdersDesk   = "SELECT * FROM post.orders " +
+	getActualOrdersDesk = "SELECT * FROM post.orders " +
 		"WHERE CASE WHEN $1 != 0 THEN budget >= $1 ELSE true END " +
 		"AND CASE WHEN $2 != 0  THEN budget <= $2 ELSE true END " +
 		"AND CASE WHEN $3 != '~' THEN to_tsvector(order_name) @@ to_tsquery($3) ELSE true END " +
 		"AND CASE WHEN $4 != '~' THEN category = $4 ELSE true END " +
 		"ORDER BY budget DESC LIMIT $5 OFFSET $6"
+
+	selectTittle = `SELECT DISTINCT order_name FROM post.orders WHERE order_name LIKE $1 LIMIT 5`
+
+	selectAllTittle = `SELECT DISTINCT order_name FROM post.orders LIMIT 5`
 )
 const (
 	ctxQueryParams uint8 = 4
@@ -205,12 +210,26 @@ func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error
 	budgetFrom := param["from"].(int)
 	budgetTo := param["to"].(int)
 	searchStr := param["search_str"].(string)
+	if searchStr != "~" {
+		search := strings.Split(searchStr, " ")
+		var res string
+		for i, s := range search {
+			if i == len(search) - 1 {
+				res += " " + s
+				break
+			}
+			res += s + " <->"
+
+		}
+		searchStr = res
+		searchStr += ":*"
+	}
 	if desk {
 		if err := r.db.Select(&orders, getActualOrdersDesk, budgetFrom, budgetTo, searchStr, category, limit, offset); err != nil {
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
 		}
-	}else{
+	} else {
 		if err := r.db.Select(&orders, getActualOrders, budgetFrom, budgetTo, searchStr, category, limit, offset); err != nil {
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
@@ -327,4 +346,21 @@ func (r *Repository) FindArchiveByID(id uint64, ctx context.Context) (*models.Or
 		return nil, errors.Wrap(customErr, err.Error())
 	}
 	return &order, nil
+}
+
+func (r *Repository) SuggestOrderTitle(suggestWord string, ctx context.Context) ([]models.SuggestOrderTitle, error) {
+	var suggestTittles []models.SuggestOrderTitle
+	if suggestWord == "" {
+		if err := r.db.Select(&suggestTittles, selectAllTittle); err != nil {
+			customErr := errortools.SqlErrorChoice(err)
+			return nil, errors.Wrap(customErr, err.Error())
+		}
+		return suggestTittles, nil
+	}
+	suggestWord += "%"
+	if err := r.db.Select(&suggestTittles, selectTittle, suggestWord); err != nil {
+		customErr := errortools.SqlErrorChoice(err)
+		return nil, errors.Wrap(customErr, err.Error())
+	}
+	return suggestTittles, nil
 }
