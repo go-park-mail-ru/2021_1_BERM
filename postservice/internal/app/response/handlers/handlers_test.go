@@ -1,4 +1,4 @@
-package response
+package response_test
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"post/internal/app/models"
+	respHandl "post/internal/app/response/handlers"
 	"post/internal/app/response/mock"
 	"post/pkg/metric"
 	"post/pkg/types"
@@ -17,7 +18,11 @@ import (
 	"time"
 )
 
-const ctxKeyStartReqTime types.CtxKey = 5
+const (
+	ctxKeyStartReqTime types.CtxKey = 5
+	ctxKeyReqID types.CtxKey = 1
+	ctxUserID   types.CtxKey = 2
+)
 
 func TestHandlers_CreatePostResponse(t *testing.T) {
 	metric.New()
@@ -27,7 +32,7 @@ func TestHandlers_CreatePostResponse(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	response := models.Response{
 		PostID:        1,
@@ -94,7 +99,7 @@ func TestHandlers_CreatePostResponseErrJson(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	body := "Kek"
 	req, err := http.NewRequest("POST", "/api/order/1/response", bytes.NewBuffer([]byte(body)))
@@ -136,7 +141,7 @@ func TestHandlers_CreatePostResponseBadMux(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	response := models.Response{
 		PostID:        1,
@@ -188,7 +193,7 @@ func TestHandlers_CreatePostResponseErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	response := models.Response{
 		PostID:        1,
@@ -255,7 +260,7 @@ func TestHandlers_GetAllPostResponses(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	response := []models.Response{
 		{
@@ -326,7 +331,7 @@ func TestHandlers_GetAllPostResponsesErrVars(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	response := []models.Response{
 		{
@@ -380,7 +385,7 @@ func TestHandlers_GetAllPostResponsesErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	response := []models.Response{
 		{
@@ -451,7 +456,7 @@ func TestHandlers_ChangePostResponse(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	response := models.Response{
 		PostID:        1,
@@ -475,7 +480,7 @@ func TestHandlers_ChangePostResponse(t *testing.T) {
 	}
 
 	body, _ := json.Marshal(response)
-	req, err := http.NewRequest("PATCH", "/api/order/1/response", bytes.NewBuffer([]byte(body)))
+	req, err := http.NewRequest("PATCH", "/api/order/1/response", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -517,7 +522,7 @@ func TestHandlers_ChangePostResponseErrJson(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	body := "я уже не программист, я тестей на***"
 	req, err := http.NewRequest("PATCH", "/api/order/1/response", bytes.NewBuffer([]byte(body)))
@@ -558,7 +563,7 @@ func TestHandlers_ChangePostResponseErrVar(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	response := models.Response{
 		PostID:        1,
@@ -571,7 +576,7 @@ func TestHandlers_ChangePostResponseErrVar(t *testing.T) {
 	}
 
 	body, _ := json.Marshal(response)
-	req, err := http.NewRequest("PATCH", "/api/order/1/response", bytes.NewBuffer([]byte(body)))
+	req, err := http.NewRequest("PATCH", "/api/order/1/response", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -609,7 +614,7 @@ func TestHandlers_ChangePostResponseErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	response := models.Response{
 		PostID:        1,
@@ -633,7 +638,7 @@ func TestHandlers_ChangePostResponseErr(t *testing.T) {
 	}
 
 	body, _ := json.Marshal(response)
-	req, err := http.NewRequest("PATCH", "/api/order/1/response", bytes.NewBuffer([]byte(body)))
+	req, err := http.NewRequest("PATCH", "/api/order/1/response", bytes.NewBuffer(body))
 
 	ctx := req.Context()
 	var val1 uint64
@@ -675,7 +680,7 @@ func TestHandlers_DelPostResponse(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	req, err := http.NewRequest("DELETE", "/api/order/1/response", nil)
 
@@ -726,7 +731,7 @@ func TestHandlers_DelPostResponseErrVar(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	req, err := http.NewRequest("DELETE", "/api/order/1/response", nil)
 
@@ -767,7 +772,7 @@ func TestHandlers_DelPostResponseErr(t *testing.T) {
 
 	mockUseCase := mock.NewMockUseCase(ctrl)
 
-	handle := NewHandler(mockUseCase)
+	handle := respHandl.NewHandler(mockUseCase)
 
 	req, err := http.NewRequest("DELETE", "/api/order/1/response", nil)
 

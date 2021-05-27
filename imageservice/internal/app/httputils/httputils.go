@@ -6,11 +6,12 @@ import (
 	"imageservice/internal/app/error/errortools"
 	"imageservice/internal/app/logger"
 	"imageservice/internal/app/metric"
+	"imageservice/internal/app/types"
 	"net/http"
 )
 
 const (
-	ctxKeyReqID uint8 = 1
+	ctxKeyReqID types.CtxKey = 1
 )
 
 func Respond(w http.ResponseWriter, r *http.Request, requestId uint64, code int, data interface{}) {

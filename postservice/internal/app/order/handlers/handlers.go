@@ -117,7 +117,6 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 	orderResponse["order"] = o
 	orderResponse["size"] = num
 	httputils.Respond(w, r, reqID, http.StatusOK, orderResponse)
-
 }
 
 func (h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {

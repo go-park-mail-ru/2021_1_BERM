@@ -14,9 +14,8 @@ import (
 )
 
 const (
-	orderUseCaseError              = "Order use case error"
+	orderUseCaseError string       = "Order use case error"
 	ctxUserID         types.CtxKey = 2
-  ctxQueryParams types.CtxKey = 4
 )
 
 type UseCase struct {
@@ -135,12 +134,10 @@ func (u *UseCase) DeleteOrder(id uint64, ctx context.Context) error {
 	return nil
 }
 
-
-
 func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, uint64, error) {
 	orders, err := u.OrderRepo.GetActualOrders(ctx)
 	if err != nil {
-		return nil, 0,errors.Wrap(err, orderUseCaseError)
+		return nil, 0, errors.Wrap(err, orderUseCaseError)
 	}
 	for i, order := range orders {
 		err = u.supplementingTheOrderModel(&order)
@@ -150,7 +147,7 @@ func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, uint64, 
 		orders[i] = order
 	}
 	if orders == nil {
-		return []models.Order{}, 0,  nil
+		return []models.Order{}, 0, nil
 	}
 
 	user, err := u.UserRepo.GetUserById(ctx, &api.UserRequest{Id: ctx.Value(ctxUserID).(uint64)})
@@ -167,7 +164,7 @@ func (u *UseCase) GetActualOrders(ctx context.Context) ([]models.Order, uint64, 
 			}
 		}
 	}
-	oNum, err := u.OrderRepo.GetOrderNum(ctx);
+	oNum, err := u.OrderRepo.GetOrderNum(ctx)
 	if err != nil {
 		return []models.Order{}, 0, errors.Wrap(err, orderUseCaseError)
 	}

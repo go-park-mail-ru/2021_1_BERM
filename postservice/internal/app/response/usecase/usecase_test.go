@@ -1,4 +1,4 @@
-package response
+package response_test
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"post/api"
 	"post/internal/app/models"
 	"post/internal/app/response/mock"
+	respUseCase "post/internal/app/response/usecase"
 	"testing"
 )
 
@@ -37,12 +38,12 @@ func TestCreate(t *testing.T) {
 		UserImg:         "kek",
 		UserLogin:       "Mem",
 	}
-	var id uint64
-	id = 1
+
+	id := uint64(1)
 	ctx := context.Background()
 	mockResponseRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockResponseRepo, mockUserRepo)
+	useCase := respUseCase.NewUseCase(mockResponseRepo, mockUserRepo)
 
 	mockResponseRepo.EXPECT().
 		Create(*expectResponse, ctx).
@@ -67,7 +68,7 @@ func TestCreate(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, nil)
 
-	resResponse, err = useCase.Create(*response, ctx)
+	_, err = useCase.Create(*response, ctx)
 
 	require.Error(t, err)
 
@@ -76,7 +77,7 @@ func TestCreate(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, errors.New("GRPC Err"))
 
-	resResponse, err = useCase.Create(*response, ctx)
+	_, err = useCase.Create(*response, ctx)
 
 	require.Error(t, err)
 }
@@ -111,12 +112,11 @@ func TestFindByPostID(t *testing.T) {
 			UserLogin:       "Mem",
 		},
 	}
-	var id uint64
-	id = 1
+	var id = uint64(1)
 	ctx := context.Background()
 	mockResponseRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockResponseRepo, mockUserRepo)
+	useCase := respUseCase.NewUseCase(mockResponseRepo, mockUserRepo)
 
 	mockResponseRepo.EXPECT().
 		FindByOrderPostID(id, ctx).
@@ -178,7 +178,7 @@ func TestFindByPostID(t *testing.T) {
 		Times(1).
 		Return(response, errors.New("DB err"))
 
-	resResponse, err = useCase.FindByPostID(id, false, true, ctx)
+	_, err = useCase.FindByPostID(id, false, true, ctx)
 
 	require.Error(t, err)
 
@@ -191,7 +191,7 @@ func TestFindByPostID(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, errors.New("GRPC Err"))
 
-	resResponse, err = useCase.FindByPostID(id, false, true, ctx)
+	_, err = useCase.FindByPostID(id, false, true, ctx)
 
 	require.Error(t, err)
 
@@ -236,7 +236,7 @@ func TestChange(t *testing.T) {
 	ctx := context.Background()
 	mockResponseRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockResponseRepo, mockUserRepo)
+	useCase := respUseCase.NewUseCase(mockResponseRepo, mockUserRepo)
 
 	mockResponseRepo.EXPECT().
 		ChangeOrderResponse(*response, ctx).
@@ -294,7 +294,7 @@ func TestChange(t *testing.T) {
 		Times(1).
 		Return(response, errors.New("DB err"))
 
-	resResponse, err = useCase.Change(*response, ctx)
+	_, err = useCase.Change(*response, ctx)
 
 	require.Error(t, err)
 
@@ -307,7 +307,7 @@ func TestChange(t *testing.T) {
 		Times(1).
 		Return(&api.UserInfoResponse{Login: "Mem", Img: "kek"}, errors.New("GRPC Err"))
 
-	resResponse, err = useCase.Change(*response, ctx)
+	_, err = useCase.Change(*response, ctx)
 
 	require.Error(t, err)
 }
@@ -330,7 +330,7 @@ func TestDelete(t *testing.T) {
 	ctx := context.Background()
 	mockResponseRepo := mock.NewMockRepository(ctrl)
 	mockUserRepo := mock.NewMockUserClient(ctrl)
-	useCase := NewUseCase(mockResponseRepo, mockUserRepo)
+	useCase := respUseCase.NewUseCase(mockResponseRepo, mockUserRepo)
 
 	mockResponseRepo.EXPECT().
 		DeleteOrderResponse(*response, ctx).

@@ -138,12 +138,13 @@ func (mr *MockUseCaseMockRecorder) FindByUserID(arg0, arg1 interface{}) *gomock.
 }
 
 // GetActualVacancies mocks base method.
-func (m *MockUseCase) GetActualVacancies(arg0 context.Context) ([]models.Vacancy, error) {
+func (m *MockUseCase) GetActualVacancies(arg0 context.Context) ([]models.Vacancy, uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetActualVacancies", arg0)
 	ret0, _ := ret[0].([]models.Vacancy)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(uint64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetActualVacancies indicates an expected call of GetActualVacancies.

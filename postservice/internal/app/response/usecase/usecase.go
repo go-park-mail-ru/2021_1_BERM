@@ -40,7 +40,11 @@ func (u *UseCase) Create(response models.Response, ctx context.Context) (*models
 	return &response, nil
 }
 
-func (u *UseCase) FindByPostID(postID uint64, orderResponse bool, vacancyResponse bool, ctx context.Context) ([]models.Response, error) {
+func (u *UseCase) FindByPostID(
+	postID uint64,
+	orderResponse bool,
+	vacancyResponse bool,
+	ctx context.Context) ([]models.Response, error) {
 	var responses []models.Response
 	var err error
 	if orderResponse {

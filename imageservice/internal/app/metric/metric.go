@@ -7,8 +7,6 @@ import (
 	"strconv"
 )
 
-const ctxKeyStartReqTime uint8 = 5
-
 var (
 	hits    *prometheus.CounterVec
 	errors  *prometheus.CounterVec

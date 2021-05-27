@@ -273,14 +273,17 @@ func (h *Handlers) GetAllArchiveUserVacancies(w http.ResponseWriter, r *http.Req
 	params := mux.Vars(r)
 	userInfo := models.UserBasicInfo{}
 	var err error
+	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	userInfo.ID, err = strconv.ParseUint(params["id"], 10, 64)
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
 	userInfo.Executor = r.Context().Value(ctxExecutor).(bool)
 
-	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	v, err := h.useCase.GetArchiveVacancies(userInfo, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
 		return
 	}
 	httputils.Respond(w, r, reqID, http.StatusOK, v)

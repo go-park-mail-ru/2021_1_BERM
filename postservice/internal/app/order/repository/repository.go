@@ -39,8 +39,6 @@ const (
 
 	selectOrderByCustomerID = "SELECT * FROM post.orders WHERE customer_id=$1"
 
-	selectOrders = "SELECT * FROM post.orders "
-
 	selectArchiveOrdersByExecutorID = "SELECT * FROM post.archive_orders WHERE executor_id=$1"
 
 	selectArchiveOrdersByCustomerID = "SELECT * FROM post.archive_orders WHERE customer_id=$1"
@@ -239,7 +237,16 @@ func (r *Repository) GetActualOrders(ctx context.Context) ([]models.Order, error
 			return nil, errors.Wrap(customErr, err.Error())
 		}
 	} else {
-		if err := r.db.Select(&orders, getActualOrders, budgetFrom, budgetTo, searchStr, category, limit, offset); err != nil {
+		if err := r.db.Select(
+			&orders,
+			getActualOrders,
+			budgetFrom,
+			budgetTo,
+			searchStr,
+			category,
+			limit,
+			offset);
+		err != nil {
 			customErr := errortools.SqlErrorChoice(err)
 			return nil, errors.Wrap(customErr, err.Error())
 		}
