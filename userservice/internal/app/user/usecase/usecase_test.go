@@ -515,3 +515,47 @@ func TestNewUser(t *testing.T) {
 	require.Equal(t, u.SpecializeRepository, mockSpecializeRepo)
 	require.Equal(t, u.ReviewsRepository, mockReviewRepo)
 }
+
+func TestSuggestUsersTitle(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	ctx := context.Background()
+
+	suggestWord := "kek"
+	res := []models.SuggestUsersTittle{
+		{Title: suggestWord}}
+	mockUserRepo := mock.NewMockRepository(ctrl)
+	mockUserRepo.EXPECT().
+		SuggestUsersTitle(suggestWord, ctx).
+		Times(1).
+		Return(res, nil)
+
+	useCase := userUseCase.UseCase{
+		UserRepository: mockUserRepo,
+	}
+
+	_, err := useCase.SuggestUsersTitle(suggestWord, ctx)
+	require.NoError(t, err)
+}
+
+func TestSuggestUsersTitleErr(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	ctx := context.Background()
+
+	suggestWord := "kek"
+	res := []models.SuggestUsersTittle{
+		{Title: suggestWord}}
+	mockUserRepo := mock.NewMockRepository(ctrl)
+	mockUserRepo.EXPECT().
+		SuggestUsersTitle(suggestWord, ctx).
+		Times(1).
+		Return(res, errors.New("kek"))
+
+	useCase := userUseCase.UseCase{
+		UserRepository: mockUserRepo,
+	}
+
+	_, err := useCase.SuggestUsersTitle(suggestWord, ctx)
+	require.Error(t, err)
+}
