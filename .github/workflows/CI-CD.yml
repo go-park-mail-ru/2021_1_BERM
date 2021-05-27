@@ -7,56 +7,56 @@ on:
     branches:
       - development
 jobs:
-    check:
-      runs-on: ubuntu-latest
+  check:
+    runs-on: ubuntu-latest
 
-      steps:
-        - uses: actions/checkout@v2
+    steps:
+      - uses: actions/checkout@v2
 
-        - name: Install Go
-          uses: actions/setup-go@v2
-          with:
-            go-version: 1.16.x
+      - name: install go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.x
 
-        - name: Linters check auth service
-          uses: golangci/golangci-lint-action@v2
-          with:
-            version: v1.29
-            working-directory: authservice
-            args: -c .golangci-lint.yml
+      - name: linters check auth service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.29
+          working-directory: authservice
+          args: -c .golangci-lint.yml
 
-        - name: Linters check post service
-          uses: golangci/golangci-lint-action@v2
-          with:
-            version: v1.29
-            working-directory: postservice
-            args: -c .golangci-lint.yml
+      - name: linters check post service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.29
+          working-directory: postservice
+          args: -c .golangci-lint.yml
 
-        - name: Linters check image service
-          uses: golangci/golangci-lint-action@v2
-          with:
-            version: v1.29
-            working-directory: imageservice
-            args: -c .golangci-lint.yml
+      - name: linters check image service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.29
+          working-directory: imageservice
+          args: -c .golangci-lint.yml
 
-        - name: Linters check user service
-          uses: golangci/golangci-lint-action@v2
-          with:
-            version: v1.29
-            working-directory: userservice
-            args: -c .golangci-lint.yml
+      - name: linters check user service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.29
+          working-directory: userservice
+          args: -c .golangci-lint.yml
 
-        - name: tests auth service
-          run: cd authservice && go test ./...
+      - name: tests auth service
+        run: cd authservice && go test ./...
 
-        - name: tests image service
-          run: cd imageservice && go test ./...
+      - name: tests image service
+        run: cd imageservice && go test ./...
 
-        - name: tests user service
-          run: cd usersirvice && go test ./...
+      - name: tests user service
+        run: cd usersirvice && go test ./...
 
-        - name: tests post service
-          run: cd postservice && go test ./...
+      - name: tests post service
+        run: cd postservice && go test ./...
 
   build:
     runs-on: ubuntu-latest
