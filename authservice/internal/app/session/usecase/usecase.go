@@ -9,14 +9,14 @@ import (
 )
 
 type UseCase struct {
-	sessionRepository session2.Repository
-	tools             tools2.SessionTools
+	SessionRepository session2.Repository
+	Tools             tools2.SessionTools
 }
 
 func New(sessionRepository session2.Repository) *UseCase {
 	return &UseCase{
-		sessionRepository: sessionRepository,
-		tools:             &sessiontools2.SessionTools{},
+		SessionRepository: sessionRepository,
+		Tools:             &sessiontools2.SessionTools{},
 	}
 }
 
@@ -26,11 +26,11 @@ func (useCase *UseCase) Create(ID uint64, executor bool, ctx context.Context) (*
 		Executor: executor,
 	}
 	var err error
-	session, err = useCase.tools.BeforeCreate(session)
+	session, err = useCase.Tools.BeforeCreate(session)
 	if err != nil {
 		return nil, err
 	}
-	err = useCase.sessionRepository.Store(session, ctx)
+	err = useCase.SessionRepository.Store(session, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (useCase *UseCase) Create(ID uint64, executor bool, ctx context.Context) (*
 }
 
 func (useCase *UseCase) Get(sessionID string, ctx context.Context) (*models2.Session, error) {
-	session, err := useCase.sessionRepository.Get(sessionID, ctx)
+	session, err := useCase.SessionRepository.Get(sessionID, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (useCase *UseCase) Get(sessionID string, ctx context.Context) (*models2.Ses
 }
 
 func (useCase *UseCase) Remove(sessionID string, ctx context.Context) error {
-	err := useCase.sessionRepository.Remove(sessionID, ctx)
+	err := useCase.SessionRepository.Remove(sessionID, ctx)
 	if err != nil {
 		return err
 	}

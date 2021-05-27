@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-//go:generate mockgen -destination=./mock/mock_usecase.go -package=mock authorizationservice/internal/app/session UseCase
+//nolint:lll    //go:generate mockgen -destination=./mock/mock_usecase.go -package=mock authorizationservice/internal/app/session UseCase
 type UseCase interface {
 	Create(ID uint64, executor bool, ctx context.Context) (*models2.Session, error)
 	Get(sessionID string, ctx context.Context) (*models2.Session, error)

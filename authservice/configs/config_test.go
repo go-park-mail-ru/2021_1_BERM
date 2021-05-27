@@ -1,15 +1,16 @@
-package configs
+package configs_test
 
 import (
+	conf "authorizationservice/configs"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestNewConfig(t *testing.T) {
-	expectConfig := &Config{
+	expectConfig := &conf.Config{
 		BindAddr: ":8080",
 		LogLevel: "debug",
 	}
-	config := NewConfig()
+	config := conf.NewConfig()
 	require.Equal(t, config, expectConfig)
 }

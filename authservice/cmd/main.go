@@ -52,6 +52,9 @@ func main() {
 		User: "guest",
 	}
 	conn, err := tarantool.Connect(config.Host + config.DatabaseURL, opts)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	defer conn.Close()
 	sessionRepository := repository.New(conn)
 
