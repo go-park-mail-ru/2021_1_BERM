@@ -127,7 +127,7 @@ func main() {
 
 	orderUseCase := orderUCase.NewUseCase(orderRepository, userRepo)
 	vacancyUseCase := vacancyUCase.NewUseCase(vacancyRepository, userRepo)
-	responseUseCase := responseUCase.NewUseCase(responseRepository, userRepo)
+	responseUseCase := responseUCase.NewUseCase(responseRepository, userRepo, orderRepository)
 
 	orderHandler := orderHandlers.NewHandler(orderUseCase)
 	vacancyHandler := vacancyHandlers.NewHandler(vacancyUseCase)
