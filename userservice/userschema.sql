@@ -1,5 +1,6 @@
 ALTER USER postgres WITH ENCRYPTED PASSWORD 'admin';
 DROP SCHEMA IF EXISTS userservice CASCADE;
+CREATE EXTENSION IF NOT EXISTS citext;
 CREATE SCHEMA userservice;
 
 CREATE TABLE userservice.users
@@ -8,7 +9,7 @@ CREATE TABLE userservice.users
     email        VARCHAR UNIQUE     NOT NULL,
     password     bytea              NOT NULL,
     login        VARCHAR            NOT NULL,
-    name_surname VARCHAR            NOT NULL,
+    name_surname citext            NOT NULL,
     about        VARCHAR DEFAULT NULL,
     executor     boolean            NOT NULL,
     img          VARCHAR DEFAULT ''
