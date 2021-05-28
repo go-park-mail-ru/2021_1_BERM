@@ -75,8 +75,15 @@ func (u *UseCase) FindByPostID(
 }
 
 func (u *UseCase) Change(response models.Response, ctx context.Context) (*models.Response, error) {
+	o, err := u.OrderRepo.FindByID(response.PostID, ctx)
+	if err != nil{
+		return nil, errors.Wrap(err, responseUseCaseError)
+	}
+	if o.ExecutorID == response.UserID{
+		return nil, errors.New(responseUseCaseError)
+	}
+
 	changedResponse := &models.Response{}
-	var err error
 	if response.OrderResponse {
 		changedResponse, err = u.ResponseRepo.ChangeOrderResponse(response, ctx)
 	}
@@ -89,13 +96,6 @@ func (u *UseCase) Change(response models.Response, ctx context.Context) (*models
 	err = u.supplementingTheResponseModel(changedResponse)
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
-	}
-	o, err := u.OrderRepo.FindByID(response.PostID, ctx)
-	if err != nil{
-		return nil, errors.Wrap(err, responseUseCaseError)
-	}
-	if o.ExecutorID == response.UserID{
-		return nil, errors.New(responseUseCaseError)
 	}
 	return changedResponse, nil
 
