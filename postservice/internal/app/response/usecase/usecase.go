@@ -7,7 +7,6 @@ import (
 	"post/internal/app/models"
 	orderRepo "post/internal/app/order"
 	responseRepo "post/internal/app/response"
-	"post/pkg/types"
 )
 
 const (
@@ -74,10 +73,6 @@ func (u *UseCase) FindByPostID(
 	}
 	return responses, nil
 }
-const (
-	ctxKeyReqID types.CtxKey = 1
-	ctxUserID   types.CtxKey = 2
-)
 
 func (u *UseCase) Change(response models.Response, ctx context.Context) (*models.Response, error) {
 	changedResponse := &models.Response{}
@@ -97,6 +92,9 @@ func (u *UseCase) Change(response models.Response, ctx context.Context) (*models
 		return nil, errors.Wrap(err, responseUseCaseError)
 	}
 	o, err := u.OrderRepo.FindByID(response.PostID, ctx)
+	if err != nil{
+		return nil, errors.Wrap(err, responseUseCaseError)
+	}
 	if o.ID == response.UserID{
 		return nil, errors.New(responseUseCaseError)
 	}
