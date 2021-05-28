@@ -46,7 +46,7 @@ func TestGRPCServer_GetOrderById(t *testing.T) {
 		Times(1).
 		Return(&orderInfo, nil)
 
-	response, err := handle.GetOrderByID(context.Background(), &api.OrderRequest{Id: 1})
+	response, err := handle.GetOrderById(context.Background(), &api.OrderRequest{Id: 1})
 	require.NoError(t, err)
 	require.Equal(t, expectResponse, response)
 	metric.Destroy()
@@ -85,7 +85,7 @@ func TestGRPCServer_GetOrderByIdErr(t *testing.T) {
 		Times(1).
 		Return(&orderInfo, errors.New("ERR"))
 
-	response, err := handle.GetOrderByID(context.Background(), &api.OrderRequest{Id: 1})
+	response, err := handle.GetOrderById(context.Background(), &api.OrderRequest{Id: 1})
 	require.Error(t, err)
 	require.Equal(t, expectResponse, response)
 	metric.Destroy()

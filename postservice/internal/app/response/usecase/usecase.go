@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"post/api"
 	"post/internal/app/models"
+	orderRepo "post/internal/app/order"
 	responseRepo "post/internal/app/response"
 )
 
@@ -15,12 +16,15 @@ const (
 type UseCase struct {
 	ResponseRepo responseRepo.Repository
 	UserRepo     api.UserClient
+	OrderRepo    orderRepo.Repository
 }
 
-func NewUseCase(responseRepo responseRepo.Repository, userRepo api.UserClient) *UseCase {
+func NewUseCase(responseRepo responseRepo.Repository,
+	userRepo api.UserClient, orderR orderRepo.Repository) *UseCase {
 	return &UseCase{
 		ResponseRepo: responseRepo,
 		UserRepo:     userRepo,
+		OrderRepo: orderR,
 	}
 }
 
@@ -71,8 +75,15 @@ func (u *UseCase) FindByPostID(
 }
 
 func (u *UseCase) Change(response models.Response, ctx context.Context) (*models.Response, error) {
+	o, err := u.OrderRepo.FindByID(response.PostID, ctx)
+	if err != nil{
+		return nil, errors.Wrap(err, responseUseCaseError)
+	}
+	if o.ExecutorID == response.UserID{
+		return nil, errors.New(responseUseCaseError)
+	}
+
 	changedResponse := &models.Response{}
-	var err error
 	if response.OrderResponse {
 		changedResponse, err = u.ResponseRepo.ChangeOrderResponse(response, ctx)
 	}
