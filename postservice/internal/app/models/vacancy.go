@@ -1,5 +1,9 @@
 package models
 
+//easyjson:json
+type VacancyList []Vacancy
+
+//easyjson:json
 type Vacancy struct {
 	ID          uint64 `json:"id,omitempty" db:"id"`
 	CustomerID  uint64 `json:"customer_id,omitempty" db:"customer_id"`
@@ -13,10 +17,16 @@ type Vacancy struct {
 	IsArchived  bool   `json:"is_archived" db:"is_archived"`
 }
 
+//easyjson:json
 type VacancySearch struct {
 	Keyword string `json:"keyword"`
 }
 
+//easyjson:json
+type SuggestVacancyTittleList []SuggestVacancyTittle
+
+
+//easyjson:json
 type SuggestVacancyTittle struct {
 	Title string `json:"title" db:"vacancy_name"`
 }

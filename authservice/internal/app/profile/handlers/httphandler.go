@@ -6,7 +6,7 @@ import (
 	"authorizationservice/internal/app/session"
 	"authorizationservice/pkg/utils"
 	"context"
-	"encoding/json"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"time"
@@ -28,7 +28,12 @@ func (h *Handler) RegistrationProfile(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 	reqId := rand.Uint64()
 	u := &models2.NewUser{}
-	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.RespondError(w, r, reqId, err)
+		return
+	}
+	if err := u.UnmarshalJSON(body); err != nil {
 		utils.RespondError(w, r, reqId, err)
 		return
 	}
@@ -43,14 +48,24 @@ func (h *Handler) RegistrationProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.CreateCookie(sess, w)
-	utils.Respond(w, r, reqId, http.StatusAccepted, resp)
+	result, err := resp.MarshalJSON()
+	if err != nil {
+		utils.RespondError(w, r, reqId, err)
+		return
+	}
+	utils.Respond(w, r, reqId, http.StatusAccepted, result)
 }
 
 func (h *Handler) AuthorisationProfile(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 	reqId := rand.Uint64()
 	u := &models2.LoginUser{}
-	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.RespondError(w, r, reqId, err)
+		return
+	}
+	if err := u.UnmarshalJSON(body); err != nil {
 		utils.RespondError(w, r, reqId, err)
 		return
 	}
@@ -65,5 +80,10 @@ func (h *Handler) AuthorisationProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.CreateCookie(sess, w)
-	utils.Respond(w, r, reqId, http.StatusAccepted, resp)
+	result, err := resp.MarshalJSON()
+	if err != nil {
+		utils.RespondError(w, r, reqId, err)
+		return
+	}
+	utils.Respond(w, r, reqId, http.StatusAccepted, result)
 }

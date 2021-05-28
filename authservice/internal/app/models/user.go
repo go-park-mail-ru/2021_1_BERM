@@ -2,6 +2,7 @@ package models
 
 import "github.com/lib/pq"
 
+//easyjson:json
 type NewUser struct {
 	ID              uint64         `json:"id,omitempty" db:"id"`
 	Email           string         `json:"email" db:"email"`
@@ -14,11 +15,13 @@ type NewUser struct {
 	Executor        bool           `db:"executor"`
 }
 
+//easyjson:json
 type LoginUser struct {
 	Email    string
 	Password string
 }
 
+//easyjson:json
 type UserBasicInfo struct {
 	ID       uint64 `json:"id"`
 	Executor bool   `json:"executor"`

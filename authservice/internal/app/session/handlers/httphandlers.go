@@ -34,7 +34,12 @@ func (h *Handler) CheckLogin(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	utils.Respond(w, r, reqId, http.StatusAccepted, session)
+	result, err := session.MarshalJSON()
+	if err != nil {
+		utils.RespondError(w, r, reqId, err)
+		return
+	}
+	utils.Respond(w, r, reqId, http.StatusAccepted, result)
 }
 
 func (h *Handler) LogOut(w http.ResponseWriter, r *http.Request) {

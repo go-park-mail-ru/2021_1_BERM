@@ -2,8 +2,8 @@ package order
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"net/http"
 	"post/internal/app/models"
 	orderUseCase "post/internal/app/order"
@@ -33,18 +33,29 @@ func (h *Handlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	id := r.Context().Value(ctxUserID).(uint64)
 	o := &models.Order{}
-	if err := json.NewDecoder(r.Body).Decode(o); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	if err := o.UnmarshalJSON(body); err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
 	o.CustomerID = id
-	o, err := h.useCase.Create(*o, context.Background())
+	o, err = h.useCase.Create(*o, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusCreated, o)
+
+	result, err := o.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusCreated, result)
 }
 
 func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
@@ -105,7 +116,9 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 		param["offset"] = 0
 	}
 	ctx := context.WithValue(r.Context(), ctxQueryParams, param)
-	o, num, err := h.useCase.GetActualOrders(ctx)
+	o := models.OrderList{}
+	var err error
+	o, _, err = h.useCase.GetActualOrders(ctx)
 
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
@@ -113,10 +126,12 @@ func (h *Handlers) GetActualOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orderResponse := make(map[string]interface{})
-	orderResponse["order"] = o
-	orderResponse["size"] = num
-	httputils.Respond(w, r, reqID, http.StatusOK, orderResponse)
+	result, err := o.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
@@ -132,19 +147,28 @@ func (h *Handlers) GetOrder(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, o)
+	result, err := o.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) ChangeOrder(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	order := models.Order{}
-	if err := json.NewDecoder(r.Body).Decode(&order); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
 		return
 	}
+	if err := order.UnmarshalJSON(body); err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+
 	params := mux.Vars(r)
-	var err error
 	order.ID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
@@ -157,7 +181,12 @@ func (h *Handlers) ChangeOrder(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, order)
+	result, err := order.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) DeleteOrder(w http.ResponseWriter, r *http.Request) {
@@ -175,20 +204,23 @@ func (h *Handlers) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	var emptyInterface interface{}
-	httputils.Respond(w, r, reqID, http.StatusOK, emptyInterface)
+	httputils.Respond(w, r, reqID, http.StatusOK, nil)
 }
 
 func (h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	order := models.Order{}
-	if err := json.NewDecoder(r.Body).Decode(&order); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
 		return
 	}
-	var err error
+	if err := order.UnmarshalJSON(body); err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+
 	order.ID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
@@ -201,7 +233,12 @@ func (h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, order)
+	result, err := order.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) DeleteExecutor(w http.ResponseWriter, r *http.Request) {
@@ -223,8 +260,7 @@ func (h *Handlers) DeleteExecutor(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	var emptyInterface interface{}
-	httputils.Respond(w, r, reqID, http.StatusOK, emptyInterface)
+	httputils.Respond(w, r, reqID, http.StatusOK, nil)
 }
 
 func (h *Handlers) GetAllUserOrders(w http.ResponseWriter, r *http.Request) {
@@ -238,13 +274,19 @@ func (h *Handlers) GetAllUserOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	o, err := h.useCase.FindByUserID(userID, context.Background())
+	o := models.OrderList{}
+	o, err = h.useCase.FindByUserID(userID, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, o)
+	result, err := o.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) CloseOrder(w http.ResponseWriter, r *http.Request) {
@@ -261,8 +303,7 @@ func (h *Handlers) CloseOrder(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	var emptyInterface interface{}
-	httputils.Respond(w, r, reqID, http.StatusOK, emptyInterface)
+	httputils.Respond(w, r, reqID, http.StatusOK, nil)
 }
 
 func (h *Handlers) GetAllArchiveUserOrders(w http.ResponseWriter, r *http.Request) {
@@ -276,39 +317,63 @@ func (h *Handlers) GetAllArchiveUserOrders(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	userInfo.Executor = r.Context().Value(ctxExecutor).(bool)
-	o, err := h.useCase.GetArchiveOrders(userInfo, context.Background())
+	o := models.OrderList{}
+	o, err = h.useCase.GetArchiveOrders(userInfo, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, o)
+	result, err := o.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) SearchOrder(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	orderSearch := models.OrderSearch{}
-	if err := json.NewDecoder(r.Body).Decode(&orderSearch); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
 		return
 	}
-	o, err := h.useCase.SearchOrders(orderSearch.Keyword, context.Background())
+	if err := orderSearch.UnmarshalJSON(body); err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+
+	o := models.OrderList{}
+	o, err = h.useCase.SearchOrders(orderSearch.Keyword, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, o)
+	result, err := o.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) SuggestOrderTitle(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	suggestWord := r.URL.Query().Get("suggest_word")
-	suggestTitles, err := h.useCase.SuggestOrderTitle(suggestWord, context.Background())
+	suggestTitles := models.SuggestOrderTitleList{}
+	var err error
+	suggestTitles, err = h.useCase.SuggestOrderTitle(suggestWord, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, suggestTitles)
+	result, err := suggestTitles.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }

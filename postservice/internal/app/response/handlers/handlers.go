@@ -2,8 +2,8 @@ package response
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"net/http"
 	"post/internal/app/models"
 	responseUseCase "post/internal/app/response"
@@ -30,7 +30,12 @@ func NewHandler(useCase responseUseCase.UseCase) *Handlers {
 func (h *Handlers) CreatePostResponse(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	response := &models.Response{}
-	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	if err := response.UnmarshalJSON(body); err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
@@ -50,7 +55,12 @@ func (h *Handlers) CreatePostResponse(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusCreated, response)
+	result, err := response.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusCreated, result)
 }
 
 func (h *Handlers) GetAllPostResponses(w http.ResponseWriter, r *http.Request) {
@@ -64,27 +74,37 @@ func (h *Handlers) GetAllPostResponses(w http.ResponseWriter, r *http.Request) {
 	}
 	vacancyResponse := r.URL.String() == "/api/vacancy/"+strconv.FormatUint(id, 10)+"/response"
 	orderResponse := r.URL.String() == "/api/order/"+strconv.FormatUint(id, 10)+"/response"
-	responses, err := h.useCase.FindByPostID(id, orderResponse, vacancyResponse, context.Background())
+	responses := models.ResponseList{}
+	responses, err = h.useCase.FindByPostID(id, orderResponse, vacancyResponse, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 
 		return
 	}
 
-	httputils.Respond(w, r, reqID, http.StatusOK, responses)
+	result, err := responses.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 	response := &models.Response{}
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 
-	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
 		return
 	}
+	if err := response.UnmarshalJSON(body); err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+
 	params := mux.Vars(r)
-	var err error
 	response.PostID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
@@ -102,7 +122,12 @@ func (h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httputils.Respond(w, r, reqID, http.StatusOK, responses)
+	result, err := responses.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) DelPostResponse(w http.ResponseWriter, r *http.Request) {
@@ -128,7 +153,6 @@ func (h *Handlers) DelPostResponse(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	var emptyInterface interface{}
 
-	httputils.Respond(w, r, reqID, http.StatusOK, emptyInterface)
+	httputils.Respond(w, r, reqID, http.StatusOK, nil)
 }

@@ -1,5 +1,6 @@
 package models
 
+//easyjson:json
 type Review struct {
 	ID              uint64 `json:"id,omitempty" db:"id"`
 	UserId          uint64 `json:"user" db:"user_id"`
@@ -12,12 +13,14 @@ type Review struct {
 	UserNameSurname string `json:"user_name_surname,omitempty"`
 }
 
+//easyjson:json
 type UserReviews struct {
 	Name    string   `json:"name_surname"`
 	Login   string   `json:"login"`
 	Reviews []Review `json:"reviews"`
 }
 
+//easyjson:json
 type UserReviewInfo struct {
 	ReviewCount uint64  `db:"reviews_count"`
 	Rating      float64 `db:"rating"`

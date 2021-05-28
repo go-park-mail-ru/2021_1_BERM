@@ -12,6 +12,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/jmoiron/sqlx v1.3.3
 	github.com/lib/pq v1.10.1
+	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/opentracing-contrib/go-grpc v0.0.0-20210225150812-73cb765af46e
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pkg/errors v0.9.1

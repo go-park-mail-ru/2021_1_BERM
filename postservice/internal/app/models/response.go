@@ -1,5 +1,9 @@
 package models
 
+//easyjson:json
+type ResponseList []Response
+
+//easyjson:json
 type Response struct {
 	ID              uint64 `json:"id,omitempty" db:"id"`
 	Time            uint64 `json:"time,omitempty" db:"time"`

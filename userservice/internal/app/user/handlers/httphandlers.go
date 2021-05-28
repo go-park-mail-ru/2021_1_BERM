@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"user/internal/app/models"
@@ -37,7 +37,12 @@ func (h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := &models.ChangeUser{}
-	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	if err := u.UnmarshalJSON(body); err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
@@ -47,7 +52,13 @@ func (h *Handlers) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, response)
+
+	result, err := response.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +75,12 @@ func (h *Handlers) GetUserInfo(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, u)
+	result, err := u.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) GetUsers(w http.ResponseWriter, r *http.Request) {
@@ -128,21 +144,35 @@ func (h *Handlers) GetUsers(w http.ResponseWriter, r *http.Request) {
 	} else {
 		param["offset"] = 0
 	}
-	u, err := h.userUseCase.GetUsers(context.WithValue(r.Context(), ctxParam, param))
+	u := models.UserInfoList{}
+	var err error
+	u, err = h.userUseCase.GetUsers(context.WithValue(r.Context(), ctxParam, param))
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, u)
+	result, err := u.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) SuggestUsers(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	suggestWord := r.URL.Query().Get("suggest_word")
+
+	suggestTitles := models.SuggestUsersTittleList{}
 	suggestTitles, err := h.userUseCase.SuggestUsersTitle(suggestWord, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, suggestTitles)
+	result, err := suggestTitles.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }

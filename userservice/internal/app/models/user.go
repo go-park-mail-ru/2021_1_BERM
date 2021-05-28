@@ -2,6 +2,7 @@ package models
 
 import "github.com/lib/pq"
 
+//easyjson:json
 type NewUser struct {
 	ID              uint64         `json:"id,omitempty" db:"id"`
 	Email           string         `json:"email" db:"email"`
@@ -14,6 +15,7 @@ type NewUser struct {
 	Executor        bool           `db:"executor"`
 }
 
+//easyjson:json
 type ChangeUser struct {
 	ID              uint64         `json:"id,omitempty" db:"id"`
 	Email           string         `json:"email,omitempty" db:"email"`
@@ -27,6 +29,10 @@ type ChangeUser struct {
 	Executor        bool           `json:"executor,omitempty" db:"executor"`
 }
 
+//easyjson:json
+type UserInfoList []UserInfo
+
+//easyjson:json
 type UserInfo struct {
 	ID          uint64         `json:"id" db:"id"`
 	Email       string         `json:"email" db:"email"`
@@ -41,6 +47,7 @@ type UserInfo struct {
 	ReviewCount uint64         `json:"reviews_count" db:"reviews_count"`
 }
 
+//easyjson:json
 type UserBasicInfo struct {
 	ID          uint64 `json:"id"`
 	Email       string `json:"email,omitempty"`
@@ -50,6 +57,10 @@ type UserBasicInfo struct {
 	NameSurname string `json:"name_surname,omitempty"`
 }
 
+//easyjson:json
+type SuggestUsersTittleList []SuggestUsersTittle
+
+//easyjson:json
 type SuggestUsersTittle struct {
 	Title string `json:"title" db:"name_surname"`
 }

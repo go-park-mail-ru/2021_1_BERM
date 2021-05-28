@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"encoding/json"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"user/internal/app/models"
@@ -39,7 +39,12 @@ func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s := &models.Specialize{}
-	if err := json.NewDecoder(r.Body).Decode(s); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	if err := s.UnmarshalJSON(body); err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
@@ -62,7 +67,12 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s := &models.Specialize{}
-	if err = json.NewDecoder(r.Body).Decode(s); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	if err := s.UnmarshalJSON(body); err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
@@ -76,5 +86,10 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	httputils.Respond(w, r, reqID, 200, u)
+	result, err := u.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, 200, result)
 }

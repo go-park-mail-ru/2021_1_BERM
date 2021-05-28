@@ -6,7 +6,8 @@ import (
 	"authorizationservice/pkg/logger"
 	"authorizationservice/pkg/metric"
 	"authorizationservice/pkg/types"
-	"encoding/json"
+	"bytes"
+	"encoding/binary"
 	"errors"
 	"net/http"
 	"time"
@@ -16,10 +17,11 @@ const (
 	ctxKeyReqID types.CtxKey = 1
 )
 
-func Respond(w http.ResponseWriter, r *http.Request, requestId uint64, code int, data interface{}) {
+func Respond(w http.ResponseWriter, r *http.Request, requestId uint64, code int, data []byte) {
 	w.WriteHeader(code)
 	if data != nil {
-		err := json.NewEncoder(w).Encode(data)
+		w.Header().Set("Content-Type", "application/json")
+		_, err := w.Write(data)
 		if err != nil {
 			RespondError(w, r, requestId, err)
 			return
@@ -33,7 +35,10 @@ func RespondError(w http.ResponseWriter, r *http.Request, requestId uint64, err 
 	logger.LoggingError(requestId, err)
 	responseBody, code := errortools.ErrorHandle(err)
 	metric.CrateRequestError(err)
-	Respond(w, r, requestId, code, responseBody)
+
+	var binBuf bytes.Buffer
+	binary.Write(&binBuf, binary.BigEndian, responseBody)
+	Respond(w, r, requestId, code, binBuf.Bytes())
 }
 
 func RespondCSRF() http.Handler {
@@ -41,9 +46,14 @@ func RespondCSRF() http.Handler {
 		reqID := r.Context().Value(ctxKeyReqID).(uint64)
 
 		logger.LoggingError(reqID, errors.New("Invalid CSRF token"))
-		Respond(w, r, reqID, http.StatusForbidden, map[string]interface{}{
+
+		response := map[string]interface{}{
 			"error": "Invalid CSRF token",
-		})
+		}
+
+		var binBuf bytes.Buffer
+		binary.Write(&binBuf, binary.BigEndian, response)
+		Respond(w, r, reqID, http.StatusForbidden, binBuf.Bytes())
 	})
 }
 

@@ -2,8 +2,8 @@ package vacancy
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"net/http"
 	"post/internal/app/models"
 	vacancyUseCase "post/internal/app/vacancy"
@@ -36,18 +36,27 @@ func (h *Handlers) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 	v := &models.Vacancy{
 		CustomerID: id,
 	}
-	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
 		return
 	}
-	var err error
+	if err := v.UnmarshalJSON(body); err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
 	if v, err = h.useCase.Create(*v, context.Background()); err != nil {
 		httputils.RespondError(w, r, reqID, err)
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusCreated, v)
+
+	result, err := v.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusCreated, result)
 }
 
 func (h *Handlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +74,12 @@ func (h *Handlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, v)
+	result, err := v.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
@@ -127,25 +141,32 @@ func (h *Handlers) GetActualVacancies(w http.ResponseWriter, r *http.Request) {
 		param["offset"] = 0
 	}
 
-	v, num, err := h.useCase.GetActualVacancies(context.WithValue(r.Context(), ctxParam, param))
+	v := models.VacancyList{}
+	v, _, err := h.useCase.GetActualVacancies(context.WithValue(r.Context(), ctxParam, param))
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 
 		return
 	}
-	vacancyResponse := make(map[string]interface{})
-	vacancyResponse["vacancy"] = v
-	vacancyResponse["size"] = num
-	httputils.Respond(w, r, reqID, http.StatusOK, vacancyResponse)
+	result, err := v.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	vacancy := models.Vacancy{}
-	var err error
-	if err = json.NewDecoder(r.Body).Decode(&vacancy); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
+		return
+	}
+	if err := vacancy.UnmarshalJSON(body); err != nil {
+		httputils.RespondError(w, r, reqID, err)
 		return
 	}
 	params := mux.Vars(r)
@@ -161,7 +182,12 @@ func (h *Handlers) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, vacancy)
+	result, err := vacancy.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
@@ -179,8 +205,7 @@ func (h *Handlers) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	var emptyInterface interface{}
-	httputils.Respond(w, r, reqID, http.StatusOK, emptyInterface)
+	httputils.Respond(w, r, reqID, http.StatusOK, nil)
 }
 
 func (h *Handlers) GetAllUserVacancies(w http.ResponseWriter, r *http.Request) {
@@ -192,25 +217,35 @@ func (h *Handlers) GetAllUserVacancies(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	vacancies, err := h.useCase.FindByUserID(userID, context.Background())
+	vacancies := models.VacancyList{}
+	vacancies, err = h.useCase.FindByUserID(userID, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, vacancies)
+	result, err := vacancies.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	vacancy := models.Vacancy{}
-	var err error
-	if err = json.NewDecoder(r.Body).Decode(&vacancy); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
 		return
 	}
+	if err := vacancy.UnmarshalJSON(body); err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+
 	vacancy.ID, err = strconv.ParseUint(params["id"], 10, 64)
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
@@ -223,7 +258,12 @@ func (h *Handlers) SelectExecutor(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, vacancy)
+	result, err := vacancy.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) DeleteExecutor(w http.ResponseWriter, r *http.Request) {
@@ -245,8 +285,7 @@ func (h *Handlers) DeleteExecutor(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	var emptyInterface interface{}
-	httputils.Respond(w, r, reqID, http.StatusOK, emptyInterface)
+	httputils.Respond(w, r, reqID, http.StatusOK, nil)
 }
 
 func (h *Handlers) CloseVacancy(w http.ResponseWriter, r *http.Request) {
@@ -265,8 +304,7 @@ func (h *Handlers) CloseVacancy(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	var emptyInterface interface{}
-	httputils.Respond(w, r, reqID, http.StatusOK, emptyInterface)
+	httputils.Respond(w, r, reqID, http.StatusOK, nil)
 }
 
 func (h *Handlers) GetAllArchiveUserVacancies(w http.ResponseWriter, r *http.Request) {
@@ -281,38 +319,62 @@ func (h *Handlers) GetAllArchiveUserVacancies(w http.ResponseWriter, r *http.Req
 	}
 	userInfo.Executor = r.Context().Value(ctxExecutor).(bool)
 
-	v, err := h.useCase.GetArchiveVacancies(userInfo, context.Background())
+	v := models.VacancyList{}
+	v, err = h.useCase.GetArchiveVacancies(userInfo, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, v)
+	result, err := v.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) SearchVacancy(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	vacancySearch := models.VacancySearch{}
-	if err := json.NewDecoder(r.Body).Decode(&vacancySearch); err != nil {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
-
 		return
 	}
-	v, err := h.useCase.SearchVacancy(vacancySearch.Keyword, context.Background())
+	if err := vacancySearch.UnmarshalJSON(body); err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+
+	v := models.VacancyList{}
+	v, err = h.useCase.SearchVacancy(vacancySearch.Keyword, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, v)
+	result, err := v.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
 
 func (h *Handlers) SuggestVacancyTitle(w http.ResponseWriter, r *http.Request) {
 	reqID := r.Context().Value(ctxKeyReqID).(uint64)
 	suggestWord := r.URL.Query().Get("suggest_word")
-	suggestTitles, err := h.useCase.SuggestVacancyTitle(suggestWord, context.Background())
+	suggestTitles := models.SuggestVacancyTittleList{}
+	var err error
+	suggestTitles, err = h.useCase.SuggestVacancyTitle(suggestWord, context.Background())
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 		return
 	}
-	httputils.Respond(w, r, reqID, http.StatusOK, suggestTitles)
+	result, err := suggestTitles.MarshalJSON()
+	if err != nil {
+		httputils.RespondError(w, r, reqID, err)
+		return
+	}
+	httputils.Respond(w, r, reqID, http.StatusOK, result)
 }
