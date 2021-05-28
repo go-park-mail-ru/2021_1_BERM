@@ -1,111 +1,111 @@
-#name: CI
-#on:
-#  push:
-#    branches:
-#      - development
-#  pull_request:
-#    branches:
-#      - development
-#jobs:
-#  lint:
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - uses: actions/checkout@v2
-#
-#      - name: linters check auth service
-#        uses: golangci/golangci-lint-action@v2
-#        with:
-#          version: latest
-#          working-directory: authservice
-#          args: -c .golangci-lint.yml
-#
-#      - name: linters check post service
-#        uses: golangci/golangci-lint-action@v2
-#        with:
-#          version: latest
-#          working-directory: postservice
-#          args: -c .golangci-lint.yml
-#
-#      - name: linters check image service
-#        uses: golangci/golangci-lint-action@v2
-#        with:
-#          version: latest
-#          working-directory: imageservice
-#          args: -c .golangci-lint.yml
-#
-#      - name: linters check user service
-#        uses: golangci/golangci-lint-action@v2
-#        with:
-#          version: latest
-#          working-directory: userservice
-#          args: -c .golangci-lint.yml
-#
-#  test:
-#    runs-on: ubuntu-latest
-#
-#    needs: lint
-#    steps:
-#      - uses: actions/checkout@v2
-#
-#      - name: install go
-#        uses: actions/setup-go@v2
-#        with:
-#          go-version: 1.16.x
-#
-#      - name: tests auth service
-#        run: cd authservice && go test ./...
-#
-#      - name: tests image service
-#        run: cd imageservice && go test ./...
-#
-#      - name: tests user service
-#        run: cd userservice && go test ./...
-#
-#      - name: tests post service
-#        run: cd postservice && go test ./...
-#
-#  build:
-#    runs-on: ubuntu-latest
-#    needs: test
-#    steps:
-#      - uses: actions/checkout@v1
-#      - name: Login to DockerHub Registry
-#        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
-#      - name: Build Docker authservice image
-#        run: cd authservice && docker build -t astlok/ff:auth .
-#      - name: Build Docker postservice image
-#        run: cd postservice && docker build -t astlok/ff:post .
-#      - name: Build Docker imageservice image
-#        run: cd imageservice && docker build -t astlok/ff:image .
-#      - name: Build Docker userservice image
-#        run: cd userservice && docker build -t astlok/ff:user .
-#      - name: Build Docker tarantool image
-#        run: cd db && docker build -t astlok/ff:tarantool .
-#      - name: Push the authservice
-#        run: docker push --all-tags astlok/ff
-#
-#  deploy:
-#    runs-on: ubuntu-latest
-#    needs: build
-#    steps:
-#      - name: pull docker images
-#        uses: appleboy/ssh-action@master
-#        with:
-#          host: 95.163.212.121
-#          username: ubuntu
-#          key: ${{ secrets.KEY }}
-#          script: sudo docker pull --all-tags astlok/ff
-#      - name: deploy docker image
-#        uses: appleboy/ssh-action@master
-#        with:
-#          host: 95.163.212.121
-#          username: ubuntu
-#          key: ${{ secrets.KEY }}
-#          script: |
-#            sudo docker rm -f $(sudo docker ps -aq)
-#            sudo docker run -d -p 3001:3001 astlok/ff:tarantool
-#            sudo docker run -d -p 8082:8082 -p 8086:8086 astlok/ff:post
-#            sudo docker run --volume=/home/ubuntu/image:/image -d -p 8083:8083 astlok/ff:image
-#            sudo docker run -d -p 8080:8080 -p 8081:8081 astlok/ff:user
-#            sudo docker run -d -p 8084:8084 -p 8085:8085 astlok/ff:auth
+name: CI
+on:
+  push:
+    branches:
+      - development
+  pull_request:
+    branches:
+      - development
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: linters check auth service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+          working-directory: authservice
+          args: -c .golangci-lint.yml
+
+      - name: linters check post service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+          working-directory: postservice
+          args: -c .golangci-lint.yml
+
+      - name: linters check image service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+          working-directory: imageservice
+          args: -c .golangci-lint.yml
+
+      - name: linters check user service
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+          working-directory: userservice
+          args: -c .golangci-lint.yml
+
+  test:
+    runs-on: ubuntu-latest
+
+    needs: lint
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: install go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.x
+
+      - name: tests auth service
+        run: cd authservice && go test ./...
+
+      - name: tests image service
+        run: cd imageservice && go test ./...
+
+      - name: tests user service
+        run: cd userservice && go test ./...
+
+      - name: tests post service
+        run: cd postservice && go test ./...
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v1
+      - name: Login to DockerHub Registry
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
+      - name: Build Docker authservice image
+        run: cd authservice && docker build -t astlok/ff:auth .
+      - name: Build Docker postservice image
+        run: cd postservice && docker build -t astlok/ff:post .
+      - name: Build Docker imageservice image
+        run: cd imageservice && docker build -t astlok/ff:image .
+      - name: Build Docker userservice image
+        run: cd userservice && docker build -t astlok/ff:user .
+      - name: Build Docker tarantool image
+        run: cd db && docker build -t astlok/ff:tarantool .
+      - name: Push the authservice
+        run: docker push --all-tags astlok/ff
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: pull docker images
+        uses: appleboy/ssh-action@master
+        with:
+          host: 95.163.212.121
+          username: ubuntu
+          key: ${{ secrets.KEY }}
+          script: sudo docker pull --all-tags astlok/ff
+      - name: deploy docker image
+        uses: appleboy/ssh-action@master
+        with:
+          host: 95.163.212.121
+          username: ubuntu
+          key: ${{ secrets.KEY }}
+          script: |
+            sudo docker rm -f $(sudo docker ps -aq)
+            sudo docker run -d -p 3001:3001 astlok/ff:tarantool
+            sudo docker run -d -p 8082:8082 -p 8086:8086 astlok/ff:post
+            sudo docker run --volume=/home/ubuntu/image:/image -d -p 8083:8083 astlok/ff:image
+            sudo docker run -d -p 8080:8080 -p 8081:8081 astlok/ff:user
+            sudo docker run -d -p 8084:8084 -p 8085:8085 astlok/ff:auth
