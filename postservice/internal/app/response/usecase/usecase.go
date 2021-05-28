@@ -6,6 +6,7 @@ import (
 	"post/api"
 	"post/internal/app/models"
 	responseRepo "post/internal/app/response"
+	orderRepo "post/internal/app/order"
 )
 
 const (
@@ -15,12 +16,15 @@ const (
 type UseCase struct {
 	ResponseRepo responseRepo.Repository
 	UserRepo     api.UserClient
+	OrderRepo    orderRepo.Repository
 }
 
-func NewUseCase(responseRepo responseRepo.Repository, userRepo api.UserClient) *UseCase {
+func NewUseCase(responseRepo responseRepo.Repository,
+	userRepo api.UserClient, orderR orderRepo.Repository) *UseCase {
 	return &UseCase{
 		ResponseRepo: responseRepo,
 		UserRepo:     userRepo,
+		OrderRepo: orderR,
 	}
 }
 
@@ -86,7 +90,17 @@ func (u *UseCase) Change(response models.Response, ctx context.Context) (*models
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
 	}
+	o, err := u.OrderRepo.FindByID(response.PostID, ctx)
+	if err != nil{
+		return nil, errors.Wrap(err, responseUseCaseError)
+	}
+	if o.ID == response.UserID{
+		return nil, errors.New(responseUseCaseError)
+	}
 	return changedResponse, nil
+
+
+
 }
 
 func (u *UseCase) Delete(response models.Response, ctx context.Context) error {
