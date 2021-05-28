@@ -5,8 +5,8 @@ import (
 	"github.com/pkg/errors"
 	"post/api"
 	"post/internal/app/models"
-	responseRepo "post/internal/app/response"
 	orderRepo "post/internal/app/order"
+	responseRepo "post/internal/app/response"
 )
 
 const (
@@ -94,7 +94,7 @@ func (u *UseCase) Change(response models.Response, ctx context.Context) (*models
 	if err != nil{
 		return nil, errors.Wrap(err, responseUseCaseError)
 	}
-	if o.ID == response.UserID{
+	if o.ExecutorID == response.UserID{
 		return nil, errors.New(responseUseCaseError)
 	}
 	return changedResponse, nil
