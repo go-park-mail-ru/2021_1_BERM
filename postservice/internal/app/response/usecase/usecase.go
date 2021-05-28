@@ -98,9 +98,6 @@ func (u *UseCase) Change(response models.Response, ctx context.Context) (*models
 		return nil, errors.Wrap(err, responseUseCaseError)
 	}
 	return changedResponse, nil
-
-
-
 }
 
 func (u *UseCase) Delete(response models.Response, ctx context.Context) error {
