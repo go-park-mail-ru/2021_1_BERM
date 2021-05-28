@@ -5,7 +5,9 @@ import (
 	"github.com/pkg/errors"
 	"post/api"
 	"post/internal/app/models"
+	orderRepo "post/internal/app/order"
 	responseRepo "post/internal/app/response"
+	"post/pkg/types"
 )
 
 const (
@@ -15,12 +17,15 @@ const (
 type UseCase struct {
 	ResponseRepo responseRepo.Repository
 	UserRepo     api.UserClient
+	OrderRepo    orderRepo.Repository
 }
 
-func NewUseCase(responseRepo responseRepo.Repository, userRepo api.UserClient) *UseCase {
+func NewUseCase(responseRepo responseRepo.Repository,
+	userRepo api.UserClient, orderR orderRepo.Repository) *UseCase {
 	return &UseCase{
 		ResponseRepo: responseRepo,
 		UserRepo:     userRepo,
+		OrderRepo: orderR,
 	}
 }
 
@@ -69,6 +74,10 @@ func (u *UseCase) FindByPostID(
 	}
 	return responses, nil
 }
+const (
+	ctxKeyReqID types.CtxKey = 1
+	ctxUserID   types.CtxKey = 2
+)
 
 func (u *UseCase) Change(response models.Response, ctx context.Context) (*models.Response, error) {
 	changedResponse := &models.Response{}
@@ -82,9 +91,14 @@ func (u *UseCase) Change(response models.Response, ctx context.Context) (*models
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
 	}
+
 	err = u.supplementingTheResponseModel(changedResponse)
 	if err != nil {
 		return nil, errors.Wrap(err, responseUseCaseError)
+	}
+	o, err := u.OrderRepo.FindByID(response.PostID, ctx)
+	if o.ID == response.UserID{
+		return nil, errors.New(responseUseCaseError)
 	}
 	return changedResponse, nil
 }

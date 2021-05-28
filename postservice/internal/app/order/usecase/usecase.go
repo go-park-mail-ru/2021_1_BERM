@@ -95,6 +95,7 @@ func (u *UseCase) FindByUserID(userID uint64, ctx context.Context) ([]models.Ord
 
 func (u *UseCase) ChangeOrder(order models.Order, ctx context.Context) (models.Order, error) {
 	oldOrder, err := u.OrderRepo.FindByID(order.ID, context.Background())
+
 	if err != nil {
 		return models.Order{}, errors.Wrap(err, orderUseCaseError)
 	}

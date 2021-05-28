@@ -1,4 +1,4 @@
-package configs_test
+пшpackage configs_test
 
 import (
 	conf "authorizationservice/configs"

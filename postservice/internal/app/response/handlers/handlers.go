@@ -86,6 +86,7 @@ func (h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var err error
 	response.PostID, err = strconv.ParseUint(params["id"], 10, 64)
+
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
 
@@ -94,7 +95,7 @@ func (h *Handlers) ChangePostResponse(w http.ResponseWriter, r *http.Request) {
 	response.UserID = r.Context().Value(ctxUserID).(uint64)
 	response.VacancyResponse = r.URL.String() == "/api/vacancy/"+strconv.FormatUint(response.PostID, 10)+"/response"
 	response.OrderResponse = r.URL.String() == "/api/order/"+strconv.FormatUint(response.PostID, 10)+"/response"
-	responses, err := h.useCase.Change(*response, context.Background())
+	responses, err := h.useCase.Change(*response, r.Context())
 
 	if err != nil {
 		httputils.RespondError(w, r, reqID, err)
