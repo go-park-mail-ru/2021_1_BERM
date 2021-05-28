@@ -21,7 +21,7 @@ func NewGRPCServer(orderUseCase order.UseCase) *GRPCServer {
 	}
 }
 
-func (s *GRPCServer) GetOrderByID(ctx context.Context, in *api.OrderRequest) (*api.OrderInfoResponse, error) {
+func (s *GRPCServer) GetOrderById(ctx context.Context, in *api.OrderRequest) (*api.OrderInfoResponse, error) {
 	orderInfo, err := s.orderUseCase.FindByID(in.GetId(), ctx)
 	if err != nil {
 		errData, codeUint32 := errortools.ErrorHandle(err)
