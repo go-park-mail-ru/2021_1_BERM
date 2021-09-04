@@ -109,3 +109,5 @@ jobs:
             sudo docker run --volume=/home/ubuntu/image:/image -d -p 8083:8083 astlok/ff:image
             sudo docker run -d -p 8080:8080 -p 8081:8081 astlok/ff:user
             sudo docker run -d -p 8084:8084 -p 8085:8085 astlok/ff:auth
+
+
