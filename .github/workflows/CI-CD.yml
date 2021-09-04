@@ -7,67 +7,66 @@ on:
     branches:
       - main
 jobs:
-  lint:
-    runs-on: ubuntu-latest
+#   lint:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v2
+#     steps:
+#       - uses: actions/checkout@v2
 
-      - name: linters check auth service
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: latest
-          working-directory: authservice
-          args: -c .golangci-lint.yml
+#       - name: linters check auth service
+#         uses: golangci/golangci-lint-action@v2
+#         with:
+#           version: latest
+#           working-directory: authservice
+#           args: -c .golangci-lint.yml
 
-      - name: linters check post service
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: latest
-          working-directory: postservice
-          args: -c .golangci-lint.yml
+#       - name: linters check post service
+#         uses: golangci/golangci-lint-action@v2
+#         with:
+#           version: latest
+#           working-directory: postservice
+#           args: -c .golangci-lint.yml
 
-      - name: linters check image service
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: latest
-          working-directory: imageservice
-          args: -c .golangci-lint.yml
+#       - name: linters check image service
+#         uses: golangci/golangci-lint-action@v2
+#         with:
+#           version: latest
+#           working-directory: imageservice
+#           args: -c .golangci-lint.yml
 
-      - name: linters check user service
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: latest
-          working-directory: userservice
-          args: -c .golangci-lint.yml
+#       - name: linters check user service
+#         uses: golangci/golangci-lint-action@v2
+#         with:
+#           version: latest
+#           working-directory: userservice
+#           args: -c .golangci-lint.yml
 
-  test:
-    runs-on: ubuntu-latest
+#   test:
+#     runs-on: ubuntu-latest
 
-    needs: lint
-    steps:
-      - uses: actions/checkout@v2
+#     needs: lint
+#     steps:
+#       - uses: actions/checkout@v2
 
-      - name: install go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.16.x
+#       - name: install go
+#         uses: actions/setup-go@v2
+#         with:
+#           go-version: 1.16.x
 
-      - name: tests auth service
-        run: cd authservice && go test ./...
+#       - name: tests auth service
+#         run: cd authservice && go test ./...
 
-      - name: tests image service
-        run: cd imageservice && go test ./...
+#       - name: tests image service
+#         run: cd imageservice && go test ./...
 
-      - name: tests user service
-        run: cd userservice && go test ./...
+#       - name: tests user service
+#         run: cd userservice && go test ./...
 
-      - name: tests post service
-        run: cd postservice && go test ./...
+#       - name: tests post service
+#         run: cd postservice && go test ./...
 
   build:
     runs-on: ubuntu-latest
-    needs: test
     steps:
       - uses: actions/checkout@v1
       - name: Login to DockerHub Registry
@@ -109,5 +108,3 @@ jobs:
             sudo docker run --volume=/home/ubuntu/image:/image -d -p 8083:8083 astlok/ff:image
             sudo docker run -d -p 8080:8080 -p 8081:8081 astlok/ff:user
             sudo docker run -d -p 8084:8084 -p 8085:8085 astlok/ff:auth
-
-
